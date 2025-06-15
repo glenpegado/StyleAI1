@@ -35,21 +35,22 @@ export const updateSession = async (request: NextRequest) => {
             });
           },
         },
-      }
+      },
     );
 
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
     // protected routes
     if (request.nextUrl.pathname.startsWith("/dashboard") && error) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !error) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+    // Remove redundant redirect for home page
 
     return response;
   } catch (e) {

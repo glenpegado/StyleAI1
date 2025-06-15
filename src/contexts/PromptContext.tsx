@@ -84,6 +84,22 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("prompt_count");
   };
 
+  // Development reset function - immediately reset for testing
+  useEffect(() => {
+    if (
+      process.env.NODE_ENV === "development" ||
+      window.location.hostname.includes("tempo-dev")
+    ) {
+      // Auto-reset if we've reached the limit for testing purposes
+      if (hasReachedLimit) {
+        console.log(
+          "Development mode: Auto-resetting prompt count for testing",
+        );
+        resetPrompts();
+      }
+    }
+  }, [hasReachedLimit]);
+
   return (
     <PromptContext.Provider
       value={{

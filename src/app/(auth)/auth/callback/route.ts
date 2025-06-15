@@ -11,13 +11,13 @@ export async function GET(request: Request) {
   // Handle errors from Supabase
   if (error) {
     console.error("Auth callback error:", error, error_description);
-    // Redirect to sign-in page with error message
-    return NextResponse.redirect(
-      new URL(
-        `/sign-in?error=${encodeURIComponent(error_description || error)}`,
-        requestUrl.origin,
-      ),
+    // Redirect to sign-in page with error message using current origin
+    const errorRedirectUrl = new URL(
+      `/sign-in?error=${encodeURIComponent(error_description || error)}`,
+      requestUrl.origin,
     );
+    console.log("Error redirect to:", errorRedirectUrl.toString());
+    return NextResponse.redirect(errorRedirectUrl);
   }
 
   if (code) {
@@ -27,16 +27,21 @@ export async function GET(request: Request) {
 
     if (exchangeError) {
       console.error("Error exchanging code for session:", exchangeError);
-      return NextResponse.redirect(
-        new URL(
-          `/sign-in?error=${encodeURIComponent(exchangeError.message)}`,
-          requestUrl.origin,
-        ),
+      const exchangeErrorUrl = new URL(
+        `/sign-in?error=${encodeURIComponent(exchangeError.message)}`,
+        requestUrl.origin,
       );
+      console.log("Exchange error redirect to:", exchangeErrorUrl.toString());
+      return NextResponse.redirect(exchangeErrorUrl);
     }
   }
 
   // URL to redirect to after sign in process completes
   const redirectTo = redirect_to || "/pricing";
-  return NextResponse.redirect(new URL(redirectTo, requestUrl.origin));
+
+  // Use the current request origin (Tempo URL) instead of localhost
+  const redirectUrl = new URL(redirectTo, requestUrl.origin);
+  console.log("Redirecting to:", redirectUrl.toString());
+
+  return NextResponse.redirect(redirectUrl);
 }

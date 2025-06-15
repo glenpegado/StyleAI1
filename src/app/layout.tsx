@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <Script src="https://api.tempolabs.ai/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <PromptProvider>
           {children}
           <TempoInit />
