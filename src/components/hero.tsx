@@ -10,6 +10,8 @@ import {
   Loader2,
   ShoppingBag,
   Star,
+  ExternalLink,
+  Tag,
 } from "lucide-react";
 import { useState } from "react";
 import { usePrompt } from "@/contexts/PromptContext";
@@ -18,8 +20,13 @@ import SignupPaymentDialog from "@/components/signup-payment-dialog";
 interface OutfitItem {
   name: string;
   description: string;
-  price_range: string;
-  suggested_image_search: string;
+  price: string;
+  original_price?: string;
+  brand: string;
+  website: string;
+  website_url: string;
+  image_url: string;
+  availability: string;
 }
 
 interface OutfitSuggestion {
@@ -62,15 +69,47 @@ export default function Hero() {
           let errorMessage = "Failed to generate outfit";
           try {
             const errorData = await response.json();
-            if (errorData.error) {
+
+            // Handle quota errors specifically
+            if (
+              errorData.type === "quota_exceeded" ||
+              (response.status === 429 &&
+                (errorData.error?.includes("quota") ||
+                  errorData.error?.includes("exceeded your current quota") ||
+                  errorData.details?.includes("quota") ||
+                  errorData.error?.includes("billing hard limit")))
+            ) {
+              errorMessage =
+                "💳 OpenAI API quota exceeded!\n\n" +
+                "If you just paid for OpenAI:\n" +
+                "• Wait 2-3 minutes for your quota to update\n" +
+                "• Then try your request again\n\n" +
+                "Otherwise:\n" +
+                "• Check usage: https://platform.openai.com/account/usage\n" +
+                "• Add billing: https://platform.openai.com/account/billing\n\n" +
+                "Your quota updates automatically after payment.";
+            } else if (response.status === 429) {
+              errorMessage =
+                "⏳ Rate limit reached\n\n" +
+                "Too many requests in a short time. " +
+                "Please wait 30-60 seconds and try again.\n\n" +
+                "This is different from quota limits - " +
+                "it's just temporary traffic control.";
+            } else if (errorData.error) {
               errorMessage = errorData.error;
             }
+
             if (errorData.details) {
               console.error("API Error details:", errorData.details);
             }
           } catch (parseError) {
             console.error("Could not parse error response:", parseError);
-            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            if (response.status === 429) {
+              errorMessage =
+                "⏳ Service temporarily unavailable due to high demand. Please try again in a few minutes.";
+            } else {
+              errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
           }
           throw new Error(errorMessage);
         }
@@ -97,10 +136,21 @@ export default function Hero() {
           errorMessage = error.message;
         }
 
-        // Try to get more specific error from response if available
-        // Note: response variable is only available in the try block scope
-
-        alert(errorMessage);
+        // Show user-friendly alert with proper formatting
+        if (
+          errorMessage.includes("AI returned invalid JSON") ||
+          errorMessage.includes("Response formatting error")
+        ) {
+          alert(
+            "🤖 AI Response Error\n\n" +
+              "The AI service returned a response in an unexpected format. " +
+              "This sometimes happens when the service is under high load.\n\n" +
+              "Please try your request again with a slightly different wording, " +
+              "or wait a moment and retry.",
+          );
+        } else {
+          alert(errorMessage);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -121,24 +171,110 @@ export default function Hero() {
         {items.map((item, index) => (
           <div
             key={index}
-            className="bg-white/5 rounded-lg p-4 border border-white/10"
+            className="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-all duration-300"
           >
             <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium text-white">{item.name}</h4>
-              <span className="text-sm text-purple-300 bg-purple-500/20 px-2 py-1 rounded">
-                {item.price_range}
-              </span>
+              <div>
+                <h4 className="font-medium text-white mb-1">{item.name}</h4>
+                <p className="text-sm text-gray-400">{item.brand}</p>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center gap-2">
+                  {item.original_price && (
+                    <span className="text-xs text-gray-500 line-through">
+                      {item.original_price}
+                    </span>
+                  )}
+                  <span className="text-sm font-semibold text-green-400">
+                    {item.price}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      item.availability === "In Stock"
+                        ? "bg-green-400"
+                        : item.availability === "Limited Stock"
+                          ? "bg-yellow-400"
+                          : "bg-orange-400"
+                    }`}
+                  />
+                  <span className="text-xs text-gray-400">
+                    {item.availability}
+                  </span>
+                </div>
+              </div>
             </div>
             <p className="text-gray-300 text-sm mb-3">{item.description}</p>
-            <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center border border-gray-700 relative overflow-hidden">
+
+            {/* Product Image */}
+            <div className="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center border border-gray-700 relative overflow-hidden mb-3">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
-              <div className="text-center text-gray-400 relative z-10">
-                <ShoppingBag className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-                <p className="text-xs font-medium">
-                  {item.suggested_image_search}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Image placeholder</p>
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  className="w-full h-full object-cover rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    // Try a few different fallback strategies
+                    if (!target.dataset.fallbackAttempt) {
+                      target.dataset.fallbackAttempt = "1";
+                      // First fallback: try a generic fashion image
+                      target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop&auto=format`;
+                    } else if (target.dataset.fallbackAttempt === "1") {
+                      target.dataset.fallbackAttempt = "2";
+                      // Second fallback: try another fashion image
+                      target.src = `https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=300&fit=crop&auto=format`;
+                    } else {
+                      // Final fallback: show placeholder with item info
+                      target.style.display = "none";
+                      const placeholder =
+                        target.parentElement?.querySelector(
+                          ".image-placeholder",
+                        );
+                      if (placeholder) {
+                        (placeholder as HTMLElement).style.display = "flex";
+                      }
+                    }
+                  }}
+                />
+              ) : (
+                <div className="image-placeholder flex flex-col items-center justify-center text-center p-4">
+                  <ShoppingBag className="w-12 h-12 text-gray-400 mb-2" />
+                  <p className="text-gray-400 text-sm">{item.name}</p>
+                  <p className="text-gray-500 text-xs">{item.brand}</p>
+                </div>
+              )}
+              {/* Hidden placeholder for fallback */}
+              <div className="image-placeholder hidden flex-col items-center justify-center text-center p-4">
+                <ShoppingBag className="w-12 h-12 text-gray-400 mb-2" />
+                <p className="text-gray-400 text-sm">{item.name}</p>
+                <p className="text-gray-500 text-xs">{item.brand}</p>
               </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            </div>
+
+            {/* Website and Purchase Info */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-800">
+                    {item.website.charAt(0)}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-300">{item.website}</span>
+              </div>
+              <a
+                href={item.website_url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-md transition-colors"
+              >
+                <ShoppingBag className="w-3 h-3" />
+                Shop
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
         ))}
@@ -153,12 +289,12 @@ export default function Hero() {
 
       <div className="relative pt-24 pb-32 sm:pt-32 sm:pb-40">
         <div className="container mx-auto px-4">
-          <div
-            className={`${outfitSuggestions ? "grid lg:grid-cols-2 gap-12" : "text-center max-w-4xl mx-auto"}`}
-          >
+          <div className="grid lg:grid-cols-2 gap-12">
             <div
               className={
-                outfitSuggestions ? "" : "text-center max-w-4xl mx-auto"
+                outfitSuggestions
+                  ? ""
+                  : "lg:col-span-2 text-center max-w-4xl mx-auto"
               }
             >
               <div className="flex justify-center mb-6">
@@ -185,20 +321,20 @@ export default function Hero() {
               </p>
 
               {/* AI Search Bar */}
-              <div className="max-w-2xl mx-auto mb-12">
+              <div className="max-w-4xl mx-auto mb-12">
                 <form onSubmit={handleSearch} className="relative">
-                  <input
-                    type="text"
+                  <textarea
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Show me how to style my new Chrome Hearts jewelry"
-                    className="w-full px-6 py-4 text-lg bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                    className="w-full px-6 py-6 text-lg bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none min-h-[80px] max-h-[200px] overflow-y-auto"
                     disabled={isLoading}
+                    rows={3}
                   />
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="absolute right-3 bottom-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isLoading ? (
                       <>
@@ -259,7 +395,7 @@ export default function Hero() {
 
             {/* Outfit Suggestions Panel */}
             {outfitSuggestions && (
-              <div className="space-y-6">
+              <div className="space-y-6 max-h-[80vh] overflow-y-auto">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-4">
                     Your Styled Outfit
