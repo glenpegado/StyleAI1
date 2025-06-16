@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are a Gen-Z fashion stylist AI specializing in streetwear and urban fashion. When given a fashion query, respond with a JSON object containing outfit suggestions.
+          content: `You are a Gen-Z fashion stylist AI specializing in streetwear and urban fashion. When given a fashion query, respond with a JSON object containing complete outfit suggestions.
 
 IMPORTANT RESPONSE FORMAT RULES:
 - Respond with ONLY valid JSON - no markdown, no code blocks, no backticks, no extra text
@@ -55,11 +55,18 @@ IMPORTANT RESPONSE FORMAT RULES:
 - Do not include any explanatory text before or after the JSON
 - Ensure all JSON is properly formatted with correct quotes and commas
 
+OUTFIT GENERATION LOGIC:
+- Unless the user specifies a particular item (like "Chrome Hearts jewelry" or "Jordan 1s"), always provide a COMPLETE outfit with alternatives for each category
+- A complete outfit should include: tops, bottoms, shoes, and accessories
+- For each category, provide 2-3 alternatives at different price points (high-end, mid-range, budget)
+- If user specifies a particular item, build the outfit around that item but still provide alternatives for other categories
+
 The JSON response should include:
 - main_description: A brief description of the overall outfit vibe
-- tops: Array of 2-3 top items (shirts, hoodies, jackets, etc.)
-- accessories: Array of 2-3 accessories (jewelry, bags, hats, etc.)
+- tops: Array of 2-3 top items (t-shirts, hoodies, jackets, etc.)
+- bottoms: Array of 2-3 bottom items (jeans, pants, shorts, etc.)
 - shoes: Array of 2-3 shoe options
+- accessories: Array of 2-3 accessories (jewelry, bags, hats, etc.)
 
 Each item should have:
 - name: Specific item name
@@ -85,15 +92,16 @@ DO NOT use generic Unsplash images. Focus on actual product photography that sho
 Include both high-end and budget alternatives from real streetwear retailers. Keep the style trendy and streetwear-focused.
 
 Example format (respond exactly like this, no extra formatting):
-{"main_description":"Elevated streetwear with luxury touches","tops":[{"name":"Fear of God Essentials Hoodie","description":"Oversized fit in cream","price":"$90","brand":"Fear of God Essentials","website":"SSENSE","website_url":"https://www.ssense.com/en-us/men/product/essentials/beige-hoodie/123456","image_url":"https://img.ssensemedia.com/images/b_white,c_lpad,g_center,h_706,w_514/c_scale,h_706,w_514/f_auto,q_auto/231319M202017_1/fear-of-god-essentials-beige-hoodie.jpg","availability":"In Stock"}],"accessories":[{"name":"Chrome Hearts Chain","description":"Sterling silver cross pendant","price":"$450","brand":"Chrome Hearts","website":"END Clothing","website_url":"https://www.endclothing.com/us/chrome-hearts-chain/123456","image_url":"https://media.endclothing.com/media/f_auto,q_auto:eco,w_400,h_400/prodmedia/media/catalog/product/0/5/05-12-2023_chromehearts_crosschainpendant_silver_ch-cp-001_hh_1.jpg","availability":"Limited Stock"}],"shoes":[{"name":"Jordan 1 High OG","description":"Chicago colorway","price":"$170","brand":"Nike Jordan","website":"Nike","website_url":"https://www.nike.com/t/air-jordan-1-retro-high-og/123456","image_url":"https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pph9VS.png","availability":"In Stock"}]}`,
+{"main_description":"Elevated streetwear with luxury touches","tops":[{"name":"Fear of God Essentials Hoodie","description":"Oversized fit in cream","price":"$90","brand":"Fear of God Essentials","website":"SSENSE","website_url":"https://www.ssense.com/en-us/men/product/essentials/beige-hoodie/123456","image_url":"https://img.ssensemedia.com/images/b_white,c_lpad,g_center,h_706,w_514/c_scale,h_706,w_514/f_auto,q_auto/231319M202017_1/fear-of-god-essentials-beige-hoodie.jpg","availability":"In Stock"}],"bottoms":[{"name":"Levi's 501 Original Jeans","description":"Classic straight fit in vintage wash","price":"$98","brand":"Levi's","website":"Levi's","website_url":"https://www.levi.com/US/en_US/clothing/men/jeans/501-original-fit-mens-jeans/p/005010000","image_url":"https://lsco.scene7.com/is/image/lsco/005010000-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=750&hei=1000","availability":"In Stock"}],"accessories":[{"name":"Chrome Hearts Chain","description":"Sterling silver cross pendant","price":"$450","brand":"Chrome Hearts","website":"END Clothing","website_url":"https://www.endclothing.com/us/chrome-hearts-chain/123456","image_url":"https://media.endclothing.com/media/f_auto,q_auto:eco,w_400,h_400/prodmedia/media/catalog/product/0/5/05-12-2023_chromehearts_crosschainpendant_silver_ch-cp-001_hh_1.jpg","availability":"Limited Stock"}],"shoes":[{"name":"Jordan 1 High OG","description":"Chicago colorway","price":"$170","brand":"Nike Jordan","website":"Nike","website_url":"https://www.nike.com/t/air-jordan-1-retro-high-og/123456","image_url":"https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pph9VS.png","availability":"In Stock"}]}`,
         },
         {
           role: "user",
           content: `Create outfit suggestions for: ${query}`,
         },
       ],
+      n: 1,
+      max_completion_tokens: 2000,
       temperature: 0.7,
-      max_tokens: 1500,
     };
 
     console.log(
@@ -178,8 +186,6 @@ Example format (respond exactly like this, no extra formatting):
                   process.env.PICA_OPENAI_CONNECTION_KEY!,
                 "x-pica-action-id":
                   "conn_mod_def::GDzgi1QfvM4::4OjsWvZhRxmAVuLAuWgfVA",
-                "User-Agent": "UrbanStylist/1.0",
-                Accept: "application/json",
               },
               body: JSON.stringify(requestBody),
             },
@@ -513,6 +519,7 @@ Example format (respond exactly like this, no extra formatting):
     if (
       !outfitData.main_description ||
       !Array.isArray(outfitData.tops) ||
+      !Array.isArray(outfitData.bottoms) ||
       !Array.isArray(outfitData.accessories) ||
       !Array.isArray(outfitData.shoes)
     ) {
@@ -533,6 +540,7 @@ Example format (respond exactly like this, no extra formatting):
     };
 
     validateItems(outfitData.tops, "tops");
+    validateItems(outfitData.bottoms, "bottoms");
     validateItems(outfitData.accessories, "accessories");
     validateItems(outfitData.shoes, "shoes");
 
@@ -541,6 +549,7 @@ Example format (respond exactly like this, no extra formatting):
       console.log("Enhancing images with improved scraping...");
       const allItems = [
         ...outfitData.tops,
+        ...outfitData.bottoms,
         ...outfitData.accessories,
         ...outfitData.shoes,
       ];
@@ -567,6 +576,11 @@ Example format (respond exactly like this, no extra formatting):
           itemIndex + outfitData.tops.length,
         );
         itemIndex += outfitData.tops.length;
+        outfitData.bottoms = enhancedItems.slice(
+          itemIndex,
+          itemIndex + outfitData.bottoms.length,
+        );
+        itemIndex += outfitData.bottoms.length;
         outfitData.accessories = enhancedItems.slice(
           itemIndex,
           itemIndex + outfitData.accessories.length,

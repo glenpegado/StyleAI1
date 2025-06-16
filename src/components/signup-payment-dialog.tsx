@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles } from "lucide-react";
-import { supabase } from "../../supabase/supabase";
-import { signUpAction } from "@/app/actions";
+import { createClient } from "../../supabase/client";
 import { usePrompt } from "@/contexts/PromptContext";
 
 interface SignupPaymentDialogProps {
@@ -33,13 +32,12 @@ export default function SignupPaymentDialog({
   const [error, setError] = useState("");
   const [confirmationMessage, setConfirmationMessage] = useState("");
   const { promptCount } = usePrompt();
+  const supabase = createClient();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    console.log("Starting signup process...", { email, fullName });
 
     try {
       // Validate inputs
@@ -53,39 +51,34 @@ export default function SignupPaymentDialog({
         return;
       }
 
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("full_name", fullName);
+      // Use Supabase client directly
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            name: fullName,
+            email: email,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect_to=/pricing`,
+        },
+      });
 
-      console.log("Calling signUpAction...");
-      const result = await signUpAction(formData);
-      console.log("SignUpAction result:", result);
-
-      if (result?.error) {
-        console.error("Signup error:", result.error);
-        setError(result.error);
+      if (error) {
+        setError(error.message);
         return;
       }
 
-      if (result?.needsConfirmation) {
-        console.log("Confirmation needed, showing confirmation step");
+      if (data.user) {
         setConfirmationMessage(
-          result.message || "Please check your email for a confirmation link.",
-        );
-        setStep("confirmation");
-      } else if (result?.success) {
-        console.log("Signup successful, showing confirmation step");
-        setConfirmationMessage(
-          "Please check your email for a confirmation link.",
+          "We've sent a confirmation email to your inbox. Click the link in the email to activate your account and choose your plan.",
         );
         setStep("confirmation");
       } else {
-        console.error("Unexpected result:", result);
         setError("Something went wrong. Please try again.");
       }
     } catch (err: any) {
-      console.error("Signup exception:", err);
       setError(err.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
@@ -94,16 +87,26 @@ export default function SignupPaymentDialog({
 
   // Allow closing the dialog if on confirmation step
   const handleOpenChange = (newOpen: boolean) => {
-    if (step === "confirmation" && !newOpen) {
-      onOpenChange(false);
+    if (step === "confirmation" || !newOpen) {
+      onOpenChange(newOpen);
     }
-    // Don't allow closing on signup step once limit is reached
-    return;
   };
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStep("signup");
+      setEmail("");
+      setPassword("");
+      setFullName("");
+      setError("");
+      setLoading(false);
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" hideCloseButton>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-center">
             <Sparkles className="w-5 h-5 text-purple-500" />

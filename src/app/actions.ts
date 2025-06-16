@@ -5,73 +5,44 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../supabase/server";
 
 export const signUpAction = async (formData: FormData) => {
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
-  const fullName = formData.get("full_name")?.toString() || "";
-
-  console.log("SignUpAction called with:", {
-    email,
-    fullName,
-    hasPassword: !!password,
-  });
-
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const fullName = formData.get("full_name") as string;
   const supabase = await createClient();
 
-  if (!email || !password) {
-    console.error("Missing email or password");
-    return { error: "Email and password are required" };
+  if (!email || !password || !fullName) {
+    return encodedRedirect("error", "/sign-up", "All fields are required");
   }
 
   if (password.length < 6) {
-    console.error("Password too short");
-    return { error: "Password must be at least 6 characters long" };
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Password must be at least 6 characters long",
+    );
   }
 
-  try {
-    console.log("Attempting to sign up user...");
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          name: fullName,
-          email: email,
-        },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback?redirect_to=/pricing`,
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+        name: fullName,
+        email: email,
       },
-    });
+    },
+  });
 
-    console.log("Supabase signup response:", {
-      user: !!user,
-      error: error?.message,
-    });
-
-    if (error) {
-      console.error("Supabase signup error:", error);
-      return { error: error.message };
-    }
-
-    if (user) {
-      console.log("User created successfully, email confirmation required");
-      // Always return confirmation needed for new signups
-      return {
-        success: true,
-        needsConfirmation: true,
-        message:
-          "We've sent a confirmation email to your inbox. Click the link in the email to activate your account and choose your plan.",
-      };
-    }
-
-    console.error("No user returned from signup");
-    return { error: "Failed to create user account" };
-  } catch (err: any) {
-    console.error("Exception in signUpAction:", err);
-    return { error: err.message || "An unexpected error occurred" };
+  if (error) {
+    return encodedRedirect("error", "/sign-up", error.message);
   }
+
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Thanks for signing up! Please check your email for a verification link.",
+  );
 };
 
 export const signInAction = async (formData: FormData) => {

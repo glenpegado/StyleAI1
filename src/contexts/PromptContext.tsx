@@ -95,7 +95,10 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
         console.log(
           "Development mode: Auto-resetting prompt count for testing",
         );
-        resetPrompts();
+        // Add a small delay to prevent immediate reset during API calls
+        setTimeout(() => {
+          resetPrompts();
+        }, 1000);
       }
     }
   }, [hasReachedLimit]);

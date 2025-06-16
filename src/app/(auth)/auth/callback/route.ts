@@ -11,10 +11,10 @@ export async function GET(request: Request) {
   // Handle errors from Supabase
   if (error) {
     console.error("Auth callback error:", error, error_description);
-    // Redirect to sign-in page with error message using current origin
+    // Redirect to sign-in page with error message using webapp URL
     const errorRedirectUrl = new URL(
       `/sign-in?error=${encodeURIComponent(error_description || error)}`,
-      requestUrl.origin,
+      "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
     );
     console.log("Error redirect to:", errorRedirectUrl.toString());
     return NextResponse.redirect(errorRedirectUrl);
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       console.error("Error exchanging code for session:", exchangeError);
       const exchangeErrorUrl = new URL(
         `/sign-in?error=${encodeURIComponent(exchangeError.message)}`,
-        requestUrl.origin,
+        "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
       );
       console.log("Exchange error redirect to:", exchangeErrorUrl.toString());
       return NextResponse.redirect(exchangeErrorUrl);
@@ -39,8 +39,11 @@ export async function GET(request: Request) {
   // URL to redirect to after sign in process completes
   const redirectTo = redirect_to || "/pricing";
 
-  // Use the current request origin (Tempo URL) instead of localhost
-  const redirectUrl = new URL(redirectTo, requestUrl.origin);
+  // Use the webapp URL instead of request origin to avoid localhost issues
+  const redirectUrl = new URL(
+    redirectTo,
+    "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
+  );
   console.log("Redirecting to:", redirectUrl.toString());
 
   return NextResponse.redirect(redirectUrl);
