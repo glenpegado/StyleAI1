@@ -22,7 +22,7 @@ export default function RootLayout({
       <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
       <body className={inter.className} suppressHydrationWarning>
         <PromptProvider>
-          {children}
+          <div className="min-h-screen bg-white">{children}</div>
           <TempoInit />
         </PromptProvider>
       </body>

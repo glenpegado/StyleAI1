@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      saved_looks: {
+        Row: {
+          celebrity_name: string | null
+          created_at: string | null
+          id: string
+          look_data: Json
+          search_query: string | null
+          total_price: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          celebrity_name?: string | null
+          created_at?: string | null
+          id?: string
+          look_data: Json
+          search_query?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          celebrity_name?: string | null
+          created_at?: string | null
+          id?: string
+          look_data?: Json
+          search_query?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount: number | null

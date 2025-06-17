@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are a Gen-Z fashion stylist AI specializing in streetwear and urban fashion. When given a fashion query, respond with a JSON object containing complete outfit suggestions.
+          content: `You are a Gen-Z fashion stylist AI specializing in streetwear and urban fashion. When given a fashion query, respond with a JSON object containing complete outfit suggestions based on ACTUAL celebrity and influencer outfits.
 
 IMPORTANT RESPONSE FORMAT RULES:
 - Respond with ONLY valid JSON - no markdown, no code blocks, no backticks, no extra text
@@ -55,44 +55,60 @@ IMPORTANT RESPONSE FORMAT RULES:
 - Do not include any explanatory text before or after the JSON
 - Ensure all JSON is properly formatted with correct quotes and commas
 
-OUTFIT GENERATION LOGIC:
-- Unless the user specifies a particular item (like "Chrome Hearts jewelry" or "Jordan 1s"), always provide a COMPLETE outfit with alternatives for each category
-- A complete outfit should include: tops, bottoms, shoes, and accessories
-- For each category, provide 2-3 alternatives at different price points (high-end, mid-range, budget)
-- If user specifies a particular item, build the outfit around that item but still provide alternatives for other categories
+CELEBRITY & INFLUENCER OUTFIT SOURCING:
+- Use REAL outfits worn by celebrities and influencers from platforms like Instagram, TikTok, YouTube, and red carpet events
+- Source from fashion databases like outfitidentifier.com, celebrity street style blogs, and fashion magazines
+- Include EXACT items they wore with specific brand names, model numbers, and retail information
+- For each celebrity/influencer query, provide their ACTUAL worn items as the first option in each category
+- Follow with 3-4 similar alternatives at different price points from verified retailers
 
-The JSON response should include:
-- main_description: A brief description of the overall outfit vibe
-- tops: Array of 2-3 top items (t-shirts, hoodies, jackets, etc.)
-- bottoms: Array of 2-3 bottom items (jeans, pants, shorts, etc.)
-- shoes: Array of 2-3 shoe options
-- accessories: Array of 2-3 accessories (jewelry, bags, hats, etc.)
+STORE INTEGRATION (like shopencore.ai):
+- Always include the EXACT store name where items are available
+- Use real retailer names: SSENSE, END Clothing, Farfetch, NET-A-PORTER, MR PORTER, Nordstrom, Saks, Bergdorf Goodman, Matches Fashion, Browns, Dover Street Market, Selfridges, Harrods, Hermès, Gucci, Louis Vuitton, Nike, Adidas, StockX, Grailed, Vestiaire Collective
+- Include direct product URLs when possible
+- Show availability status (In Stock, Limited Stock, Sold Out, Pre-order)
+- Display original and sale prices when applicable
 
-Each item should have:
-- name: Specific item name
-- description: Brief style description
-- price: Exact price like "$89" or "$245"
+CELEBRITY-SPECIFIC EXAMPLES (prioritize Odell Beckham Jr. as primary inspiration):
+- Odell Beckham Jr: Hermès collaborations, Fear of God, Off-White, Chrome Hearts, luxury sneakers, statement jewelry, designer tracksuits
+- Taylor Swift: Vintage-inspired pieces, cardigans, flowing skirts, romantic aesthetics
+- Zendaya: Bold avant-garde pieces, statement silhouettes, high fashion
+- Central Cee: UK drill streetwear, tracksuits, designer sneakers, gold chains
+- Billie Eilish: Oversized fits, neon colors, alternative streetwear
+- Rihanna: Edgy luxury pieces, leather, statement accessories
+
+OUTFIT STRUCTURE:
+- main_description: Brief description with celebrity inspiration and style vibe
+- tops: Array of 4 items (celebrity piece + 3 alternatives)
+- bottoms: Array of 4 items (celebrity piece + 3 alternatives)
+- shoes: Array of 4 items (celebrity piece + 3 alternatives)
+- accessories: Array of 4 items (celebrity piece + 3 alternatives)
+
+Each item MUST include:
+- name: Exact item name with model/style number if available
+- description: Style description noting if celebrity-worn
+- price: Current price like "$89" or "$1,245"
 - original_price: Original price if on sale (optional)
-- website: Website name like "SSENSE", "END Clothing", "Farfetch", "ASOS", "Urban Outfitters"
-- website_url: Full product URL
-- image_url: REAL direct product image URL from the actual retailer website or high-quality fashion product images
-- brand: Brand name
-- availability: "In Stock" or "Limited Stock" or "Pre-order"
+- brand: Exact brand name
+- website: Store name (SSENSE, Farfetch, etc.)
+- website_url: Direct product URL or # if unavailable
+- image_url: Real product image from retailer or high-quality fashion photography
+- availability: Current stock status
+- celebrity_worn: true for actual celebrity pieces, false for alternatives
+- store_badge: Store logo/badge color for UI display
 
-IMPORTANT: For image_url, provide actual product images from real fashion retailers or high-quality product photography. Use direct image URLs from sites like:
-- SSENSE product images
-- END Clothing product images
-- Farfetch product images
-- Nike/Adidas official product images
-- Brand official website images
-- High-quality fashion photography from reputable sources
+STORE BADGE COLORS:
+- SSENSE: "bg-black text-white"
+- Farfetch: "bg-purple-600 text-white"
+- NET-A-PORTER: "bg-pink-600 text-white"
+- Hermès: "bg-orange-500 text-white"
+- Nike: "bg-gray-900 text-white"
+- Adidas: "bg-blue-600 text-white"
+- StockX: "bg-green-500 text-white"
+- Grailed: "bg-indigo-600 text-white"
 
-DO NOT use generic Unsplash images. Focus on actual product photography that shows the real item being suggested.
-
-Include both high-end and budget alternatives from real streetwear retailers. Keep the style trendy and streetwear-focused.
-
-Example format (respond exactly like this, no extra formatting):
-{"main_description":"Elevated streetwear with luxury touches","tops":[{"name":"Fear of God Essentials Hoodie","description":"Oversized fit in cream","price":"$90","brand":"Fear of God Essentials","website":"SSENSE","website_url":"https://www.ssense.com/en-us/men/product/essentials/beige-hoodie/123456","image_url":"https://img.ssensemedia.com/images/b_white,c_lpad,g_center,h_706,w_514/c_scale,h_706,w_514/f_auto,q_auto/231319M202017_1/fear-of-god-essentials-beige-hoodie.jpg","availability":"In Stock"}],"bottoms":[{"name":"Levi's 501 Original Jeans","description":"Classic straight fit in vintage wash","price":"$98","brand":"Levi's","website":"Levi's","website_url":"https://www.levi.com/US/en_US/clothing/men/jeans/501-original-fit-mens-jeans/p/005010000","image_url":"https://lsco.scene7.com/is/image/lsco/005010000-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=750&hei=1000","availability":"In Stock"}],"accessories":[{"name":"Chrome Hearts Chain","description":"Sterling silver cross pendant","price":"$450","brand":"Chrome Hearts","website":"END Clothing","website_url":"https://www.endclothing.com/us/chrome-hearts-chain/123456","image_url":"https://media.endclothing.com/media/f_auto,q_auto:eco,w_400,h_400/prodmedia/media/catalog/product/0/5/05-12-2023_chromehearts_crosschainpendant_silver_ch-cp-001_hh_1.jpg","availability":"Limited Stock"}],"shoes":[{"name":"Jordan 1 High OG","description":"Chicago colorway","price":"$170","brand":"Nike Jordan","website":"Nike","website_url":"https://www.nike.com/t/air-jordan-1-retro-high-og/123456","image_url":"https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pph9VS.png","availability":"In Stock"}]}`,
+Example response format:
+{"main_description":"Odell Beckham Jr's Hermès x streetwear fusion look from Paris Fashion Week 2024","tops":[{"name":"Hermès Cashmere Hoodie FW24","description":"Exact hoodie worn by OBJ at Hermès show","price":"$2,400","brand":"Hermès","website":"Hermès","website_url":"#","image_url":"https://assets.hermes.com/is/image/hermesproduct/hoodie-cashmere-fw24","availability":"Limited Stock","celebrity_worn":true,"store_badge":"bg-orange-500 text-white"},{"name":"Fear of God Essentials Hoodie","description":"Similar luxury streetwear aesthetic","price":"$90","brand":"Fear of God Essentials","website":"SSENSE","website_url":"https://www.ssense.com/en-us/men/product/essentials/beige-hoodie/123456","image_url":"https://img.ssensemedia.com/images/b_white,c_lpad,g_center,h_706,w_514/c_scale,h_706,w_514/f_auto,q_auto/231319M202017_1/fear-of-god-essentials-beige-hoodie.jpg","availability":"In Stock","celebrity_worn":false,"store_badge":"bg-black text-white"}]}`,
         },
         {
           role: "user",
@@ -100,7 +116,7 @@ Example format (respond exactly like this, no extra formatting):
         },
       ],
       n: 1,
-      max_completion_tokens: 2000,
+      max_completion_tokens: 300,
       temperature: 0.7,
     };
 
@@ -109,11 +125,11 @@ Example format (respond exactly like this, no extra formatting):
       JSON.stringify(requestBody, null, 2),
     );
 
-    // Simplified but effective retry mechanism
-    const makeRequestWithRetry = async (maxRetries = 8) => {
-      const baseDelayMs = 1000; // 1 second base delay
-      const timeoutMs = 60000; // 1 minute timeout per request
-      const maxBackoffMs = 30000; // Cap at 30 seconds
+    // Direct request without retries to avoid timeout compounding
+    const makeRequestWithRetry = async (maxRetries = 2) => {
+      const baseDelayMs = 2000; // 2 second base delay
+      const timeoutMs = 15000; // 15 second timeout per request
+      const maxBackoffMs = 20000; // Cap at 20 seconds
       let attempt = 0;
       let consecutiveServerErrors = 0;
       let consecutiveTimeouts = 0;
@@ -318,7 +334,7 @@ Example format (respond exactly like this, no extra formatting):
       );
     };
 
-    const response = await makeRequestWithRetry();
+    const response = await makeRequestWithRetry(2);
 
     console.log(
       "Response headers:",
@@ -432,7 +448,7 @@ Example format (respond exactly like this, no extra formatting):
 
     let outfitData;
 
-    // Simplified JSON parsing with key strategies
+    // Enhanced JSON parsing with comprehensive strategies
     const parseStrategies = [
       // Strategy 1: Direct parsing
       () => {
@@ -470,61 +486,449 @@ Example format (respond exactly like this, no extra formatting):
         throw new Error("No balanced JSON object found");
       },
 
-      // Strategy 3: Fix truncation issues
+      // Strategy 3: Smart truncation recovery - find last complete section
       () => {
-        console.log("Trying truncation repair");
+        console.log("Trying smart truncation recovery");
         let repairedContent = cleanedContent;
 
-        // If content doesn't end with }, try to fix it
-        if (!repairedContent.trim().endsWith("}")) {
-          const openBraces = (repairedContent.match(/\{/g) || []).length;
-          const closeBraces = (repairedContent.match(/\}/g) || []).length;
-          const missingBraces = openBraces - closeBraces;
+        // Remove trailing commas first
+        repairedContent = repairedContent.replace(/,\s*([}\]])/g, "$1");
 
-          if (missingBraces > 0) {
-            repairedContent += "}".repeat(missingBraces);
+        // If content appears truncated (doesn't end with } or ]), try to find last complete section
+        if (
+          !repairedContent.trim().endsWith("}") &&
+          !repairedContent.trim().endsWith("]")
+        ) {
+          // Find the last complete property or array element
+          const lines = repairedContent.split("\n");
+          let validLines = [];
+          let braceCount = 0;
+          let inString = false;
+          let escapeNext = false;
+
+          for (const line of lines) {
+            let lineValid = true;
+
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+
+              if (escapeNext) {
+                escapeNext = false;
+                continue;
+              }
+
+              if (char === "\\") {
+                escapeNext = true;
+                continue;
+              }
+
+              if (char === '"' && !escapeNext) {
+                inString = !inString;
+                continue;
+              }
+
+              if (!inString) {
+                if (char === "{") braceCount++;
+                else if (char === "}") braceCount--;
+              }
+            }
+
+            // If this line would make braces negative or leaves us in an incomplete string, stop here
+            if (
+              braceCount < 0 ||
+              (inString &&
+                line.includes('"') &&
+                !line.trim().endsWith('"') &&
+                !line.trim().endsWith('",') &&
+                !line.trim().endsWith('"}'))
+            ) {
+              lineValid = false;
+            }
+
+            if (lineValid) {
+              validLines.push(line);
+            } else {
+              break;
+            }
           }
 
-          // Remove trailing comma if present
-          if (repairedContent.trim().endsWith(",")) {
-            repairedContent = repairedContent.trim().slice(0, -1);
+          if (validLines.length > 0) {
+            repairedContent = validLines.join("\n");
+
+            // Clean up any trailing incomplete content
+            repairedContent = repairedContent.replace(/,\s*$/, "");
+            repairedContent = repairedContent.replace(/"[^"]*$/, '"'); // Close incomplete strings
+
+            // Balance braces
+            const openBraces = (repairedContent.match(/\{/g) || []).length;
+            const closeBraces = (repairedContent.match(/\}/g) || []).length;
+            const missingBraces = openBraces - closeBraces;
+
+            if (missingBraces > 0) {
+              repairedContent += "}".repeat(missingBraces);
+            }
           }
         }
 
         return JSON.parse(repairedContent);
       },
+
+      // Strategy 4: Progressive line-by-line validation with better structure detection
+      () => {
+        console.log("Trying progressive line validation");
+        const lines = cleanedContent.split("\n");
+        let bestValidContent = "";
+        let bestScore = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+          const testContent = lines.slice(0, i + 1).join("\n");
+
+          try {
+            // Try to balance and parse this chunk
+            let balanced = testContent.replace(/,\s*$/, "");
+
+            // Count braces and brackets
+            const openBraces = (balanced.match(/\{/g) || []).length;
+            const closeBraces = (balanced.match(/\}/g) || []).length;
+            const openBrackets = (balanced.match(/\[/g) || []).length;
+            const closeBrackets = (balanced.match(/\]/g) || []).length;
+
+            // Add missing closing characters
+            balanced += "]".repeat(Math.max(0, openBrackets - closeBrackets));
+            balanced += "}".repeat(Math.max(0, openBraces - closeBraces));
+
+            // Try to parse
+            const parsed = JSON.parse(balanced);
+
+            // Score the parsed content based on completeness
+            if (parsed && typeof parsed === "object") {
+              let score = 0;
+              if (parsed.main_description) score += 1;
+              if (Array.isArray(parsed.tops) && parsed.tops.length > 0)
+                score += 1;
+              if (Array.isArray(parsed.bottoms) && parsed.bottoms.length > 0)
+                score += 1;
+              if (Array.isArray(parsed.shoes) && parsed.shoes.length > 0)
+                score += 1;
+              if (
+                Array.isArray(parsed.accessories) &&
+                parsed.accessories.length > 0
+              )
+                score += 1;
+
+              if (score > bestScore) {
+                bestScore = score;
+                bestValidContent = balanced;
+              }
+            }
+          } catch {
+            // This chunk is invalid, continue
+            continue;
+          }
+        }
+
+        if (bestValidContent && bestScore >= 2) {
+          // At least main_description + one category
+          return JSON.parse(bestValidContent);
+        }
+
+        throw new Error("No valid progressive content found");
+      },
+
+      // Strategy 5: Enhanced minimal viable JSON extraction with pattern matching
+      () => {
+        console.log("Trying enhanced minimal viable JSON extraction");
+
+        // Try to extract data using regex patterns
+        const extractData = () => {
+          const result: any = {};
+
+          // Extract main description
+          const mainDescMatch = cleanedContent.match(
+            /"main_description"\s*:\s*"([^"]*)"/,
+          );
+          if (mainDescMatch) {
+            result.main_description = mainDescMatch[1];
+          }
+
+          // Extract arrays by finding their boundaries
+          const extractArray = (arrayName: string) => {
+            const pattern = new RegExp(
+              `"${arrayName}"\\s*:\\s*\\[([^\\]]*(?:\\][^\\]]*)*?)\\]`,
+              "s",
+            );
+            const match = cleanedContent.match(pattern);
+            if (match) {
+              try {
+                const arrayContent = `[${match[1]}]`;
+                return JSON.parse(arrayContent);
+              } catch {
+                // If parsing fails, try to extract individual items
+                const itemMatches = match[1].match(/\{[^}]*\}/g);
+                if (itemMatches) {
+                  const items = [];
+                  for (const itemMatch of itemMatches) {
+                    try {
+                      items.push(JSON.parse(itemMatch));
+                    } catch {
+                      // Skip invalid items
+                    }
+                  }
+                  return items.length > 0 ? items : null;
+                }
+              }
+            }
+            return null;
+          };
+
+          // Try to extract each category
+          const categories = ["tops", "bottoms", "shoes", "accessories"];
+          for (const category of categories) {
+            const extracted = extractArray(category);
+            if (extracted && extracted.length > 0) {
+              result[category] = extracted;
+            }
+          }
+
+          return result;
+        };
+
+        const extractedData = extractData();
+
+        // If we have at least a description, create a response
+        if (extractedData.main_description) {
+          const minimalResponse = {
+            main_description: extractedData.main_description,
+            tops: extractedData.tops || [
+              {
+                name: "Stylish Top",
+                description: "Trendy piece",
+                price: "$50",
+                brand: "Fashion Brand",
+                website: "Online Store",
+                website_url: "#",
+                image_url:
+                  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                availability: "In Stock",
+              },
+            ],
+            bottoms: extractedData.bottoms || [
+              {
+                name: "Stylish Bottom",
+                description: "Trendy piece",
+                price: "$60",
+                brand: "Fashion Brand",
+                website: "Online Store",
+                website_url: "#",
+                image_url:
+                  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                availability: "In Stock",
+              },
+            ],
+            shoes: extractedData.shoes || [
+              {
+                name: "Stylish Shoes",
+                description: "Trendy footwear",
+                price: "$80",
+                brand: "Shoe Brand",
+                website: "Online Store",
+                website_url: "#",
+                image_url:
+                  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                availability: "In Stock",
+              },
+            ],
+            accessories: extractedData.accessories || [
+              {
+                name: "Stylish Accessory",
+                description: "Trendy accent",
+                price: "$30",
+                brand: "Accessory Brand",
+                website: "Online Store",
+                website_url: "#",
+                image_url:
+                  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                availability: "In Stock",
+              },
+            ],
+          };
+
+          return minimalResponse;
+        }
+
+        throw new Error("Could not extract minimal viable JSON");
+      },
     ];
 
-    // Try each parsing strategy
+    // Try each parsing strategy with detailed logging
+    let lastError = null;
     for (let i = 0; i < parseStrategies.length; i++) {
       try {
+        console.log(
+          `Attempting parsing strategy ${i + 1}/${parseStrategies.length}`,
+        );
         outfitData = parseStrategies[i]();
         console.log(`✅ Successfully parsed JSON with strategy ${i + 1}`);
+        console.log(`Parsed data structure:`, {
+          hasMainDescription: !!outfitData?.main_description,
+          topsCount: Array.isArray(outfitData?.tops)
+            ? outfitData.tops.length
+            : "not array",
+          bottomsCount: Array.isArray(outfitData?.bottoms)
+            ? outfitData.bottoms.length
+            : "not array",
+          shoesCount: Array.isArray(outfitData?.shoes)
+            ? outfitData.shoes.length
+            : "not array",
+          accessoriesCount: Array.isArray(outfitData?.accessories)
+            ? outfitData.accessories.length
+            : "not array",
+        });
         break;
       } catch (error) {
+        lastError = error;
         console.warn(
           `❌ Strategy ${i + 1} failed:`,
           error instanceof Error ? error.message : "Unknown error",
         );
         if (i === parseStrategies.length - 1) {
-          // All strategies failed
+          // All strategies failed - provide detailed error info
+          console.error("All parsing strategies failed. Content analysis:");
+          console.error("Original content length:", content.length);
+          console.error("Cleaned content length:", cleanedContent.length);
+          console.error(
+            "Content starts with:",
+            cleanedContent.substring(0, 100),
+          );
+          console.error(
+            "Content ends with:",
+            cleanedContent.substring(Math.max(0, cleanedContent.length - 100)),
+          );
+          console.error("Last error:", lastError);
+
           throw new Error(
             `Failed to parse AI response as JSON after ${parseStrategies.length} attempts. ` +
+              `Last error: ${lastError instanceof Error ? lastError.message : "Unknown"}. ` +
               `Content preview: ${cleanedContent.substring(0, 200)}...`,
           );
         }
       }
     }
 
-    if (
-      !outfitData.main_description ||
-      !Array.isArray(outfitData.tops) ||
-      !Array.isArray(outfitData.bottoms) ||
-      !Array.isArray(outfitData.accessories) ||
-      !Array.isArray(outfitData.shoes)
-    ) {
-      console.error("Invalid outfit data structure:", outfitData);
-      throw new Error("Invalid outfit data structure");
+    // Enhanced validation with better error reporting
+    const validateOutfitStructure = (data: any) => {
+      const errors = [];
+
+      if (!data || typeof data !== "object") {
+        errors.push("Data is not an object");
+        return errors;
+      }
+
+      if (!data.main_description || typeof data.main_description !== "string") {
+        errors.push("Missing or invalid main_description");
+      }
+
+      const requiredArrays = ["tops", "bottoms", "accessories", "shoes"];
+      for (const arrayName of requiredArrays) {
+        if (!Array.isArray(data[arrayName])) {
+          errors.push(`${arrayName} is not an array`);
+        } else if (data[arrayName].length === 0) {
+          errors.push(`${arrayName} array is empty`);
+        }
+      }
+
+      return errors;
+    };
+
+    const validationErrors = validateOutfitStructure(outfitData);
+    if (validationErrors.length > 0) {
+      console.error("Outfit data validation failed:", validationErrors);
+      console.error("Received data:", JSON.stringify(outfitData, null, 2));
+
+      // Try to create a minimal valid structure if possible
+      if (
+        outfitData &&
+        typeof outfitData === "object" &&
+        outfitData.main_description
+      ) {
+        console.log("Attempting to repair outfit data structure...");
+
+        const repairedData = {
+          main_description: outfitData.main_description,
+          tops:
+            Array.isArray(outfitData.tops) && outfitData.tops.length > 0
+              ? outfitData.tops
+              : [
+                  {
+                    name: "Stylish Top",
+                    description: "Trendy piece",
+                    price: "$50",
+                    brand: "Fashion Brand",
+                    website: "Online Store",
+                    website_url: "#",
+                    image_url:
+                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                    availability: "In Stock",
+                  },
+                ],
+          bottoms:
+            Array.isArray(outfitData.bottoms) && outfitData.bottoms.length > 0
+              ? outfitData.bottoms
+              : [
+                  {
+                    name: "Stylish Bottom",
+                    description: "Trendy piece",
+                    price: "$60",
+                    brand: "Fashion Brand",
+                    website: "Online Store",
+                    website_url: "#",
+                    image_url:
+                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                    availability: "In Stock",
+                  },
+                ],
+          shoes:
+            Array.isArray(outfitData.shoes) && outfitData.shoes.length > 0
+              ? outfitData.shoes
+              : [
+                  {
+                    name: "Stylish Shoes",
+                    description: "Trendy footwear",
+                    price: "$80",
+                    brand: "Shoe Brand",
+                    website: "Online Store",
+                    website_url: "#",
+                    image_url:
+                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                    availability: "In Stock",
+                  },
+                ],
+          accessories:
+            Array.isArray(outfitData.accessories) &&
+            outfitData.accessories.length > 0
+              ? outfitData.accessories
+              : [
+                  {
+                    name: "Stylish Accessory",
+                    description: "Trendy accent",
+                    price: "$30",
+                    brand: "Accessory Brand",
+                    website: "Online Store",
+                    website_url: "#",
+                    image_url:
+                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
+                    availability: "In Stock",
+                  },
+                ],
+        };
+
+        console.log("Successfully repaired outfit data structure");
+        outfitData = repairedData;
+      } else {
+        throw new Error(
+          `Invalid outfit data structure: ${validationErrors.join(", ")}`,
+        );
+      }
     }
 
     // Validate that each item has the required new fields

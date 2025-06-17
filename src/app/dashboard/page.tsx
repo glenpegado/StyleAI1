@@ -1,4 +1,5 @@
 import DashboardNavbar from "@/components/dashboard-navbar";
+import Hero from "@/components/hero";
 import { createClient } from "../../../supabase/server";
 import {
   InfoIcon,
@@ -37,6 +38,7 @@ export default async function Dashboard() {
   return (
     <SubscriptionCheck>
       <DashboardNavbar />
+      <Hero showSearch={true} />
       <main className="w-full bg-gray-50 min-h-screen">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
           {/* Welcome Header */}
