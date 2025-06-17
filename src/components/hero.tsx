@@ -371,104 +371,251 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }
   };
 
-  // Odell Beckham Jr media gallery
-  const odellMediaGallery = [
-    {
-      type: "video",
-      src: "https://www.tiktok.com/embed/7464007858057694469?refer=embed",
-      duration: 30000, // 30 seconds estimated
-      title: "OBJ x Hermès Fashion Week",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-1.jpg",
-      duration: 4000,
-      title: "Monaco Vibes",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-2.jpg",
-      duration: 4000,
-      title: "AmfAR Gala Cannes",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-3.jpg",
-      duration: 4000,
-      title: "Luxury Lifestyle",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-4.jpg",
-      duration: 4000,
-      title: "Yacht Life",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-5.jpg",
-      duration: 4000,
-      title: "Monaco Style",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-6.jpg",
-      duration: 4000,
-      title: "Casual Elegance",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-7.jpg",
-      duration: 4000,
-      title: "Street Style",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-8.jpg",
-      duration: 4000,
-      title: "Fashion Forward",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-9.jpg",
-      duration: 4000,
-      title: "Luxury Details",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-10.jpg",
-      duration: 4000,
-      title: "Designer Pieces",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-11.jpg",
-      duration: 4000,
-      title: "Signature Style",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-12.jpg",
-      duration: 4000,
-      title: "Casual Cool",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-13.jpg",
-      duration: 4000,
-      title: "Luxury Timepiece",
-    },
-    {
-      type: "image",
-      src: "/images/odell-beckham-jr-obj-monaco-14.jpg",
-      duration: 4000,
-      title: "Formal Elegance",
-    },
-  ];
+  // Celebrity media gallery
+  const celebrityMediaGallery = {
+    "Odell Beckham Jr": [
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-new-3.jpg",
+        duration: 4000,
+        title: "Courtside Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-1.jpg",
+        duration: 4000,
+        title: "Monaco Vibes",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-2.jpg",
+        duration: 4000,
+        title: "AmfAR Gala Cannes",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-3.jpg",
+        duration: 4000,
+        title: "Luxury Lifestyle",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-4.jpg",
+        duration: 4000,
+        title: "Yacht Life",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-5.jpg",
+        duration: 4000,
+        title: "Monaco Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-6.jpg",
+        duration: 4000,
+        title: "Casual Elegance",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-7.jpg",
+        duration: 4000,
+        title: "Street Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-8.jpg",
+        duration: 4000,
+        title: "Fashion Forward",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-9.jpg",
+        duration: 4000,
+        title: "Luxury Details",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-10.jpg",
+        duration: 4000,
+        title: "Designer Pieces",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-11.jpg",
+        duration: 4000,
+        title: "Signature Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-12.jpg",
+        duration: 4000,
+        title: "Casual Cool",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-13.jpg",
+        duration: 4000,
+        title: "Luxury Timepiece",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-14.jpg",
+        duration: 4000,
+        title: "Formal Elegance",
+      },
+    ],
+    Drake: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Studio Sessions",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Luxury Lifestyle",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Designer Fits",
+      },
+    ],
+    "Charli D'Amelio": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "TikTok Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Gen-Z Fashion",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Casual Chic",
+      },
+    ],
+    "Emma Chamberlain": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Vintage Vibes",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Thrift Finds",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Effortless Style",
+      },
+    ],
+    "Serena Williams": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Power Dressing",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Athletic Elegance",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Red Carpet Ready",
+      },
+    ],
+    Zendaya: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Avant-garde Fashion",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Bold Statements",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "High Fashion",
+      },
+    ],
+    "Taylor Swift": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Romantic Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Vintage Romance",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Cottagecore Chic",
+      },
+    ],
+    MrBeast: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Casual Comfort",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Streetwear Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Relaxed Vibes",
+      },
+    ],
+  };
 
   // Auto-transition media effect
   useEffect(() => {
-    if (selectedCelebrity === "Odell Beckham Jr" && outfitSuggestions) {
-      const currentMedia = odellMediaGallery[currentMediaIndex];
+    if (
+      selectedCelebrity &&
+      outfitSuggestions &&
+      celebrityMediaGallery[selectedCelebrity]
+    ) {
+      const currentGallery = celebrityMediaGallery[selectedCelebrity];
+      const currentMedia = currentGallery[currentMediaIndex];
 
       if (mediaTransitionRef.current) {
         clearTimeout(mediaTransitionRef.current);
@@ -476,9 +623,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
       mediaTransitionRef.current = setTimeout(() => {
         setCurrentMediaIndex(
-          (prevIndex) => (prevIndex + 1) % odellMediaGallery.length,
+          (prevIndex) => (prevIndex + 1) % currentGallery.length,
         );
-        setIsVideoPlaying(currentMediaIndex === 0); // Only first item is video
       }, currentMedia.duration);
     }
 
@@ -491,47 +637,102 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
   // Reset media index when celebrity changes
   useEffect(() => {
-    if (selectedCelebrity === "Odell Beckham Jr") {
+    if (selectedCelebrity && celebrityMediaGallery[selectedCelebrity]) {
       setCurrentMediaIndex(0);
-      setIsVideoPlaying(true);
     }
   }, [selectedCelebrity]);
 
   // Celebrity trends data
   const celebrityTrends: CelebrityTrend[] = [
     {
-      name: "Taylor Swift",
+      name: "Odell Beckham Jr",
       tags: [
-        { name: "Vintage", color: "bg-pink-100 text-pink-800" },
-        { name: "Romantic", color: "bg-purple-100 text-purple-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Athletic", color: "bg-green-100 text-green-800" },
+        { name: "Fashion-Forward", color: "bg-indigo-100 text-indigo-800" },
       ],
-      platform: "Instagram",
+      platform: "Celebrity",
       query:
-        "Taylor Swift inspired vintage romantic outfit with cardigans and flowing skirts",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Enchanted Garden",
+        "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
+      image: "/images/odell-beckham-jr-new-3.jpg",
+      fragrance: "Champion Spirit",
     },
     {
-      name: "Central Cee",
+      name: "Drake",
       tags: [
-        { name: "UK Drill", color: "bg-slate-100 text-slate-800" },
-        { name: "Streetwear", color: "bg-yellow-100 text-yellow-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Rapper", color: "bg-yellow-100 text-yellow-800" },
+        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
+      ],
+      platform: "Celebrity",
+      query:
+        "Drake inspired luxury rapper outfit with designer hoodies, premium denim and statement jewelry",
+      image:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      fragrance: "God's Plan",
+    },
+    {
+      name: "Charli D'Amelio",
+      tags: [
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Gen-Z", color: "bg-pink-100 text-pink-800" },
+        { name: "Trendy", color: "bg-green-100 text-green-800" },
       ],
       platform: "TikTok",
       query:
-        "Central Cee inspired UK drill streetwear outfit with tracksuits, designer sneakers and gold chains",
+        "Charli D'Amelio inspired Gen-Z trendy outfit with crop tops, high-waisted jeans and chunky sneakers",
       image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      fragrance: "Urban Essence",
+        "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
+      fragrance: "Sweet Dreams",
+    },
+    {
+      name: "Emma Chamberlain",
+      tags: [
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
+        { name: "Casual", color: "bg-gray-100 text-gray-800" },
+      ],
+      platform: "Instagram",
+      query:
+        "Emma Chamberlain inspired vintage casual outfit with thrifted pieces and effortless styling",
+      image:
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+      fragrance: "Coffee Shop Vibes",
+    },
+    {
+      name: "Serena Williams",
+      tags: [
+        { name: "Athlete", color: "bg-green-100 text-green-800" },
+        { name: "Powerful", color: "bg-red-100 text-red-800" },
+        { name: "Elegant", color: "bg-purple-100 text-purple-800" },
+      ],
+      platform: "Celebrity",
+      query:
+        "Serena Williams inspired powerful elegant outfit with structured blazers and statement accessories",
+      image:
+        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
+      fragrance: "Champion's Grace",
     },
     {
       name: "Zendaya",
       tags: [
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
         { name: "Bold", color: "bg-orange-100 text-orange-800" },
         { name: "Avant-garde", color: "bg-red-100 text-red-800" },
       ],
-      platform: "Instagram",
+      platform: "Celebrity",
       query:
         "Zendaya inspired bold avant-garde outfit with statement pieces and unique silhouettes",
       image:
@@ -539,81 +740,36 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       fragrance: "Electric Nights",
     },
     {
-      name: "Lil Baby",
+      name: "Taylor Swift",
       tags: [
-        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
-        { name: "Hip-Hop", color: "bg-purple-100 text-purple-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Vintage", color: "bg-pink-100 text-pink-800" },
+        { name: "Romantic", color: "bg-rose-100 text-rose-800" },
+      ],
+      platform: "Celebrity",
+      query:
+        "Taylor Swift inspired vintage romantic outfit with cardigans and flowing skirts",
+      image:
+        "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
+      fragrance: "Enchanted Garden",
+    },
+    {
+      name: "MrBeast",
+      tags: [
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Casual", color: "bg-gray-100 text-gray-800" },
+        { name: "Comfortable", color: "bg-green-100 text-green-800" },
       ],
       platform: "YouTube",
       query:
-        "Lil Baby inspired luxury hip-hop outfit with designer hoodies, expensive jeans and iced out jewelry",
+        "MrBeast inspired casual comfortable outfit with hoodies, joggers and comfortable sneakers",
       image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      fragrance: "Diamond Dreams",
-    },
-    {
-      name: "Emma Stone",
-      tags: [
-        { name: "Classic", color: "bg-blue-100 text-blue-800" },
-        { name: "Chic", color: "bg-green-100 text-green-800" },
-      ],
-      platform: "Instagram",
-      query:
-        "Emma Stone inspired classic chic outfit with tailored pieces and timeless elegance",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      fragrance: "Timeless Grace",
-    },
-    {
-      name: "Odell Beckham Jr",
-      tags: [
-        { name: "Athletic", color: "bg-green-100 text-green-800" },
-        { name: "Fashion-Forward", color: "bg-indigo-100 text-indigo-800" },
-      ],
-      platform: "TikTok",
-      query:
-        "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
-      image: "/images/odell-beckham-jr-new.jpg",
-      fragrance: "Champion Spirit",
-      tiktokEmbed: `<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@sanfrancesco.art/video/7464007858057694469" data-video-id="7464007858057694469" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@sanfrancesco.art" href="https://www.tiktok.com/@sanfrancesco.art?refer=embed">@sanfrancesco.art</a> @Odell Beckham Jr. for @hermes Fall&#47;Winter25 <a title="londonfashionweek" target="_blank" href="https://www.tiktok.com/tag/londonfashionweek?refer=embed">#londonfashionweek</a> <a title="lfw" target="_blank" href="https://www.tiktok.com/tag/lfw?refer=embed">#lfw</a> <a title="milanfashionweek" target="_blank" href="https://www.tiktok.com/tag/milanfashionweek?refer=embed">#milanfashionweek</a> <a title="mfw" target="_blank" href="https://www.tiktok.com/tag/mfw?refer=embed">#mfw</a> <a title="parisfashionweek" target="_blank" href="https://www.tiktok.com/tag/parisfashionweek?refer=embed">#parisfashionweek</a> <a title="pfw" target="_blank" href="https://www.tiktok.com/tag/pfw?refer=embed">#pfw</a> <a title="fashionweek" target="_blank" href="https://www.tiktok.com/tag/fashionweek?refer=embed">#fashionweek</a> <a title="streetstyle" target="_blank" href="https://www.tiktok.com/tag/streetstyle?refer=embed">#streetstyle</a> <a title="parisphotographer" target="_blank" href="https://www.tiktok.com/tag/parisphotographer?refer=embed">#parisphotographer</a> <a title="parisvideographer" target="_blank" href="https://www.tiktok.com/tag/parisvideographer?refer=embed">#parisvideographer</a> <a title="streetphptography" target="_blank" href="https://www.tiktok.com/tag/streetphptography?refer=embed">#streetphptography</a> <a title="streetphotographer" target="_blank" href="https://www.tiktok.com/tag/streetphotographer?refer=embed">#streetphotographer</a> <a title="photographer" target="_blank" href="https://www.tiktok.com/tag/photographer?refer=embed">#photographer</a> <a title="runwayshow" target="_blank" href="https://www.tiktok.com/tag/runwayshow?refer=embed">#runwayshow</a> <a title="freelancephotographer" target="_blank" href="https://www.tiktok.com/tag/freelancephotographer?refer=embed">#freelancephotographer</a> <a title="runwayphotography" target="_blank" href="https://www.tiktok.com/tag/runwayphotography?refer=embed">#runwayphotography</a> <a title="pfwfw25" target="_blank" href="https://www.tiktok.com/tag/pfwfw25?refer=embed">#pfwfw25</a> <a title="sanfrancescoart" target="_blank" href="https://www.tiktok.com/tag/sanfrancescoart?refer=embed">#sanfrancescoart</a> <a title="davechappelle" target="_blank" href="https://www.tiktok.com/tag/davechappelle?refer=embed">#davechappelle</a> <a title="obj" target="_blank" href="https://www.tiktok.com/tag/obj?refer=embed">#obj</a> <a title="odellbeckhamjr" target="_blank" href="https://www.tiktok.com/tag/odellbeckhamjr?refer=embed">#odellbeckhamjr</a> <a title="hermes" target="_blank" href="https://www.tiktok.com/tag/hermes?refer=embed">#hermes</a> <a target="_blank" title="♬ original sound - sanfrancesco.art" href="https://www.tiktok.com/music/original-sound-7464007855604124421?refer=embed">♬ original sound - sanfrancesco.art</a> </section> </blockquote>`,
-    },
-    {
-      name: "Billie Eilish",
-      tags: [
-        { name: "Oversized", color: "bg-gray-100 text-gray-800" },
-        { name: "Alternative", color: "bg-lime-100 text-lime-800" },
-      ],
-      platform: "TikTok",
-      query:
-        "Billie Eilish inspired oversized alternative outfit with baggy clothes and bold neon colors",
-      image:
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400",
-      fragrance: "Urban Edge",
-    },
-    {
-      name: "Margot Robbie",
-      tags: [
-        { name: "Glamorous", color: "bg-pink-100 text-pink-800" },
-        { name: "Playful", color: "bg-purple-100 text-purple-800" },
-      ],
-      platform: "Instagram",
-      query:
-        "Margot Robbie inspired glamorous playful outfit with feminine touches and vibrant colors",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
-      fragrance: "Pink Paradise",
-    },
-    {
-      name: "Rihanna",
-      tags: [
-        { name: "Edgy", color: "bg-red-100 text-red-800" },
-        { name: "Luxe", color: "bg-yellow-100 text-yellow-800" },
-      ],
-      platform: "YouTube",
-      query:
-        "Rihanna inspired edgy luxe outfit with leather pieces and statement accessories",
-      image:
-        "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400",
-      fragrance: "Rebel Luxe",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      fragrance: "Beast Mode",
     },
   ];
 
@@ -766,7 +922,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             <img
               src={
                 celebrityName === "Odell Beckham Jr"
-                  ? "/images/odell-beckham-jr-new.jpg"
+                  ? "/images/odell-beckham-jr-new-3.jpg"
                   : celebrityData?.image ||
                     `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`
               }
@@ -1198,54 +1354,43 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               </div>
                             </div>
 
-                            {/* Single Featured Content - Video or Image */}
+                            {/* Single Featured Content - Celebrity Images */}
                             <div className="flex-1 p-4 flex flex-col">
-                              {selectedCelebrity === "Odell Beckham Jr" ? (
-                                // Show dynamic media for Odell Beckham Jr
+                              {selectedCelebrity &&
+                              celebrityMediaGallery[selectedCelebrity] ? (
+                                // Show dynamic media for selected celebrity
                                 <div className="flex-1 w-full">
-                                  <div className="w-full h-full bg-black rounded-lg overflow-hidden relative min-h-[400px]">
-                                    {odellMediaGallery[currentMediaIndex]
-                                      ?.type === "video" ? (
-                                      <iframe
-                                        src={
-                                          odellMediaGallery[currentMediaIndex]
-                                            .src
-                                        }
-                                        width="100%"
-                                        height="100%"
-                                        frameBorder="0"
-                                        scrolling="no"
-                                        allow="encrypted-media; autoplay"
-                                        allowFullScreen
-                                        className="absolute inset-0 w-full h-full scale-110 -m-2"
-                                        title="Odell Beckham Jr TikTok Video"
-                                        style={{
-                                          transform: "scale(1.05)",
-                                          margin: "-10px",
-                                        }}
-                                      />
-                                    ) : (
-                                      <img
-                                        src={
-                                          odellMediaGallery[currentMediaIndex]
-                                            ?.src
-                                        }
-                                        alt={
-                                          odellMediaGallery[currentMediaIndex]
-                                            ?.title
-                                        }
-                                        className="w-full h-full object-cover transition-opacity duration-500"
-                                        style={{
-                                          objectFit: "cover",
-                                          width: "100%",
-                                          height: "100%",
-                                        }}
-                                      />
-                                    )}
+                                  <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative min-h-[400px]">
+                                    <img
+                                      src={
+                                        celebrityMediaGallery[
+                                          selectedCelebrity
+                                        ][currentMediaIndex]?.src
+                                      }
+                                      alt={
+                                        celebrityMediaGallery[
+                                          selectedCelebrity
+                                        ][currentMediaIndex]?.title
+                                      }
+                                      className="w-full h-full object-cover transition-opacity duration-500"
+                                      style={{
+                                        objectFit: "cover",
+                                        width: "100%",
+                                        height: "100%",
+                                      }}
+                                      onError={(e) => {
+                                        const target =
+                                          e.target as HTMLImageElement;
+                                        target.src =
+                                          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                      }}
+                                    />
 
                                     {/* Media indicators */}
                                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1">
-                                      {odellMediaGallery.map((_, index) => (
+                                      {celebrityMediaGallery[
+                                        selectedCelebrity
+                                      ].map((_, index) => (
                                         <div
                                           key={index}
                                           className={`w-2 h-2 rounded-full transition-colors ${
@@ -1259,7 +1404,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                   </div>
                                 </div>
                               ) : (
-                                // Show image for other celebrities or default
+                                // Show default image for no celebrity selected
                                 <div className="flex-1 rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer border border-gray-100 min-h-[400px]">
                                   <img
                                     src="/images/style-inspiration.jpg"
@@ -1276,14 +1421,17 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               )}
                               <div className="mt-4 text-center flex-shrink-0">
                                 <h4 className="font-semibold text-gray-900 mb-1">
-                                  {selectedCelebrity === "Odell Beckham Jr"
-                                    ? odellMediaGallery[currentMediaIndex]
-                                        ?.title || "OBJ x Hermès"
+                                  {selectedCelebrity &&
+                                  celebrityMediaGallery[selectedCelebrity]
+                                    ? celebrityMediaGallery[selectedCelebrity][
+                                        currentMediaIndex
+                                      ]?.title || "Celebrity Style"
                                     : "Street Style Vibes"}
                                 </h4>
                                 <p className="text-gray-600 text-sm">
-                                  {selectedCelebrity === "Odell Beckham Jr"
-                                    ? "Fashion Week Moments"
+                                  {selectedCelebrity &&
+                                  celebrityMediaGallery[selectedCelebrity]
+                                    ? "Celebrity Fashion Moments"
                                     : "Effortless urban fashion"}
                                 </p>
                               </div>
@@ -1380,9 +1528,21 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                         {tag.name}
                                       </span>
                                     ))}
-                                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                    {trend.platform}
-                                  </span>
+                                  {trend.platform !== "Celebrity" && (
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        trend.platform === "Instagram"
+                                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                          : trend.platform === "TikTok"
+                                            ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
+                                            : trend.platform === "YouTube"
+                                              ? "bg-red-600 text-white"
+                                              : "bg-gray-100 text-gray-700"
+                                      }`}
+                                    >
+                                      {trend.platform}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex items-center text-slate-600 text-xs font-medium">
                                   <Sparkles className="w-3 h-3 mr-1" />
@@ -1633,20 +1793,36 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
                 {/* Right: Details */}
                 <div className="space-y-6">
-                  {/* TikTok Video for Odell Beckham Jr */}
-                  {selectedLookData.celebrity === "Odell Beckham Jr" && (
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                        Style Inspiration Video
-                      </h4>
-                      <div
-                        className="w-full"
-                        dangerouslySetInnerHTML={{
-                          __html: `<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@sanfrancesco.art/video/7464007858057694469" data-video-id="7464007858057694469" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@sanfrancesco.art" href="https://www.tiktok.com/@sanfrancesco.art?refer=embed">@sanfrancesco.art</a> @Odell Beckham Jr. for @hermes Fall&#47;Winter25 <a title="londonfashionweek" target="_blank" href="https://www.tiktok.com/tag/londonfashionweek?refer=embed">#londonfashionweek</a> <a title="lfw" target="_blank" href="https://www.tiktok.com/tag/lfw?refer=embed">#lfw</a> <a title="milanfashionweek" target="_blank" href="https://www.tiktok.com/tag/milanfashionweek?refer=embed">#milanfashionweek</a> <a title="mfw" target="_blank" href="https://www.tiktok.com/tag/mfw?refer=embed">#mfw</a> <a title="parisfashionweek" target="_blank" href="https://www.tiktok.com/tag/parisfashionweek?refer=embed">#parisfashionweek</a> <a title="pfw" target="_blank" href="https://www.tiktok.com/tag/pfw?refer=embed">#pfw</a> <a title="fashionweek" target="_blank" href="https://www.tiktok.com/tag/fashionweek?refer=embed">#fashionweek</a> <a title="streetstyle" target="_blank" href="https://www.tiktok.com/tag/streetstyle?refer=embed">#streetstyle</a> <a title="parisphotographer" target="_blank" href="https://www.tiktok.com/tag/parisphotographer?refer=embed">#parisphotographer</a> <a title="parisvideographer" target="_blank" href="https://www.tiktok.com/tag/parisvideographer?refer=embed">#parisvideographer</a> <a title="streetphptography" target="_blank" href="https://www.tiktok.com/tag/streetphptography?refer=embed">#streetphptography</a> <a title="streetphotographer" target="_blank" href="https://www.tiktok.com/tag/streetphotographer?refer=embed">#streetphotographer</a> <a title="photographer" target="_blank" href="https://www.tiktok.com/tag/photographer?refer=embed">#photographer</a> <a title="runwayshow" target="_blank" href="https://www.tiktok.com/tag/runwayshow?refer=embed">#runwayshow</a> <a title="freelancephotographer" target="_blank" href="https://www.tiktok.com/tag/freelancephotographer?refer=embed">#freelancephotographer</a> <a title="runwayphotography" target="_blank" href="https://www.tiktok.com/tag/runwayphotography?refer=embed">#runwayphotography</a> <a title="pfwfw25" target="_blank" href="https://www.tiktok.com/tag/pfwfw25?refer=embed">#pfwfw25</a> <a title="sanfrancescoart" target="_blank" href="https://www.tiktok.com/tag/sanfrancescoart?refer=embed">#sanfrancescoart</a> <a title="davechappelle" target="_blank" href="https://www.tiktok.com/tag/davechappelle?refer=embed">#davechappelle</a> <a title="obj" target="_blank" href="https://www.tiktok.com/tag/obj?refer=embed">#obj</a> <a title="odellbeckhamjr" target="_blank" href="https://www.tiktok.com/tag/odellbeckhamjr?refer=embed">#odellbeckhamjr</a> <a title="hermes" target="_blank" href="https://www.tiktok.com/tag/hermes?refer=embed">#hermes</a> <a target="_blank" title="♬ original sound - sanfrancesco.art" href="https://www.tiktok.com/music/original-sound-7464007855604124421?refer=embed">♬ original sound - sanfrancesco.art</a> </section> </blockquote> <script async src="https://www.tiktok.com/embed.js"></script>`,
-                        }}
-                      />
-                    </div>
-                  )}
+                  {/* Celebrity Style Gallery */}
+                  {selectedLookData.celebrity &&
+                    celebrityMediaGallery[selectedLookData.celebrity] && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                          Style Inspiration Gallery
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {celebrityMediaGallery[selectedLookData.celebrity]
+                            .slice(0, 4)
+                            .map((media, index) => (
+                              <div
+                                key={index}
+                                className="aspect-square rounded-lg overflow-hidden bg-gray-100"
+                              >
+                                <img
+                                  src={media.src}
+                                  alt={media.title}
+                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src =
+                                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80";
+                                  }}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
 
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 mb-3">
