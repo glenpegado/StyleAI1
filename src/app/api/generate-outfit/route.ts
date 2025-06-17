@@ -5,42 +5,20 @@ export async function POST(request: NextRequest) {
     const { query } = await request.json();
 
     if (!query) {
-      console.log("No query provided");
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
-    console.log("Processing query:", query);
-
     // Check environment variables
-    console.log("Checking environment variables...");
-    console.log("PICA_SECRET_KEY exists:", !!process.env.PICA_SECRET_KEY);
-    console.log(
-      "PICA_OPENAI_CONNECTION_KEY exists:",
-      !!process.env.PICA_OPENAI_CONNECTION_KEY,
-    );
-
-    if (!process.env.PICA_SECRET_KEY) {
-      console.error("PICA_SECRET_KEY is not set");
+    if (
+      !process.env.PICA_SECRET_KEY ||
+      !process.env.PICA_OPENAI_CONNECTION_KEY
+    ) {
       return NextResponse.json(
-        { error: "Server configuration error: Missing PICA_SECRET_KEY" },
+        { error: "Server configuration error: Missing API keys" },
         { status: 500 },
       );
     }
 
-    if (!process.env.PICA_OPENAI_CONNECTION_KEY) {
-      console.error("PICA_OPENAI_CONNECTION_KEY is not set");
-      return NextResponse.json(
-        {
-          error:
-            "Server configuration error: Missing PICA_OPENAI_CONNECTION_KEY",
-        },
-        { status: 500 },
-      );
-    }
-
-    console.log("Environment variables check passed");
-
-    // Use PICA passthrough endpoint for OpenAI
     const requestBody = {
       model: "gpt-4o",
       messages: [
@@ -103,79 +81,15 @@ Example format (respond exactly like this, no extra formatting):
       max_tokens: 2000,
     };
 
-    console.log(
-      "Making request to PICA API with body:",
-      JSON.stringify(requestBody, null, 2),
-    );
-
-    // Simplified but effective retry mechanism
-    const makeRequestWithRetry = async (maxRetries = 8) => {
-      const baseDelayMs = 1000; // 1 second base delay
-      const timeoutMs = 60000; // 1 minute timeout per request
-      const maxBackoffMs = 30000; // Cap at 30 seconds
+    // Robust retry mechanism with exponential backoff
+    const makeRequestWithRetry = async (maxRetries = 5) => {
       let attempt = 0;
-      let consecutiveServerErrors = 0;
-      let consecutiveTimeouts = 0;
-
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
-
-      const getJitter = () => Math.floor(Math.random() * 1000); // 0-1000ms jitter
-
-      const getBackoffDelay = (attemptNumber: number) => {
-        // Simple exponential backoff with jitter
-        const exponentialDelay =
-          baseDelayMs * Math.pow(2, Math.min(attemptNumber, 5));
-        const jitter = getJitter();
-        const totalDelay = exponentialDelay + jitter;
-        return Math.min(totalDelay, maxBackoffMs);
-      };
-
-      const fetchWithTimeout = async (
-        url: string,
-        options: any,
-        timeout: number,
-      ) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          console.log(`⏰ Request timeout after ${timeout}ms`);
-          controller.abort();
-        }, timeout);
-
-        try {
-          const response = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-          return response;
-        } catch (error) {
-          clearTimeout(timeoutId);
-          if (error instanceof Error && error.name === "AbortError") {
-            throw new Error("Request timeout");
-          }
-          throw error;
-        }
-      };
+      const baseDelay = 1000;
 
       while (attempt <= maxRetries) {
         try {
-          if (attempt > 0) {
-            console.log(
-              `🔄 Attempt ${attempt + 1}/${maxRetries + 1} - PICA API [Errors: ${consecutiveServerErrors}, Timeouts: ${consecutiveTimeouts}]`,
-            );
-          }
-
-          // Apply backoff delay for retries
-          if (attempt > 0) {
-            const delay = getBackoffDelay(attempt);
-            console.log(`⏳ Backoff delay: ${Math.round(delay)}ms`);
-            await sleep(delay);
-          }
-
-          const startTime = Date.now();
-          const response = await fetchWithTimeout(
-            "https://api.picaos.com/v1/passthrough/v1/chat/completions",
+          const response = await fetch(
+            "https://api.picaos.com/v1/passthrough/chat/completions",
             {
               method: "POST",
               headers: {
@@ -183,58 +97,26 @@ Example format (respond exactly like this, no extra formatting):
                 "x-pica-secret": process.env.PICA_SECRET_KEY!,
                 "x-pica-connection-key":
                   process.env.PICA_OPENAI_CONNECTION_KEY!,
-                "x-pica-action-id": "conn_openai::chat-completions",
-                "User-Agent": "UrbanStylist/1.0",
-                Accept: "application/json",
+                "x-pica-action-id":
+                  "conn_mod_def::GDzgi1QfvM4::4OjsWvZhRxmAVuLAuWgfVA",
               },
               body: JSON.stringify(requestBody),
             },
-            timeoutMs,
           );
 
-          const responseTime = Date.now() - startTime;
-          console.log(
-            `📊 Response received in ${responseTime}ms with status ${response.status}`,
-          );
-
-          // Success case
           if (response.ok) {
-            console.log(
-              `✅ PICA API SUCCESS on attempt ${attempt + 1} (${responseTime}ms)`,
-            );
-            consecutiveServerErrors = 0;
-            consecutiveTimeouts = 0;
             return response;
           }
 
-          // Server errors (502, 503, 504, 500) - retryable
-          if ([500, 502, 503, 504].includes(response.status)) {
-            consecutiveServerErrors++;
-            console.warn(
-              `⚠️ Server error ${response.status} on attempt ${attempt + 1} (consecutive: ${consecutiveServerErrors})`,
-            );
-
-            if (attempt < maxRetries) {
-              attempt++;
-              continue;
-            }
-          }
-
-          // Rate limiting (429)
+          // Handle specific error cases
           if (response.status === 429) {
             const errorText = await response.text();
             let errorData;
-
             try {
               errorData = JSON.parse(errorText);
             } catch {
               errorData = { error: { message: errorText } };
             }
-
-            console.warn(
-              `⚠️ Rate limited (429) on attempt ${attempt + 1}:`,
-              errorData?.error?.message || "No details",
-            );
 
             // Check for quota errors (don't retry these)
             const isQuotaError =
@@ -243,101 +125,52 @@ Example format (respond exactly like this, no extra formatting):
               errorData?.error?.message?.includes("quota") ||
               errorData?.error?.message?.includes(
                 "exceeded your current quota",
-              ) ||
-              errorData?.error?.message?.includes("billing hard limit");
+              );
 
             if (isQuotaError) {
-              console.error("❌ Quota exceeded - not retrying");
               throw new Error(
                 JSON.stringify({
                   error:
-                    "💳 OpenAI API quota exceeded! If you just paid, please wait 2-3 minutes for your quota to update, then try again.",
+                    "OpenAI API quota exceeded. Please check your billing.",
                   type: "quota_exceeded",
                   details: errorData?.error?.message || "Insufficient quota",
-                  helpUrl: "https://platform.openai.com/account/usage",
                 }),
               );
             }
-
-            // For other 429 errors (rate limiting), retry with backoff
-            if (attempt < maxRetries) {
-              const retryAfter = response.headers.get("retry-after");
-              const waitTime = retryAfter
-                ? Math.max(parseInt(retryAfter) * 1000, 5000) // Minimum 5 seconds
-                : getBackoffDelay(attempt);
-
-              console.log(`⏳ Rate limit backoff: ${Math.round(waitTime)}ms`);
-              await sleep(waitTime);
-              attempt++;
-              continue;
-            }
           }
 
-          // For other HTTP errors, don't retry - return response for downstream handling
-          console.warn(
-            `⚠️ Non-retryable HTTP error ${response.status} on attempt ${attempt + 1}`,
-          );
-          return response;
-        } catch (error) {
-          const isTimeout =
-            error instanceof Error && error.message === "Request timeout";
-          const isNetworkError =
-            error instanceof Error &&
-            (error.name === "TypeError" ||
-              error.message.includes("fetch") ||
-              error.message.includes("ECONNRESET") ||
-              error.message.includes("ENOTFOUND") ||
-              error.message.includes("ETIMEDOUT") ||
-              error.message.includes("network") ||
-              error.message.includes("ECONNREFUSED"));
-
-          if (isTimeout) {
-            consecutiveTimeouts++;
-          }
-
-          console.error(
-            `❌ ${isTimeout ? "TIMEOUT" : "NETWORK"} error on attempt ${attempt + 1}:`,
-            error instanceof Error ? error.message : "Unknown error",
-          );
-
-          // Retry network/timeout errors
-          if (attempt < maxRetries) {
+          // Retry on server errors (500, 502, 503, 504)
+          if (
+            [500, 502, 503, 504].includes(response.status) &&
+            attempt < maxRetries
+          ) {
+            const delay =
+              baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
             attempt++;
             continue;
           }
 
-          // Max retries reached for network errors
-          throw new Error(
-            `${isTimeout ? "Timeout" : "Network"} error after ${maxRetries + 1} attempts: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
+          return response;
+        } catch (error) {
+          if (attempt < maxRetries) {
+            const delay =
+              baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            attempt++;
+            continue;
+          }
+          throw error;
         }
       }
 
-      throw new Error(
-        `Max retries (${maxRetries + 1}) reached for PICA API. Server errors: ${consecutiveServerErrors}, Timeouts: ${consecutiveTimeouts}`,
-      );
+      throw new Error("Max retries reached");
     };
 
     const response = await makeRequestWithRetry();
 
-    console.log(
-      "Response headers:",
-      Object.fromEntries(response.headers.entries()),
-    );
-
-    console.log("PICA API response status:", response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("PICA API error details:");
-      console.error("Status:", response.status);
-      console.error("Status Text:", response.statusText);
-      console.error("Error Body:", errorText);
-      console.error(
-        "Response Headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
-
       let errorData;
       try {
         errorData = JSON.parse(errorText);
@@ -345,42 +178,18 @@ Example format (respond exactly like this, no extra formatting):
         errorData = { error: { message: errorText } };
       }
 
-      // Handle server errors specifically
-      if (
-        response.status === 502 ||
-        response.status === 503 ||
-        response.status === 504
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "🔧 The AI service is experiencing server issues after multiple retry attempts. This is likely a temporary problem with the upstream service. Please wait 1-2 minutes and try again.",
-            type: "server_error",
-            details: `Server returned ${response.status}: ${response.statusText} after ${maxRetries + 1} attempts`,
-            retryAfter: "60-120 seconds",
-            suggestion:
-              "Try refreshing the page or using a simpler query if the issue persists.",
-          },
-          { status: 503 },
-        );
-      }
-
       // Handle quota errors specifically
       if (
         response.status === 429 &&
         (errorData?.error?.code === "insufficient_quota" ||
           errorData?.error?.type === "insufficient_quota" ||
-          errorData?.error?.message?.includes("quota") ||
-          errorData?.error?.message?.includes("exceeded your current quota") ||
-          errorData?.error?.message?.includes("billing hard limit"))
+          errorData?.error?.message?.includes("quota"))
       ) {
         return NextResponse.json(
           {
-            error:
-              "💳 OpenAI API quota exceeded! If you just paid, please wait 2-3 minutes for your quota to update, then try again.",
+            error: "OpenAI API quota exceeded. Please check your billing.",
             type: "quota_exceeded",
             details: errorData?.error?.message || "Insufficient quota",
-            helpUrl: "https://platform.openai.com/account/usage",
           },
           { status: 429 },
         );
@@ -390,132 +199,70 @@ Example format (respond exactly like this, no extra formatting):
         {
           error: `API request failed: ${response.status} ${response.statusText}`,
           details: errorText,
-          status: response.status,
         },
         { status: response.status >= 500 ? 502 : response.status },
       );
     }
 
     const data = await response.json();
-    console.log("PICA API response:", JSON.stringify(data, null, 2));
-
     const content = data.choices?.[0]?.message?.content;
+
     if (!content) {
-      console.error("No content in response:", data);
       throw new Error("No response content from AI service");
     }
 
-    console.log("Raw content from AI:", content);
-    console.log("Content length:", content.length);
-
-    // Enhanced content cleaning to handle various markdown formats
-    let cleanedContent = content.trim();
-
-    // Remove markdown code block markers - handle multiple variations
-    cleanedContent = cleanedContent
+    // Clean and parse JSON response
+    let cleanedContent = content
+      .trim()
       .replace(/^```json\s*/gm, "")
       .replace(/^```\s*/gm, "")
       .replace(/\s*```$/gm, "")
       .replace(/^`+|`+$/g, "")
+      .replace(/`/g, "")
       .trim();
 
-    // Remove any remaining backticks that might be scattered in the content
-    cleanedContent = cleanedContent.replace(/`/g, "");
-
-    // Remove any "json" text that might be left over from code block markers
     if (cleanedContent.startsWith("json")) {
       cleanedContent = cleanedContent.replace(/^json\s*/, "").trim();
     }
 
-    console.log("Cleaned content for parsing:", cleanedContent);
-    console.log("Cleaned content length:", cleanedContent.length);
-
     let outfitData;
+    try {
+      outfitData = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      // Try to extract JSON object
+      let braceCount = 0;
+      let startIndex = -1;
+      let endIndex = -1;
 
-    // Simplified JSON parsing with key strategies
-    const parseStrategies = [
-      // Strategy 1: Direct parsing
-      () => {
-        console.log("Trying direct JSON parsing");
-        return JSON.parse(cleanedContent);
-      },
-
-      // Strategy 2: Extract balanced JSON object
-      () => {
-        console.log("Trying balanced braces extraction");
-        let braceCount = 0;
-        let startIndex = -1;
-        let endIndex = -1;
-
-        for (let i = 0; i < cleanedContent.length; i++) {
-          if (cleanedContent[i] === "{") {
-            if (startIndex === -1) startIndex = i;
-            braceCount++;
-          } else if (cleanedContent[i] === "}") {
-            braceCount--;
-            if (braceCount === 0 && startIndex !== -1) {
-              endIndex = i;
-              break;
-            }
+      for (let i = 0; i < cleanedContent.length; i++) {
+        if (cleanedContent[i] === "{") {
+          if (startIndex === -1) startIndex = i;
+          braceCount++;
+        } else if (cleanedContent[i] === "}") {
+          braceCount--;
+          if (braceCount === 0 && startIndex !== -1) {
+            endIndex = i;
+            break;
           }
         }
+      }
 
-        if (startIndex !== -1 && endIndex !== -1) {
-          const extractedJson = cleanedContent.substring(
-            startIndex,
-            endIndex + 1,
-          );
-          return JSON.parse(extractedJson);
-        }
-        throw new Error("No balanced JSON object found");
-      },
-
-      // Strategy 3: Fix truncation issues
-      () => {
-        console.log("Trying truncation repair");
-        let repairedContent = cleanedContent;
-
-        // If content doesn't end with }, try to fix it
-        if (!repairedContent.trim().endsWith("}")) {
-          const openBraces = (repairedContent.match(/\{/g) || []).length;
-          const closeBraces = (repairedContent.match(/\}/g) || []).length;
-          const missingBraces = openBraces - closeBraces;
-
-          if (missingBraces > 0) {
-            repairedContent += "}".repeat(missingBraces);
-          }
-
-          // Remove trailing comma if present
-          if (repairedContent.trim().endsWith(",")) {
-            repairedContent = repairedContent.trim().slice(0, -1);
-          }
-        }
-
-        return JSON.parse(repairedContent);
-      },
-    ];
-
-    // Try each parsing strategy
-    for (let i = 0; i < parseStrategies.length; i++) {
-      try {
-        outfitData = parseStrategies[i]();
-        console.log(`✅ Successfully parsed JSON with strategy ${i + 1}`);
-        break;
-      } catch (error) {
-        console.warn(
-          `❌ Strategy ${i + 1} failed:`,
-          error instanceof Error ? error.message : "Unknown error",
+      if (startIndex !== -1 && endIndex !== -1) {
+        const extractedJson = cleanedContent.substring(
+          startIndex,
+          endIndex + 1,
         );
-        if (i === parseStrategies.length - 1) {
-          // All strategies failed
-          throw new Error(
-            `Failed to parse AI response as JSON after ${parseStrategies.length} attempts. ` +
-              `Content preview: ${cleanedContent.substring(0, 200)}...`,
-          );
+        try {
+          outfitData = JSON.parse(extractedJson);
+        } catch {
+          throw new Error("Failed to parse AI response as JSON");
         }
+      } else {
+        throw new Error("Failed to parse AI response as JSON");
       }
     }
 
+    // Validate response structure
     if (
       !outfitData.main_description ||
       !Array.isArray(outfitData.tops) ||
@@ -523,30 +270,11 @@ Example format (respond exactly like this, no extra formatting):
       !Array.isArray(outfitData.accessories) ||
       !Array.isArray(outfitData.shoes)
     ) {
-      console.error("Invalid outfit data structure:", outfitData);
       throw new Error("Invalid outfit data structure");
     }
 
-    // Validate that each item has the required new fields
-    const validateItems = (items: any[], category: string) => {
-      items.forEach((item, index) => {
-        if (!item.name || !item.price || !item.website || !item.brand) {
-          console.warn(
-            `Missing required fields in ${category}[${index}]:`,
-            item,
-          );
-        }
-      });
-    };
-
-    validateItems(outfitData.tops, "tops");
-    validateItems(outfitData.bottoms, "bottoms");
-    validateItems(outfitData.accessories, "accessories");
-    validateItems(outfitData.shoes, "shoes");
-
-    // Enhance images using the improved scraping service
+    // Try to enhance images if scraping service is available
     try {
-      console.log("Enhancing images with improved scraping...");
       const allItems = [
         ...outfitData.tops,
         ...outfitData.bottoms,
@@ -590,32 +318,22 @@ Example format (respond exactly like this, no extra formatting):
           itemIndex,
           itemIndex + outfitData.shoes.length,
         );
-
-        console.log("Successfully enhanced images");
-      } else {
-        console.warn("Image enhancement failed, using original images");
       }
     } catch (error) {
-      console.error("Image enhancement error:", error);
       // Continue with original images if enhancement fails
+      console.warn("Image enhancement failed:", error);
     }
 
     return NextResponse.json(outfitData);
   } catch (error) {
     console.error("Error generating outfit:", error);
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack trace",
-    );
 
     let errorMessage = "Failed to generate outfit suggestions";
     let statusCode = 500;
     let errorType = "general_error";
 
     if (error instanceof Error) {
-      console.error("Error message:", error.message);
-
-      // Check if it's a quota error thrown from retry logic
+      // Check if it's a quota error
       try {
         const parsedError = JSON.parse(error.message);
         if (parsedError.type === "quota_exceeded") {
@@ -625,33 +343,21 @@ Example format (respond exactly like this, no extra formatting):
         // Not a JSON error, continue with regular error handling
       }
 
-      if (error.message.includes("PICA API error")) {
-        errorMessage = "API connection error. Please try again.";
-        statusCode = 502;
-      } else if (
-        error.message.includes("AI returned invalid JSON") ||
-        error.message.includes("AI returned non-JSON")
-      ) {
-        errorMessage =
-          "The AI service returned an invalid response format. Please try again with a different query.";
-        statusCode = 502;
-      } else if (error.message.includes("Response formatting error")) {
-        errorMessage = "Response formatting error. Please try again.";
-        statusCode = 502;
-      } else if (error.message.includes("No response")) {
-        errorMessage = "No response from AI service. Please try again.";
-        statusCode = 502;
-      } else if (error.message.includes("Server configuration error")) {
-        errorMessage = "Server configuration error";
-        statusCode = 500;
-      } else if (error.message.includes("fetch")) {
-        errorMessage =
-          "Network error. Please check your connection and try again.";
-        statusCode = 503;
-      } else if (error.message.includes("quota")) {
+      if (error.message.includes("quota")) {
         errorMessage = "OpenAI API quota exceeded. Please check your billing.";
         statusCode = 429;
         errorType = "quota_exceeded";
+      } else if (
+        error.message.includes("fetch") ||
+        error.message.includes("network")
+      ) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
+        statusCode = 503;
+      } else if (error.message.includes("JSON")) {
+        errorMessage =
+          "The AI service returned an invalid response format. Please try again.";
+        statusCode = 502;
       }
     }
 
