@@ -109,7 +109,7 @@ export default function SignupPaymentDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-center">
-            <Sparkles className="w-5 h-5 text-slate-600" />
+            <Sparkles className="w-5 h-5 text-purple-500" />
             {step === "signup" && "Unlock Your Style Potential!"}
             {step === "confirmation" && "Check Your Email"}
           </DialogTitle>

@@ -87,7 +87,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 sm:gap-3"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-slate-800 to-slate-600 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
               <span className="text-base sm:text-lg font-semibold text-gray-900">
@@ -150,7 +150,7 @@ export default function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2.5 text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all duration-200 w-full text-sm font-medium shadow-lg"
+                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2.5 text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 rounded-xl transition-all duration-200 w-full text-sm font-medium shadow-lg"
                 >
                   <UserPlus className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign Up</span>

@@ -21,6 +21,11 @@ import { usePrompt } from "@/contexts/PromptContext";
 import SignupPaymentDialog from "@/components/signup-payment-dialog";
 import { createClient } from "../../supabase/client";
 
+function useSupabase() {
+  const supabase = createClient();
+  return { supabase };
+}
+
 interface OutfitItem {
   name: string;
   description: string;
@@ -31,8 +36,6 @@ interface OutfitItem {
   website_url: string;
   image_url: string;
   availability: string;
-  celebrity_worn?: boolean;
-  store_badge?: string;
 }
 
 interface OutfitSuggestion {
@@ -46,11 +49,15 @@ interface OutfitSuggestion {
 interface CelebrityTrend {
   name: string;
   tags: { name: string; color: string }[];
-  platform: string;
   query: string;
   image: string;
   fragrance?: string;
-  tiktokEmbed?: string;
+}
+
+interface CelebrityData {
+  name: string;
+  image: string;
+  fragrance: string;
 }
 
 interface HeroProps {
@@ -58,1707 +65,1205 @@ interface HeroProps {
 }
 
 export default function Hero({ showSearch = true }: HeroProps = {}) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isStyleLoading, setIsStyleLoading] = useState(false);
-  const [outfitSuggestions, setOutfitSuggestions] =
-    useState<OutfitSuggestion | null>(null);
-  const { promptCount, incrementPrompt, hasReachedLimit } = usePrompt();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
-  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentTypingText, setCurrentTypingText] = useState("");
-  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [outfitSuggestions, setOutfitSuggestions] = useState<OutfitSuggestion | null>(null);
+  const [showSignInDialog, setShowSignInDialog] = useState<boolean>(false);
+  const [selectedCelebrity, setSelectedCelebrity] = useState<string | null>(null);
+  const [showLookModal, setShowLookModal] = useState<boolean>(false);
+  const [selectedLookData, setSelectedLookData] = useState<any | null>(null);
+  const [currentCelebLookIndex, setCurrentCelebLookIndex] = useState<number>(0);
+  const [isAutoScrolling, setIsAutoScrolling] = useState<boolean>(true);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [textareaHeight, setTextareaHeight] = useState("auto");
-  const [selectedCelebrity, setSelectedCelebrity] = useState<string | null>(
-    null,
-  );
-  const [currentCelebLookIndex, setCurrentCelebLookIndex] = useState(0);
-  const [user, setUser] = useState<any>(null);
-  const [savedLooks, setSavedLooks] = useState<string[]>([]);
-  const [showSignInDialog, setShowSignInDialog] = useState(false);
-  const [showLookModal, setShowLookModal] = useState(false);
-  const [selectedLookData, setSelectedLookData] = useState<{
-    outfit: OutfitSuggestion;
-    celebrity?: string;
-    celebrityData?: { name: string; image: string; fragrance: string };
-  } | null>(null);
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
-  const mediaTransitionRef = useRef<NodeJS.Timeout | null>(null);
-  const supabase = createClient();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const generateOutfit = async (query: string) => {
-    if (hasReachedLimit) {
-      setShowDialog(true);
-      return;
-    }
+  const { promptCount, incrementPrompt, hasReachedLimit } = usePrompt();
+  const { supabase } = useSupabase();
 
-    // Show loading state immediately for both outfit and style
-    setOutfitSuggestions({ loading: true } as any);
+  // Celebrity data with images and fragrances
+  const celebrities = {
+    "Bella Hadid": {
+      image:
+        "https://hips.hearstapps.com/hmg-prod/images/bella-hadid-is-seen-on-february-25-2023-in-paris-france-news-photo-1677419264.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+      fragrance: "Orebella Nightcap",
+    },
+    "Michael B. Jordan": {
+      image:
+        "https://www.gq.com/verso/static/gq/assets/michael-b-jordan-style-evolution-gq-2023-tout.jpg",
+      fragrance: "Coach For Men",
+    },
+    Zendaya: {
+      image:
+        "https://hips.hearstapps.com/hmg-prod/images/zendaya-attends-the-dune-part-two-world-premiere-at-news-photo-1708439058.jpg?crop=0.66667xw:1xh;center,top&resize=1200:*",
+      fragrance: "Lancôme Idôle",
+    },
+    "A$AP Rocky": {
+      image:
+        "https://www.gq.com/verso/static/gq/assets/asap-rocky-style-evolution-gq-2023.jpg",
+      fragrance: "Dior Sauvage",
+    },
+    Rihanna: {
+      image:
+        "https://hips.hearstapps.com/hmg-prod/images/rihanna-is-seen-on-february-12-2023-in-paris-france-news-photo-1676230847.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+      fragrance: "Fenty Eau de Parfum",
+    },
+    "Tyler, The Creator": {
+      image:
+        "https://www.gq.com/verso/static/gq/assets/tyler-the-creator-style-evolution-gq-2023.jpg",
+      fragrance: "Le Labo Santal 33",
+    },
+  };
+
+  // Event Handlers
+  const handleSearch = async (e: MouseEvent | KeyboardEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
     setIsLoading(true);
-    setIsStyleLoading(true);
-
-    // Increment prompt count after successful API call to prevent issues with auto-reset
-    // incrementPrompt();
-
-    // Simplified retry logic with better error handling
-    const makeRequestWithRetry = async (maxRetries = 3) => {
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
-
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          if (attempt > 0) {
-            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-            console.log(
-              `Retrying request (${attempt + 1}/${maxRetries + 1}) after ${delay}ms`,
-            );
-            await sleep(delay);
-          }
-
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-          try {
-            const response = await fetch("/api/generate-outfit", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ query }),
-              signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              return response;
-            }
-
-            // Handle non-200 responses
-            const errorText = await response.text();
-            let errorData;
-            try {
-              errorData = JSON.parse(errorText);
-            } catch {
-              errorData = { error: errorText };
-            }
-
-            // Don't retry client errors (4xx)
-            if (response.status >= 400 && response.status < 500) {
-              throw new Error(
-                errorData.error || `Client error: ${response.status}`,
-              );
-            }
-
-            // Retry server errors (5xx) but only if we have attempts left
-            if (response.status >= 500 && attempt < maxRetries) {
-              console.warn(`Server error ${response.status}, will retry...`);
-              continue;
-            }
-
-            throw new Error(
-              errorData.error || `Server error: ${response.status}`,
-            );
-          } finally {
-            clearTimeout(timeoutId);
-          }
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.name === "AbortError") {
-              if (attempt < maxRetries) {
-                console.warn("Request timeout, retrying...");
-                continue;
-              }
-              throw new Error("Request timeout. Please try again.");
-            }
-
-            // Don't retry for non-network errors
-            if (
-              !error.message.includes("fetch") &&
-              !error.message.includes("network")
-            ) {
-              throw error;
-            }
-
-            // Retry network errors
-            if (attempt < maxRetries) {
-              console.warn("Network error, retrying...");
-              continue;
-            }
-          }
-
-          throw error;
-        }
-      }
-
-      throw new Error("Max retries reached. Please try again later.");
-    };
-
     try {
-      const response = await makeRequestWithRetry();
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Set both outfit suggestions and style loading to complete simultaneously
-      setOutfitSuggestions(data);
-      setIsStyleLoading(false);
-
-      // Increment prompt count after successful generation
-      incrementPrompt();
-
-      // Check if this increment reached the limit
-      if (promptCount + 1 >= 7) {
-        setShowDialog(true);
-      }
+      const suggestions = await fetchOutfitSuggestions(searchQuery);
+      setOutfitSuggestions(suggestions);
     } catch (error) {
-      console.error("Error generating outfit:", error);
-
-      let errorMessage =
-        "Sorry, there was an error generating your outfit. Please try again.";
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      // Show simplified error message
-      alert(
-        errorMessage ||
-          "Sorry, there was an error generating your outfit. Please try again.",
-      );
+      console.error('Error fetching outfit suggestions:', error);
+      setOutfitSuggestions(null);
     } finally {
       setIsLoading(false);
-      setIsStyleLoading(false);
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      await generateOutfit(searchQuery);
-    }
-  };
-
-  const handleStyleClick = async (query: string, celebrityName?: string) => {
-    setSearchQuery(query); // Update search query to match the clicked style
-    if (celebrityName && !selectedCelebrity) {
-      setSelectedCelebrity(celebrityName);
-    }
-    await generateOutfit(query);
-  };
-
-  // Auto-scroll effect with infinite loop
-  useEffect(() => {
-    const startAutoScroll = () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current);
-      }
-
-      autoScrollIntervalRef.current = setInterval(() => {
-        if (scrollContainerRef.current && isAutoScrolling) {
-          const container = scrollContainerRef.current;
-          const maxScrollLeft = container.scrollWidth - container.clientWidth;
-
-          // Check if we've reached the end
-          if (container.scrollLeft >= maxScrollLeft - 1) {
-            // Instantly reset to beginning for seamless loop
-            container.scrollLeft = 0;
-          } else {
-            // Scroll right by one card width for discrete movement
-            container.scrollLeft += 160; // Move by approximately one card width
-          }
-        }
-      }, 5000); // Move once every 5 seconds
-    };
-
-    if (isAutoScrolling) {
-      startAutoScroll();
-    }
-
-    return () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current);
-      }
-    };
-  }, [isAutoScrolling]);
-
-  // Typing animation effect
-  useEffect(() => {
-    const suggestions = [
-      "Casual weekend outfit for brunch",
-      "Professional look for a job interview",
-      "Date night outfit that's stylish but comfortable",
-      "Summer vacation wardrobe essentials",
-      "Cozy fall layers for the office",
-      "Trendy streetwear inspired by celebrities",
-      "Elegant evening wear for a special event",
-      "Athleisure outfit for running errands",
-    ];
-
-    let currentIndex = 0;
-    let currentText = "";
-    let isDeleting = false;
-    let charIndex = 0;
-
-    const typeText = () => {
-      const currentSuggestion = suggestions[currentIndex];
-
-      if (!isDeleting) {
-        // Typing
-        currentText = currentSuggestion.substring(0, charIndex + 1);
-        charIndex++;
-
-        if (charIndex === currentSuggestion.length) {
-          // Finished typing, wait then start deleting
-          setTimeout(() => {
-            isDeleting = true;
-          }, 2000);
-        }
-      } else {
-        // Deleting
-        currentText = currentSuggestion.substring(0, charIndex - 1);
-        charIndex--;
-
-        if (charIndex === 0) {
-          // Finished deleting, move to next suggestion
-          isDeleting = false;
-          currentIndex = (currentIndex + 1) % suggestions.length;
-        }
-      }
-
-      setCurrentTypingText(currentText);
-
-      // Adjust typing speed
-      const typingSpeed = isDeleting ? 50 : 100;
-      typingTimeoutRef.current = setTimeout(typeText, typingSpeed);
-    };
-
-    if (isTyping && !searchQuery.trim()) {
-      typeText();
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [isTyping, searchQuery]);
-
-  // Handle textarea auto-resize
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
 
-    // Auto-resize textarea
-    const textarea = e.target;
-    textarea.style.height = "auto";
-    const newHeight = Math.min(textarea.scrollHeight, 120); // Max height of ~3 lines
-    textarea.style.height = `${newHeight}px`;
-    setTextareaHeight(`${newHeight}px`);
-
-    // Stop typing animation when user starts typing
-    if (value.trim() && isTyping) {
-      setIsTyping(false);
-      setCurrentTypingText("");
-    } else if (!value.trim() && !isTyping) {
-      setIsTyping(true);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      if (value.trim()) {
+        handleSearch(e);
+      }
+    }, 1000);
   };
 
-  // Celebrity media gallery
-  const celebrityMediaGallery = {
-    "Odell Beckham Jr": [
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-new-3.jpg",
-        duration: 4000,
-        title: "Courtside Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-1.jpg",
-        duration: 4000,
-        title: "Monaco Vibes",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-2.jpg",
-        duration: 4000,
-        title: "AmfAR Gala Cannes",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-3.jpg",
-        duration: 4000,
-        title: "Luxury Lifestyle",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-4.jpg",
-        duration: 4000,
-        title: "Yacht Life",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-5.jpg",
-        duration: 4000,
-        title: "Monaco Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-6.jpg",
-        duration: 4000,
-        title: "Casual Elegance",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-7.jpg",
-        duration: 4000,
-        title: "Street Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-8.jpg",
-        duration: 4000,
-        title: "Fashion Forward",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-9.jpg",
-        duration: 4000,
-        title: "Luxury Details",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-10.jpg",
-        duration: 4000,
-        title: "Designer Pieces",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-11.jpg",
-        duration: 4000,
-        title: "Signature Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-12.jpg",
-        duration: 4000,
-        title: "Casual Cool",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-13.jpg",
-        duration: 4000,
-        title: "Luxury Timepiece",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-14.jpg",
-        duration: 4000,
-        title: "Formal Elegance",
-      },
-    ],
-    Drake: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Studio Sessions",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Luxury Lifestyle",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Designer Fits",
-      },
-    ],
-    "Charli D'Amelio": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "TikTok Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Gen-Z Fashion",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Casual Chic",
-      },
-    ],
-    "Emma Chamberlain": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Vintage Vibes",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Thrift Finds",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Effortless Style",
-      },
-    ],
-    "Serena Williams": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Power Dressing",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Athletic Elegance",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Red Carpet Ready",
-      },
-    ],
-    Zendaya: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Avant-garde Fashion",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Bold Statements",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "High Fashion",
-      },
-    ],
-    "Taylor Swift": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Romantic Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Vintage Romance",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Cottagecore Chic",
-      },
-    ],
-    MrBeast: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Casual Comfort",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Streetwear Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Relaxed Vibes",
-      },
-    ],
-  };
-
-  // Auto-transition media effect
-  useEffect(() => {
-    if (
-      selectedCelebrity &&
-      outfitSuggestions &&
-      celebrityMediaGallery[selectedCelebrity]
-    ) {
-      const currentGallery = celebrityMediaGallery[selectedCelebrity];
-      const currentMedia = currentGallery[currentMediaIndex];
-
-      if (mediaTransitionRef.current) {
-        clearTimeout(mediaTransitionRef.current);
-      }
-
-      mediaTransitionRef.current = setTimeout(() => {
-        setCurrentMediaIndex(
-          (prevIndex) => (prevIndex + 1) % currentGallery.length,
-        );
-      }, currentMedia.duration);
-    }
-
-    return () => {
-      if (mediaTransitionRef.current) {
-        clearTimeout(mediaTransitionRef.current);
-      }
-    };
-  }, [currentMediaIndex, selectedCelebrity, outfitSuggestions]);
-
-  // Reset media index when celebrity changes
-  useEffect(() => {
-    if (selectedCelebrity && celebrityMediaGallery[selectedCelebrity]) {
-      setCurrentMediaIndex(0);
-    }
-  }, [selectedCelebrity]);
-
-  // Celebrity trends data
-  const celebrityTrends: CelebrityTrend[] = [
-    {
-      name: "Odell Beckham Jr",
-      tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Athletic", color: "bg-green-100 text-green-800" },
-        { name: "Fashion-Forward", color: "bg-indigo-100 text-indigo-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
-      image: "/images/odell-beckham-jr-new-3.jpg",
-      fragrance: "Champion Spirit",
-    },
-    {
-      name: "Drake",
-      tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Rapper", color: "bg-yellow-100 text-yellow-800" },
-        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Drake inspired luxury rapper outfit with designer hoodies, premium denim and statement jewelry",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      fragrance: "God's Plan",
-    },
-    {
-      name: "Charli D'Amelio",
-      tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Gen-Z", color: "bg-pink-100 text-pink-800" },
-        { name: "Trendy", color: "bg-green-100 text-green-800" },
-      ],
-      platform: "TikTok",
-      query:
-        "Charli D'Amelio inspired Gen-Z trendy outfit with crop tops, high-waisted jeans and chunky sneakers",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Sweet Dreams",
-    },
-    {
-      name: "Emma Chamberlain",
-      tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
-        { name: "Casual", color: "bg-gray-100 text-gray-800" },
-      ],
-      platform: "Instagram",
-      query:
-        "Emma Chamberlain inspired vintage casual outfit with thrifted pieces and effortless styling",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      fragrance: "Coffee Shop Vibes",
-    },
-    {
-      name: "Serena Williams",
-      tags: [
-        { name: "Athlete", color: "bg-green-100 text-green-800" },
-        { name: "Powerful", color: "bg-red-100 text-red-800" },
-        { name: "Elegant", color: "bg-purple-100 text-purple-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Serena Williams inspired powerful elegant outfit with structured blazers and statement accessories",
-      image:
-        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
-      fragrance: "Champion's Grace",
-    },
-    {
-      name: "Zendaya",
-      tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Bold", color: "bg-orange-100 text-orange-800" },
-        { name: "Avant-garde", color: "bg-red-100 text-red-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Zendaya inspired bold avant-garde outfit with statement pieces and unique silhouettes",
-      image:
-        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
-      fragrance: "Electric Nights",
-    },
-    {
-      name: "Taylor Swift",
-      tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Vintage", color: "bg-pink-100 text-pink-800" },
-        { name: "Romantic", color: "bg-rose-100 text-rose-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Taylor Swift inspired vintage romantic outfit with cardigans and flowing skirts",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Enchanted Garden",
-    },
-    {
-      name: "MrBeast",
-      tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Casual", color: "bg-gray-100 text-gray-800" },
-        { name: "Comfortable", color: "bg-green-100 text-green-800" },
-      ],
-      platform: "YouTube",
-      query:
-        "MrBeast inspired casual comfortable outfit with hoodies, joggers and comfortable sneakers",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      fragrance: "Beast Mode",
-    },
-  ];
-
-  // State for tracking current item indices for each category
-  const [currentItemIndices, setCurrentItemIndices] = useState<{
-    [key: number]: number;
-  }>({});
-
-  // Check authentication status
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-    };
-
-    checkUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const saveLookToBoard = async (
-    outfitData: OutfitSuggestion,
-    celebrityName?: string,
-  ) => {
-    if (!user) {
-      setShowSignInDialog(true);
-      return;
-    }
-
-    try {
-      // Calculate total price for the current selection
-      const groupedItems = {
-        tops: outfitData.tops || [],
-        bottoms: outfitData.bottoms || [],
-        shoes: outfitData.shoes || [],
-        accessories: outfitData.accessories || [],
-      };
-
-      const allCategories = Object.entries(groupedItems).filter(
-        ([_, items]) => items.length > 0,
-      );
-
-      const displayItems = allCategories.map(([category, categoryItems]) => {
-        const currentIndex =
-          currentItemIndices[
-            allCategories.findIndex(([cat]) => cat === category)
-          ] || 0;
-        return categoryItems[currentIndex] || categoryItems[0];
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -window.innerWidth * 0.8,
+        behavior: 'smooth'
       });
-
-      const totalPrice = displayItems.reduce((sum, item) => {
-        const price = parseFloat(item.price.replace(/[$,]/g, "")) || 0;
-        return sum + price;
-      }, 0);
-
-      const { data, error } = await supabase
-        .from("saved_looks")
-        .insert({
-          user_id: user.id,
-          look_data: {
-            outfit: outfitData,
-            selected_items: currentItemIndices,
-            celebrity_data: celebrityName ? { name: celebrityName } : null,
-          },
-          search_query: searchQuery,
-          celebrity_name: celebrityName,
-          total_price: totalPrice,
-        })
-        .select("id")
-        .single();
-
-      if (error) {
-        console.error("Error saving look:", error);
-        alert("Failed to save look. Please try again.");
-        return;
-      }
-
-      if (data) {
-        setSavedLooks((prev) => [...prev, data.id]);
-        alert("Look liked and saved! ✨");
-      }
-    } catch (error) {
-      console.error("Error saving look:", error);
-      alert("Failed to save look. Please try again.");
     }
   };
 
-  const navigateItem = (
-    itemIndex: number,
-    direction: "prev" | "next",
-    allItems: OutfitItem[],
-  ) => {
-    const currentIndex = currentItemIndices[itemIndex] || 0;
-    let newIndex;
-
-    if (direction === "next") {
-      newIndex = currentIndex + 1 >= allItems.length ? 0 : currentIndex + 1;
-    } else {
-      newIndex = currentIndex - 1 < 0 ? allItems.length - 1 : currentIndex - 1;
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: window.innerWidth * 0.8,
+        behavior: 'smooth'
+      });
     }
-
-    setCurrentItemIndices((prev) => ({
-      ...prev,
-      [itemIndex]: newIndex,
-    }));
   };
 
-  const renderOutfitItems = (
-    outfitData: OutfitSuggestion,
-    celebrityName?: string,
-    celebrityData?: { name: string; image: string; fragrance: string },
-  ) => {
-    // Use the structured data from API response
-    const groupedItems = {
-      tops: outfitData.tops || [],
-      bottoms: outfitData.bottoms || [],
-      shoes: outfitData.shoes || [],
-      accessories: outfitData.accessories || [],
+  const handleCarouselMouseEnter = () => {
+    setIsAutoScrolling(false);
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+    }
+  };
+
+  const handleCarouselMouseLeave = () => {
+    setIsAutoScrolling(true);
+    startAutoScroll();
+  };
+
+  const startAutoScroll = () => {
+    if (isAutoScrolling && !autoScrollIntervalRef.current) {
+      autoScrollIntervalRef.current = setInterval(() => {
+        scrollRight();
+      }, 5000);
+    }
+  };
+
+  useEffect(() => {
+    startAutoScroll();
+    return () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
+  }, [isAutoScrolling]);
 
-    const allCategories = Object.entries(groupedItems).filter(
-      ([_, items]) => items.length > 0,
-    );
-    const displayItems = allCategories.map(([category, categoryItems]) => {
-      const currentIndex =
-        currentItemIndices[
-          allCategories.findIndex(([cat]) => cat === category)
-        ] || 0;
-      return categoryItems[currentIndex] || categoryItems[0];
-    });
-
-    const totalPrice = displayItems.reduce((sum, item) => {
-      const price = parseFloat(item.price.replace(/[$,]/g, "")) || 0;
-      return sum + price;
-    }, 0);
+  // Helper function to safely render outfit items
+  const renderOutfitItems = (
+    outfitData: OutfitSuggestion | null,
+    celebrityName?: string,
+    celebrityData?: { name: string; image: string; fragrance: string }
+  ) => {
+    if (!outfitData) return null;
 
     return (
-      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
-        {/* Header with celebrity info */}
-        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0">
-            <img
-              src={
-                celebrityName === "Odell Beckham Jr"
-                  ? "/images/odell-beckham-jr-new-3.jpg"
-                  : celebrityData?.image ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`
-              }
-              alt={celebrityName || "Style AI"}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`;
-              }}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-800 text-lg truncate">
-              {celebrityName || "Urban Stylist AI"}
-            </h3>
-            {celebrityData?.fragrance && (
-              <p className="text-slate-600 text-sm mb-1">
-                🌸 {celebrityData.fragrance}
-              </p>
-            )}
-            <p className="text-gray-500 text-sm">
-              {new Date().toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          <button
-            onClick={() => saveLookToBoard(outfitData, celebrityName)}
-            className="absolute top-3 right-3 p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 z-10"
-          >
-            <svg
-              className={`w-6 h-6 transition-colors ${
-                savedLooks.some((id) => {
-                  // Check if this look combination is already saved
-                  // This is a simplified check - in a real app you'd want more sophisticated matching
-                  return false; // For now, always show unfilled heart
-                })
-                  ? "text-red-500 fill-current"
-                  : "text-gray-400 hover:text-red-400"
-              }`}
-              fill={savedLooks.some((id) => false) ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-        </div>
+      <div className="bg-white">
+        <div className="relative pt-24 pb-32 sm:pt-32 sm:pb-40">
+          <div className="container mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-12">
+              <div
+                className={
+                  outfitSuggestions
+                    ? ""
+                    : "lg:col-span-2 text-center max-w-4xl mx-auto"
+                }
+              >
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
+                    Urban Stylist
+                  </span>{" "}
+                  <span className="text-gray-900">AI</span>
+                </h1>
 
-        {/* Items List with Swipeable Alternatives */}
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-          {allCategories.map(([category, categoryItems], categoryIndex) => {
-            const currentIndex = currentItemIndices[categoryIndex] || 0;
-            const currentItem = categoryItems[currentIndex] || categoryItems[0];
-            const hasAlternatives = categoryItems.length > 1;
+                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+                  Discover complete outfit ideas with high-end options and
+                  budget-friendly alternatives
+                </p>
 
-            return (
-              <div key={category} className="relative">
-                <a
-                  href={currentItem.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block hover:bg-gray-50 rounded-lg transition-colors p-3 border border-gray-100"
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Navigation Buttons */}
-                    {hasAlternatives && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            navigateItem(categoryIndex, "prev", categoryItems);
-                          }}
-                          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
-                        >
-                          <ChevronLeft className="w-4 h-4 text-gray-600" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            navigateItem(categoryIndex, "next", categoryItems);
-                          }}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
-                        >
-                          <ChevronRight className="w-4 h-4 text-gray-600" />
-                        </button>
-                      </>
-                    )}
-
-                    {/* Item Image */}
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {currentItem.image_url ? (
-                        <img
-                          src={currentItem.image_url}
-                          alt={currentItem.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove(
-                              "hidden",
-                            );
-                          }}
+                {/* AI Search Bar - Only show if showSearch is true */}
+                {showSearch && (
+                  <div className="max-w-2xl mx-auto mb-12 px-4">
+                    <form onSubmit={handleSearch} className="relative">
+                      <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-300">
+                        <textarea
+                          value={searchQuery}
+                          onChange={handleTextareaChange}
+                          placeholder={
+                            searchQuery.trim()
+                              ? "Describe your style or ask for outfit ideas..."
+                              : currentTypingText ||
+                                "Describe your style or ask for outfit ideas..."
+                          }
+                          className="w-full px-4 sm:px-6 py-4 pr-20 sm:pr-32 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
+                          disabled={isLoading}
+                          rows={1}
+                          style={{ height: searchQuery ? textareaHeight : "56px" }}
                         />
-                      ) : (
-                        <ShoppingBag className="w-6 h-6 text-gray-400" />
-                      )}
-                    </div>
-
-                    {/* Item Details */}
-                    <div className="flex-1 min-w-0 mr-2">
-                      <div className="flex items-start justify-between mb-1">
-                        <h4 className="font-semibold text-gray-900 text-base truncate">
-                          {currentItem.brand}
-                        </h4>
-                        <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
-                      </div>
-                      <p className="text-gray-600 text-sm truncate mb-1">
-                        {currentItem.name}
-                      </p>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            currentItem.store_badge ||
-                            "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {currentItem.website}
-                        </div>
-                        {currentItem.celebrity_worn && (
-                          <div className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-800 px-2 py-1 rounded-full text-xs font-medium border border-slate-200">
-                            ⭐ Celebrity Worn
+                        <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 flex items-center gap-1 sm:gap-2">
+                          <div className="text-xs text-gray-400 hidden md:block">
+                            {promptCount}/7 free
                           </div>
-                        )}
-                        {currentItem.availability === "Limited Stock" && (
-                          <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
-                            Limited
-                          </div>
-                        )}
-                        {currentItem.availability === "In Stock" && (
-                          <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                            In Stock
-                          </div>
-                        )}
-                        {currentItem.availability === "Sold Out" && (
-                          <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                            Sold Out
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-gray-900 text-base">
-                            {currentItem.price}
-                          </p>
-                          {currentItem.original_price && (
-                            <p className="text-sm text-gray-500 line-through">
-                              {currentItem.original_price}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {hasAlternatives && (
-                            <div className="flex gap-1">
-                              {categoryItems.map((_, index) => (
-                                <div
-                                  key={index}
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    index === currentIndex
-                                      ? "bg-gray-800"
-                                      : "bg-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          )}
+                          <button
+                            type="submit"
+                            disabled={isLoading || !searchQuery.trim()}
+                            className="px-2 sm:px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-500 text-white rounded-xl hover:from-violet-600 hover:to-pink-600 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0"
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="hidden sm:inline">Styling...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">Style</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    </form>
                   </div>
-                </a>
-              </div>
-            );
-          })}
-        </div>
+                )}
 
-        {/* Total */}
-        <div className="border-t border-gray-200 p-4 flex-shrink-0">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-gray-600 text-base">Total:</span>
-            <span className="font-bold text-gray-900 text-xl">
-              ${totalPrice.toLocaleString()}
-            </span>
-          </div>
-
-          {/* View Full Look Button */}
-          <button
-            onClick={() => {
-              setSelectedLookData({
-                outfit: outfitData,
-                celebrity: celebrityName,
-                celebrityData,
-              });
-              setShowLookModal(true);
-            }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-            View Full Look
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="bg-white">
-      <div className="relative pt-24 pb-32 sm:pt-32 sm:pb-40">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col" id="hero-content">
-            <div className="text-center max-w-4xl mx-auto w-full">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600">
-                  Urban Stylist
-                </span>{" "}
-                <span className="text-gray-900">AI</span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-                Discover complete outfit ideas with high-end options and
-                budget-friendly alternatives
-              </p>
-
-              {/* AI Search Bar - Only show if showSearch is true */}
-              {showSearch && (
-                <div className="max-w-2xl mx-auto mb-12 px-4">
-                  <form onSubmit={handleSearch} className="relative">
-                    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-slate-500/20 focus-within:border-slate-300">
-                      <textarea
-                        value={searchQuery}
-                        onChange={handleTextareaChange}
-                        placeholder={
-                          searchQuery.trim()
-                            ? "Describe your style or ask for outfit ideas..."
-                            : currentTypingText ||
-                              "Describe your style or ask for outfit ideas..."
-                        }
-                        className="w-full px-4 sm:px-6 py-4 pr-20 sm:pr-32 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
-                        disabled={isLoading}
-                        rows={1}
-                        style={{
-                          height: searchQuery ? textareaHeight : "56px",
-                        }}
-                      />
-                      <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 flex items-center gap-1 sm:gap-2">
-                        <div className="text-xs text-gray-400 hidden md:block">
-                          {promptCount}/7 free
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={isLoading || !searchQuery.trim()}
-                          className="px-2 sm:px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0"
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span className="hidden sm:inline">
-                                Styling...
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4" />
-                              <span className="hidden sm:inline">Style</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              )}
-
-              {/* Outfit Suggestions Panel - Show below search area */}
-              {outfitSuggestions && showSearch && (
-                <div className="container mx-auto mb-12 px-4">
-                  <div className="flex flex-col gap-8">
-                    {/* Top - Try Another Search button */}
-                    <div className="text-center">
+                {/* Outfit Suggestions Panel - Show at bottom of search area */}
+                {outfitSuggestions && showSearch && (
+                  <div className="max-w-2xl mx-auto mb-12 px-4">
+                    <div className="text-center mb-6">
                       <button
                         onClick={() => {
                           setOutfitSuggestions(null);
                           setSelectedCelebrity(null);
                           setCurrentItemIndices({});
                         }}
-                        className="text-slate-600 hover:text-slate-700 text-sm underline mb-4"
+                        className="text-violet-600 hover:text-violet-700 text-sm underline mb-4"
                       >
                         Try Another Search
                       </button>
                     </div>
 
-                    {/* Content area with outfit display and style inspiration side by side */}
-                    <div className="flex flex-col lg:flex-row gap-6 justify-center items-stretch">
-                      {/* Left side - Outfit display */}
-                      <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
-                        {(() => {
-                          // Show loading state
-                          if ((outfitSuggestions as any)?.loading) {
-                            return (
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
-                                {/* Header with celebrity info */}
-                                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
-                                  <div className="flex-1">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-                                  </div>
+                    <div className="flex justify-center">
+                      {(() => {
+                        // Show loading state
+                        if ((outfitSuggestions as any)?.loading) {
+                          return (
+                            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-auto border border-gray-200 overflow-hidden">
+                              {/* Header with celebrity info */}
+                              <div className="flex items-center gap-3 p-4 bg-gray-50">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-200 to-pink-200 animate-pulse" />
+                                <div className="flex-1">
+                                  <div className="h-5 bg-gray-300 rounded animate-pulse w-24 mb-2" />
+                                  <div className="h-4 bg-gray-300 rounded animate-pulse w-20" />
                                 </div>
+                                <div className="w-6 h-6 bg-gray-300 rounded animate-pulse" />
+                              </div>
 
-                                {/* Loading items */}
-                                <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-                                  {[1, 2, 3, 4].map((i) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg"
-                                    >
-                                      <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse" />
-                                      <div className="flex-1">
-                                        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                        <div className="h-3 bg-gray-200 rounded animate-pulse mb-2 w-3/4" />
-                                        <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
-                                      </div>
+                              {/* Outfit items */}
+                              <div className="p-4 space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-4 py-2"
+                                  >
+                                    <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse" />
+                                    <div className="flex-1">
+                                      <div className="h-4 bg-gray-300 rounded animate-pulse w-20 mb-2" />
+                                      <div className="h-3 bg-gray-300 rounded animate-pulse w-32 mb-2" />
+                                      <div className="h-4 bg-gray-300 rounded animate-pulse w-16" />
                                     </div>
-                                  ))}
-                                </div>
-
-                                {/* Loading total */}
-                                <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                                  <div className="flex items-center justify-between mb-4">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-                                    <div className="h-6 bg-gray-200 rounded animate-pulse w-20" />
+                                    <div className="w-4 h-4 bg-gray-300 rounded animate-pulse" />
                                   </div>
-                                  <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
+                                ))}
+                              </div>
+
+                              {/* Total */}
+                              <div className="border-t border-gray-200 p-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600 text-base">
+                                    Loading...
+                                  </span>
+                                  <div className="h-6 bg-gray-300 rounded animate-pulse w-20" />
                                 </div>
                               </div>
-                            );
-                          }
-
-                          // Show actual outfit suggestions
-                          return renderOutfitItems(
-                            outfitSuggestions,
-                            selectedCelebrity || undefined,
-                            selectedCelebrity
-                              ? celebrityTrends.find(
-                                  (trend) => trend.name === selectedCelebrity,
-                                )
-                              : undefined,
+                            </div>
                           );
-                        })()}
-                      </div>
+                        }
 
-                      {/* Right side - Style Inspiration Gallery */}
-                      <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
-                        {isStyleLoading ? (
-                          // Loading state for style inspiration
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
-                            {/* Header */}
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
-                              <div className="flex-1">
-                                <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-                              </div>
-                            </div>
-                            {/* Loading content */}
-                            <div className="p-4 flex-1 flex flex-col">
-                              <div className="flex-1 bg-gray-200 rounded-lg animate-pulse min-h-[400px]" />
-                              <div className="mt-4 text-center flex-shrink-0">
-                                <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 mx-auto w-32" />
-                                <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-24" />
-                              </div>
-                            </div>
-                            {/* Loading footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
-                            {/* Header */}
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                <Star className="w-6 h-6 text-slate-600" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 text-lg truncate">
-                                  Style Inspiration
-                                </h3>
-                                <p className="text-gray-500 text-sm">
-                                  Trending looks
-                                </p>
-                              </div>
-                            </div>
+                        // Enhanced celebrity detection from search query and trending clicks
+                        const detectCelebrity = (query: string) => {
+                          const lowerQuery = query.toLowerCase();
 
-                            {/* Single Featured Content - Celebrity Images */}
-                            <div className="flex-1 p-4 flex flex-col">
-                              {selectedCelebrity &&
-                              celebrityMediaGallery[selectedCelebrity] ? (
-                                // Show dynamic media for selected celebrity
-                                <div className="flex-1 w-full">
-                                  <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative min-h-[400px]">
-                                    <img
-                                      src={
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ][currentMediaIndex]?.src
-                                      }
-                                      alt={
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ][currentMediaIndex]?.title
-                                      }
-                                      className="w-full h-full object-cover transition-opacity duration-500"
-                                      style={{
-                                        objectFit: "cover",
-                                        width: "100%",
-                                        height: "100%",
-                                      }}
-                                      onError={(e) => {
-                                        const target =
-                                          e.target as HTMLImageElement;
-                                        target.src =
-                                          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                      }}
-                                    />
+                          // Celebrity data with images and fragrances
+                          const celebrities = {
+                            "Bella Hadid": {
+                              image:
+                                "https://hips.hearstapps.com/hmg-prod/images/bella-hadid-is-seen-on-february-25-2023-in-paris-france-news-photo-1677419264.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                              fragrance: "Orebella Nightcap",
+                            },
+                            "Michael B. Jordan": {
+                              image:
+                                "https://www.gq.com/verso/static/gq/assets/michael-b-jordan-style-evolution-gq-2023-tout.jpg",
+                              fragrance: "Coach For Men",
+                            },
+                            Zendaya: {
+                              image:
+                                "https://hips.hearstapps.com/hmg-prod/images/zendaya-attends-the-dune-part-two-world-premiere-at-news-photo-1708439058.jpg?crop=0.66667xw:1xh;center,top&resize=1200:*",
+                              fragrance: "Lancôme Idôle",
+                            },
+                            "A$AP Rocky": {
+                              image:
+                                "https://www.gq.com/verso/static/gq/assets/asap-rocky-style-evolution-gq-2023.jpg",
+                              fragrance: "Dior Sauvage",
+                            },
+                            Rihanna: {
+                              image:
+                                "https://hips.hearstapps.com/hmg-prod/images/rihanna-is-seen-on-february-12-2023-in-paris-france-news-photo-1676230847.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                              fragrance: "Fenty Eau de Parfum",
+                            },
+                            "Tyler, The Creator": {
+                              image:
+                                "https://www.gq.com/verso/static/gq/assets/tyler-the-creator-style-evolution-gq-2023.jpg",
+                              fragrance: "Le Labo Santal 33",
+                            },
+                          };
 
-                                    {/* Media indicators */}
-                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1">
-                                      {celebrityMediaGallery[
-                                        selectedCelebrity
-                                      ].map((_, index) => (
-                                        <div
-                                          key={index}
-                                          className={`w-2 h-2 rounded-full transition-colors ${
-                                            index === currentMediaIndex
-                                              ? "bg-white"
-                                              : "bg-white/50"
-                                          }`}
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                // Show default image for no celebrity selected
-                                <div className="flex-1 rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer border border-gray-100 min-h-[400px]">
+                          // More comprehensive celebrity detection
+                          if (
+                            lowerQuery.includes("bella hadid") ||
+                            lowerQuery.includes("bella")
+                          )
+                            return {
+                              name: "Bella Hadid",
+                              ...celebrities["Bella Hadid"],
+                            };
+                          if (
+                            lowerQuery.includes("michael b") ||
+                            lowerQuery.includes("michael")
+                          )
+                            return {
+                              name: "Michael B. Jordan",
+                              ...celebrities["Michael B. Jordan"],
+                            };
+                          if (lowerQuery.includes("zendaya"))
+                            return { name: "Zendaya", ...celebrities["Zendaya"] };
+                          if (
+                            lowerQuery.includes("asap") ||
+                            lowerQuery.includes("rocky") ||
+                            lowerQuery.includes("a$ap")
+                          )
+                            return {
+                              name: "A$AP Rocky",
+                              ...celebrities["A$AP Rocky"],
+                            };
+                          if (lowerQuery.includes("rihanna"))
+                            return { name: "Rihanna", ...celebrities["Rihanna"] };
+                          if (
+                            lowerQuery.includes("tyler") ||
+                            lowerQuery.includes("creator")
+                          )
+                            return {
+                              name: "Tyler, The Creator",
+                              ...celebrities["Tyler, The Creator"],
+                            };
+
+                          return undefined;
+                        };
+
+                        const celebrityData = detectCelebrity(searchQuery);
+
+                        return renderOutfitItems(
+                          outfitSuggestions,
+                          celebrityData?.name,
+                          celebrityData,
+                        );
+                      })()
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Trending Styles Carousel or Celebrity Looks - Only show if no outfit suggestions and showSearch is true */}
+              {!outfitSuggestions && showSearch && (
+                <div className="max-w-7xl mx-auto mb-12">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                      {selectedCelebrity ? selectedCelebrity : "Trending"}
+                    </h3>
+                  </div>
+
+                  {/* Carousel Container or Celebrity Looks */}
+                  {selectedCelebrity ? (
+                    /* Celebrity Looks Tinder-style Cards */
+                    <div className="relative max-w-sm mx-auto">
+                      {/* Card Stack */}
+                      <div className="relative h-96">
+                        {Array.from({ length: Math.min(4, 4) }, (_, index) => {
+                          const cardIndex = (currentCelebLookIndex + index) % 4;
+                          const imageId = 1441986300917 + cardIndex * 123456789;
+                          const isActive = index === 0;
+                          const zIndex = 4 - index;
+                          const scale = 1 - index * 0.05;
+                          const translateY = index * 8;
+
+                          return (
+                            <div
+                              key={cardIndex}
+                              className={`absolute inset-0 transition-all duration-300 ${
+                                isActive
+                                  ? "cursor-pointer"
+                                  : "pointer-events-none"
+                              }`}
+                              style={{
+                                zIndex,
+                                transform: `scale(${scale}) translateY(${translateY}px)`,
+                                opacity: index < 3 ? 1 : 0,
+                              }}
+                            >
+                              <button
+                                onClick={() => {
+                                  if (isActive) {
+                                    handleStyleClick(
+                                      `${selectedCelebrity} look ${cardIndex + 1} outfit inspiration`,
+                                    );
+                                  }
+                                }}
+                                className="w-full h-full group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl"
+                                disabled={!isActive}
+                              >
+                                <div className="relative w-full h-full">
                                   <img
-                                    src="/images/style-inspiration.jpg"
-                                    alt="Featured style inspiration"
-                                    className="w-full h-full object-cover"
+                                    src={`https://images.unsplash.com/photo-${imageId}?w=400&h=600&fit=crop&auto=format`}
+                                    alt={`${selectedCelebrity} Look ${cardIndex + 1}`}
+                                    className="w-full h-full object-cover rounded-lg"
                                     onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.src =
-                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                      const target = e.target as HTMLImageElement;
+                                      target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=250&fit=crop&auto=format`;
                                     }}
                                   />
-                                </div>
-                              )}
-                              <div className="mt-4 text-center flex-shrink-0">
-                                <h4 className="font-semibold text-gray-900 mb-1">
-                                  {selectedCelebrity &&
-                                  celebrityMediaGallery[selectedCelebrity]
-                                    ? celebrityMediaGallery[selectedCelebrity][
-                                        currentMediaIndex
-                                      ]?.title || "Celebrity Style"
-                                    : "Street Style Vibes"}
-                                </h4>
-                                <p className="text-gray-600 text-sm">
-                                  {selectedCelebrity &&
-                                  celebrityMediaGallery[selectedCelebrity]
-                                    ? "Celebrity Fashion Moments"
-                                    : "Effortless urban fashion"}
-                                </p>
-                              </div>
-                            </div>
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent rounded-lg" />
 
-                            {/* Footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  />
-                                </svg>
-                                View More Styles
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Celebrity Trends Section - Only show if no outfit suggestions and showSearch is true */}
-              {!outfitSuggestions && showSearch && (
-                <div className="max-w-6xl mx-auto px-4">
-                  <div className="text-center mb-8">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                      Trending Celebrity Styles
-                    </h2>
-                    <p className="text-gray-600 text-sm sm:text-base">
-                      Get inspired by your favorite celebrities' latest looks
-                    </p>
-                  </div>
-
-                  {/* Auto-scrolling celebrity cards */}
-                  <div className="relative">
-                    <div
-                      ref={scrollContainerRef}
-                      className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
-                      style={{
-                        scrollBehavior: "smooth",
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                      }}
-                      onMouseEnter={() => setIsAutoScrolling(false)}
-                      onMouseLeave={() => setIsAutoScrolling(true)}
-                    >
-                      {/* Duplicate the array to create seamless loop */}
-                      {[...celebrityTrends, ...celebrityTrends].map(
-                        (trend, index) => (
-                          <div
-                            key={`${trend.name}-${index}`}
-                            className="flex-shrink-0 w-40 cursor-pointer group"
-                            onClick={() =>
-                              handleStyleClick(trend.query, trend.name)
-                            }
-                          >
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                              <div className="aspect-square overflow-hidden">
-                                <img
-                                  src={trend.image}
-                                  alt={trend.name}
-                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                />
-                              </div>
-                              <div className="p-3">
-                                <h3 className="font-semibold text-gray-900 text-sm mb-2 truncate">
-                                  {trend.name}
-                                </h3>
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                  {trend.tags
-                                    .slice(0, 1)
-                                    .map((tag, tagIndex) => (
-                                      <span
+                                  <div className="absolute top-2 left-2 right-2 flex flex-wrap gap-1">
+                                    {[
+                                      {
+                                        name: "Celebrity",
+                                        color:
+                                          "bg-gradient-to-r from-yellow-400 to-orange-500",
+                                      },
+                                      {
+                                        name: "TikTok",
+                                        color:
+                                          "bg-gradient-to-r from-blue-400 to-pink-500",
+                                      },
+                                    ].map((tag, tagIndex) => (
+                                      <div
                                         key={tagIndex}
-                                        className={`px-2 py-1 rounded-full text-xs font-medium ${tag.color}`}
+                                        className={`px-2 py-1 rounded-full text-xs font-medium text-white ${tag.color} shadow-lg`}
                                       >
                                         {tag.name}
-                                      </span>
+                                      </div>
                                     ))}
-                                  {trend.platform !== "Celebrity" && (
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        trend.platform === "Instagram"
-                                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                          : trend.platform === "TikTok"
-                                            ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
-                                            : trend.platform === "YouTube"
-                                              ? "bg-red-600 text-white"
-                                              : "bg-gray-100 text-gray-700"
-                                      }`}
-                                    >
-                                      {trend.platform}
-                                    </span>
-                                  )}
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                                    <h4 className="text-white font-semibold text-sm leading-tight mb-1">
+                                      {selectedCelebrity}
+                                    </h4>
+                                    <p className="text-gray-200 text-xs">
+                                      Click to style
+                                    </p>
+                                  </div>
+
+                                  {/* Hover Effect */}
+                                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
                                 </div>
-                                <div className="flex items-center text-slate-600 text-xs font-medium">
-                                  <Sparkles className="w-3 h-3 mr-1" />
-                                  Get the look
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Navigation Controls */}
+                      <div className="flex justify-center items-center gap-4 mt-6">
+                        <button
+                          onClick={() =>
+                            setCurrentCelebLookIndex((prev) => (prev - 1 + 4) % 4)
+                          }
+                          className="p-3 bg-white hover:bg-gray-50 rounded-full shadow-lg border border-gray-200 transition-colors"
+                        >
+                          <ChevronLeft className="w-5 h-5 text-gray-600" />
+                        </button>
+
+                        <div className="flex gap-2">
+                          {Array.from({ length: 4 }, (_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentCelebLookIndex(index)}
+                              className={`w-2 h-2 rounded-full transition-colors ${
+                                index === currentCelebLookIndex
+                                  ? "bg-violet-600"
+                                  : "bg-gray-300 hover:bg-gray-400"
+                              }`}
+                            />
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            setCurrentCelebLookIndex((prev) => (prev + 1) % 4)
+                          }
+                          className="p-3 bg-white hover:bg-gray-50 rounded-full shadow-lg border border-gray-200 transition-colors"
+                        >
+                          <ChevronRight className="w-5 h-5 text-gray-600" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Original Trending Carousel */
+                    <div className="relative">
+                      {/* Left Arrow */}
+                      <button
+                        onClick={scrollLeft}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 border border-violet-200 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-violet-600" />
+                      </button>
+
+                      {/* Right Arrow */}
+                      <button
+                        onClick={scrollRight}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 border border-violet-200 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
+                        <ChevronRight className="w-5 h-5 text-violet-600" />
+                      </button>
+
+                      {/* Scrollable Container */}
+                      <div
+                        ref={scrollContainerRef}
+                        className="flex space-x-4 overflow-x-auto scrollbar-hide px-4 sm:px-8 md:px-12 py-4"
+                        style={{
+                          scrollbarWidth: "none",
+                          msOverflowStyle: "none",
+                        }}
+                        onMouseEnter={handleCarouselMouseEnter}
+                        onMouseLeave={handleCarouselMouseLeave}
+                      >
+                        {[
+                          // Mix of celebrities and influencers with real images and fragrance info
+                          {
+                            name: "Bella Hadid",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "TikTok",
+                                color:
+                                  "bg-gradient-to-r from-blue-400 to-pink-500",
+                              },
+                            ],
+                            query: "Bella Hadid TikTok viral street style outfit",
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/bella-hadid-is-seen-on-february-25-2023-in-paris-france-news-photo-1677419264.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                            fragrance: "Orebella Nightcap",
+                          },
+                          {
+                            name: "Emma Chamberlain",
+                            tags: [
+                              {
+                                name: "Influencer",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-purple-500",
+                              },
+                              {
+                                name: "YouTube",
+                                color: "bg-gradient-to-r from-red-500 to-red-600",
+                              },
+                            ],
+                            query:
+                              "Emma Chamberlain casual influencer street style",
+                            image:
+                              "https://media.glamour.com/photos/62a7c7b4b4f6c9b8b5b5b5b5/master/w_1600%2Cc_limit/emma-chamberlain-met-gala-2022.jpg",
+                            fragrance: "Glossier Olivia Rodrigo",
+                          },
+                          {
+                            name: "Michael B. Jordan",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Streetwear",
+                                color:
+                                  "bg-gradient-to-r from-gray-400 to-gray-600",
+                              },
+                            ],
+                            query:
+                              "Michael B Jordan streetwear casual celebrity outfit",
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/michael-b-jordan-style-evolution-gq-2023-tout.jpg",
+                            fragrance: "Coach For Men",
+                          },
+                          {
+                            name: "Zendaya",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Fashion Week",
+                                color:
+                                  "bg-gradient-to-r from-red-400 to-pink-500",
+                              },
+                            ],
+                            query: "Zendaya red carpet inspired street outfit",
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/zendaya-attends-the-dune-part-two-world-premiere-at-news-photo-1708439058.jpg?crop=0.66667xw:1xh;center,top&resize=1200:*",
+                            fragrance: "Lancôme Idôle",
+                          },
+                          {
+                            name: "A$AP Rocky",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Streetwear",
+                                color:
+                                  "bg-gradient-to-r from-gray-400 to-gray-600",
+                              },
+                            ],
+                            query:
+                              "ASAP Rocky streetwear fashion celebrity outfit",
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/asap-rocky-style-evolution-gq-2023.jpg",
+                            fragrance: "Dior Sauvage",
+                          },
+                          {
+                            name: "Rihanna",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Fenty",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-red-500",
+                              },
+                            ],
+                            query: "Rihanna casual street style celebrity outfit",
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/rihanna-is-seen-on-february-12-2023-in-paris-france-news-photo-1676230847.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                            fragrance: "Fenty Eau de Parfum",
+                          },
+                          {
+                            name: "Tyler, The Creator",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Golf Wang",
+                                color:
+                                  "bg-gradient-to-r from-green-400 to-blue-500",
+                              },
+                            ],
+                            query:
+                              "Tyler the Creator Golf Wang colorful streetwear",
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/tyler-the-creator-style-evolution-gq-2023.jpg",
+                            fragrance: "Le Labo Santal 33",
+                          },
+                          {
+                            name: "SZA",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "R&B Style",
+                                color:
+                                  "bg-gradient-to-r from-purple-500 to-pink-500",
+                              },
+                            ],
+                            query: "SZA R&B singer casual street style outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Frank Ocean",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Minimalist",
+                                color:
+                                  "bg-gradient-to-r from-gray-400 to-gray-600",
+                              },
+                            ],
+                            query:
+                              "Frank Ocean minimalist aesthetic street style",
+                            image:
+                              "https://images.unsplash.com/photo-1507003211169-00dcc994a43e?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Solange",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Avant-garde",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-red-500",
+                              },
+                            ],
+                            query: "Solange avant garde artistic fashion outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Kendrick Lamar",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Hip-Hop",
+                                color:
+                                  "bg-gradient-to-r from-red-400 to-orange-500",
+                              },
+                            ],
+                            query: "Kendrick Lamar hip hop street style outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Lupita Nyong'o",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Elegant",
+                                color:
+                                  "bg-gradient-to-r from-purple-400 to-pink-500",
+                              },
+                            ],
+                            query: "Lupita Nyongo elegant street style outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Donald Glover",
+                            tags: [
+                              {
+                                name: "Celebrity",
+                                color:
+                                  "bg-gradient-to-r from-yellow-400 to-orange-500",
+                              },
+                              {
+                                name: "Creative",
+                                color:
+                                  "bg-gradient-to-r from-green-400 to-blue-500",
+                              },
+                            ],
+                            query: "Donald Glover creative casual street outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "James Charles",
+                            tags: [
+                              {
+                                name: "Influencer",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-purple-500",
+                              },
+                              {
+                                name: "Beauty",
+                                color:
+                                  "bg-gradient-to-r from-purple-400 to-pink-400",
+                              },
+                            ],
+                            query:
+                              "James Charles colorful beauty influencer outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Addison Rae",
+                            tags: [
+                              {
+                                name: "Influencer",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-purple-500",
+                              },
+                              {
+                                name: "TikTok",
+                                color:
+                                  "bg-gradient-to-r from-blue-400 to-pink-500",
+                              },
+                            ],
+                            query: "Addison Rae TikTok influencer casual outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Nikkie Tutorials",
+                            tags: [
+                              {
+                                name: "Influencer",
+                                color:
+                                  "bg-gradient-to-r from-pink-400 to-purple-500",
+                              },
+                              {
+                                name: "YouTube",
+                                color: "bg-gradient-to-r from-red-500 to-red-600",
+                              },
+                            ],
+                            query:
+                              "Nikkie Tutorials bold makeup influencer style",
+                            image:
+                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Y2K Revival",
+                            tags: [
+                              {
+                                name: "TikTok",
+                                color:
+                                  "bg-gradient-to-r from-blue-400 to-pink-500",
+                              },
+                            ],
+                            query:
+                              "Y2K fashion low rise jeans crop top TikTok trend",
+                            image:
+                              "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Clean Girl Aesthetic",
+                            tags: [
+                              {
+                                name: "Instagram",
+                                color:
+                                  "bg-gradient-to-r from-purple-500 to-pink-500",
+                              },
+                            ],
+                            query:
+                              "clean girl aesthetic minimal Instagram outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Cargo Pants Trend",
+                            tags: [
+                              {
+                                name: "TikTok",
+                                color:
+                                  "bg-gradient-to-r from-blue-400 to-pink-500",
+                              },
+                            ],
+                            query: "cargo pants streetwear TikTok outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Dark Academia",
+                            tags: [
+                              {
+                                name: "Instagram",
+                                color:
+                                  "bg-gradient-to-r from-purple-500 to-pink-500",
+                              },
+                            ],
+                            query: "dark academia blazer vintage Instagram style",
+                            image:
+                              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Oversized Blazers",
+                            tags: [
+                              {
+                                name: "TikTok",
+                                color:
+                                  "bg-gradient-to-r from-blue-400 to-pink-500",
+                              },
+                            ],
+                            query: "oversized blazer streetwear TikTok outfit",
+                            image:
+                              "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=200&h=250&fit=crop&auto=format",
+                          },
+                          {
+                            name: "Cottagecore Vibes",
+                            tags: [
+                              {
+                                name: "Instagram",
+                                color:
+                                  "bg-gradient-to-r from-purple-500 to-pink-500",
+                              },
+                            ],
+                            query: "cottagecore aesthetic flowy dress Instagram",
+                            image:
+                              "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=200&h=250&fit=crop&auto=format",
+                          },
+                        ].map((trend, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleStyleClick(trend.query, trend.name)}
+                            className="flex-shrink-0 group relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-105"
+                          >
+                            <div className="relative w-32 sm:w-36 md:w-40 h-44 sm:h-48 md:h-52">
+                              {/* Background Image */}
+                              <img
+                                src={trend.image}
+                                alt={trend.name}
+                                className="w-full h-full object-cover rounded-lg"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=250&fit=crop&auto=format`;
+                                }}
+                              />
+
+                              {/* Gradient Overlay */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent rounded-lg" />
+
+                              {/* Multiple Tags */}
+                              <div className="absolute top-2 left-2 right-2 flex flex-wrap gap-1">
+                                {trend.tags.map((tag, tagIndex) => (
+                                  <div
+                                    key={tagIndex}
+                                    className={`px-2 py-1 rounded-full text-xs font-medium text-white ${tag.color} shadow-lg`}
+                                  >
+                                    {tag.name}
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Content */}
+                              <div className="absolute bottom-0 left-0 right-0 p-3">
+                                <h4 className="text-white font-semibold text-sm leading-tight mb-1">
+                                  {trend.name}
+                                </h4>
+                                <p className="text-gray-200 text-xs">
+                                  Click to style
+                                </p>
+                              </div>
+
+                              {/* Hover Effect */}
+                              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <style jsx>{`
+                  .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  }
+                  .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
+
+                {!outfitSuggestions && showSearch && (
+                  <>
+                    <div className="flex justify-center items-center mb-12">
+                      <Link
+                        href="/dashboard"
+                        className="inline-flex items-center px-8 py-4 text-gray-700 bg-white border border-violet-200 rounded-lg hover:bg-violet-50 transition-colors text-lg font-medium shadow-lg hover:shadow-xl"
+                      >
+                        Get Started
+                        <ArrowUpRight className="ml-2 w-5 h-5" />
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Outfit Suggestions Panel */}
+              {outfitSuggestions && (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <button
+                      onClick={() => {
+                        setOutfitSuggestions(null);
+                        setSelectedCelebrity(null);
+                        setCurrentItemIndices({});
+                      }}
+                      className="text-violet-600 hover:text-violet-700 text-sm underline mb-4"
+                    >
+                      Try Another Search
+                    </button>
+                  </div>
+
+                  <div className="flex justify-center">
+                    {(() => {
+                      // Show loading state
+                      if ((outfitSuggestions as any)?.loading) {
+                        return (
+                          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-auto border border-gray-200 overflow-hidden">
+                            {/* Header with celebrity info */}
+                            <div className="flex items-center gap-3 p-4 bg-gray-50">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-200 to-pink-200 animate-pulse" />
+                              <div className="flex-1">
+                                <div className="h-5 bg-gray-300 rounded animate-pulse w-24 mb-2" />
+                                <div className="h-4 bg-gray-300 rounded animate-pulse w-20" />
+                              </div>
+                              <div className="w-6 h-6 bg-gray-300 rounded animate-pulse" />
+                            </div>
+
+                            {/* Outfit items */}
+                            <div className="p-4 space-y-4">
+                              {[1, 2, 3].map((i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center gap-4 py-2"
+                                >
+                                  <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse" />
+                                  <div className="flex-1">
+                                    <div className="h-4 bg-gray-300 rounded animate-pulse w-20 mb-2" />
+                                    <div className="h-3 bg-gray-300 rounded animate-pulse w-32 mb-2" />
+                                    <div className="h-4 bg-gray-300 rounded animate-pulse w-16" />
+                                  </div>
+                                  <div className="w-4 h-4 bg-gray-300 rounded animate-pulse" />
                                 </div>
+                              ))}
+                            </div>
+
+                            {/* Total */}
+                            <div className="border-t border-gray-200 p-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600 text-base">
+                                  Loading...
+                                </span>
+                                <div className="h-6 bg-gray-300 rounded animate-pulse w-20" />
                               </div>
                             </div>
                           </div>
-                        ),
-                      )}
-                    </div>
+                        );
+                      }
+
+                      // Enhanced celebrity detection from search query and trending clicks
+                      const detectCelebrity = (query: string) => {
+                        const lowerQuery = query.toLowerCase();
+
+                        // Celebrity data with images and fragrances
+                        const celebrities = {
+                          "Bella Hadid": {
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/bella-hadid-is-seen-on-february-25-2023-in-paris-france-news-photo-1677419264.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                            fragrance: "Orebella Nightcap",
+                          },
+                          "Michael B. Jordan": {
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/michael-b-jordan-style-evolution-gq-2023-tout.jpg",
+                            fragrance: "Coach For Men",
+                          },
+                          Zendaya: {
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/zendaya-attends-the-dune-part-two-world-premiere-at-news-photo-1708439058.jpg?crop=0.66667xw:1xh;center,top&resize=1200:*",
+                            fragrance: "Lancôme Idôle",
+                          },
+                          "A$AP Rocky": {
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/asap-rocky-style-evolution-gq-2023.jpg",
+                            fragrance: "Dior Sauvage",
+                          },
+                          Rihanna: {
+                            image:
+                              "https://hips.hearstapps.com/hmg-prod/images/rihanna-is-seen-on-february-12-2023-in-paris-france-news-photo-1676230847.jpg?crop=0.668xw:1.00xh;0.166xw,0&resize=1200:*",
+                            fragrance: "Fenty Eau de Parfum",
+                          },
+                          "Tyler, The Creator": {
+                            image:
+                              "https://www.gq.com/verso/static/gq/assets/tyler-the-creator-style-evolution-gq-2023.jpg",
+                            fragrance: "Le Labo Santal 33",
+                          },
+                        };
+
+                        // More comprehensive celebrity detection
+                        if (
+                          lowerQuery.includes("bella hadid") ||
+                          lowerQuery.includes("bella")
+                        )
+                          return {
+                            name: "Bella Hadid",
+                            ...celebrities["Bella Hadid"],
+                          };
+                        if (
+                          lowerQuery.includes("michael b") ||
+                          lowerQuery.includes("michael")
+                        )
+                          return {
+                            name: "Michael B. Jordan",
+                            ...celebrities["Michael B. Jordan"],
+                          };
+                        if (lowerQuery.includes("zendaya"))
+                          return { name: "Zendaya", ...celebrities["Zendaya"] };
+                        if (
+                          lowerQuery.includes("asap") ||
+                          lowerQuery.includes("rocky") ||
+                          lowerQuery.includes("a$ap")
+                        )
+                          return {
+                            name: "A$AP Rocky",
+                            ...celebrities["A$AP Rocky"],
+                          };
+                        if (lowerQuery.includes("rihanna"))
+                          return { name: "Rihanna", ...celebrities["Rihanna"] };
+                        if (
+                          lowerQuery.includes("tyler") ||
+                          lowerQuery.includes("creator")
+                        )
+                          return {
+                            name: "Tyler, The Creator",
+                            ...celebrities["Tyler, The Creator"],
+                          };
+
+                        return undefined;
+                      };
+
+                      const celebrityData = detectCelebrity(searchQuery);
+
+                      return renderOutfitItems(
+                        outfitSuggestions,
+                        celebrityData?.name,
+                        celebrityData,
+                      );
+                    })()
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Right Column - Show outfit suggestions here when not in search mode */}
-            {outfitSuggestions && !showSearch && (
-              <div className="flex flex-col lg:flex-row gap-8">
-                {/* Left side - Style Inspiration Gallery */}
-                <div className="lg:w-1/3">
-                  <div className="bg-white rounded-xl shadow-md border border-gray-100 mb-4 overflow-hidden">
-                    {/* Header */}
-                    <div className="p-4 border-b border-gray-100">
-                      <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500" /> Style
-                        Inspiration
-                      </h3>
-                    </div>
-
-                    {/* Image Gallery */}
-                    <div className="p-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        {/* Style inspiration images */}
-                        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                          <img
-                            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80"
-                            alt="Street style inspiration"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                          <img
-                            src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&q=80"
-                            alt="Casual chic inspiration"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                          <img
-                            src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80"
-                            alt="Urban fashion inspiration"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                          <img
-                            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80"
-                            alt="Trendy outfit inspiration"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-
-                      {/* View More Button */}
-                      <button className="w-full mt-4 py-2 text-sm text-violet-600 hover:text-violet-700 font-medium transition-colors">
-                        View More Styles
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right side - Outfit display */}
-                <div className="lg:w-2/3">
-                  {(() => {
-                    // Show loading state
-                    if ((outfitSuggestions as any)?.loading) {
-                      return (
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-gray-200 overflow-hidden">
-                          {/* Header with celebrity info */}
-                          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
-                            <div className="flex-1">
-                              <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                              <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-                            </div>
-                          </div>
-
-                          {/* Loading items */}
-                          <div className="p-4 space-y-4">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg"
-                              >
-                                <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse" />
-                                <div className="flex-1">
-                                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                  <div className="h-3 bg-gray-200 rounded animate-pulse mb-2 w-3/4" />
-                                  <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Loading total */}
-                          <div className="border-t border-gray-200 p-4">
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-                              <div className="h-6 bg-gray-200 rounded animate-pulse w-20" />
-                            </div>
-                            <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Show actual outfit suggestions
-                    return renderOutfitItems(
-                      outfitSuggestions,
-                      selectedCelebrity || undefined,
-                      selectedCelebrity
-                        ? celebrityTrends.find(
-                            (trend) => trend.name === selectedCelebrity,
-                          )
-                        : undefined,
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Signup/Payment Dialog */}
-      <SignupPaymentDialog
-        isOpen={showDialog}
-        onClose={() => setShowDialog(false)}
-      />
+      {/* Dialogs */}
+      <SignupPaymentDialog open={showDialog} onOpenChange={setShowDialog} />
 
-      {/* Sign In Dialog */}
+      {/* Sign In Dialog for Saving Looks */}
       {showSignInDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
             <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-pink-500"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Save Your Looks
+                Save Your Favorite Looks
               </h3>
               <p className="text-gray-600">
-                Sign in to save and organize your favorite outfit combinations
+                Sign in to create your personal style board and save looks you
+                love!
               </p>
             </div>
 
             <div className="space-y-3">
-              <button
-                onClick={async () => {
-                  const { error } = await supabase.auth.signInWithOAuth({
-                    provider: "google",
-                    options: {
-                      redirectTo: `${window.location.origin}/auth/callback`,
-                    },
-                  });
-                  if (error) console.error("Error:", error);
-                }}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              <Link
+                href="/sign-in"
+                className="w-full bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Continue with Google
-              </button>
+                Sign In
+              </Link>
 
-              <button
-                onClick={async () => {
-                  const { error } = await supabase.auth.signInWithOAuth({
-                    provider: "github",
-                    options: {
-                      redirectTo: `${window.location.origin}/auth/callback`,
-                    },
-                  });
-                  if (error) console.error("Error:", error);
-                }}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              <Link
+                href="/sign-up"
+                className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12-12-12-12z" />
-                </svg>
-                Continue with GitHub
-              </button>
+                Create Account
+              </Link>
             </div>
 
             <button
               onClick={() => setShowSignInDialog(false)}
-              className="w-full mt-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Maybe later
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -1767,136 +1272,255 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       {/* Full Look Modal */}
       {showLookModal && selectedLookData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">
-                {selectedLookData.celebrity || "Style AI"} Look
-              </h3>
-              <button
-                onClick={() => setShowLookModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Left: Outfit Card */}
-                <div className="flex justify-center">
-                  {renderOutfitItems(
-                    selectedLookData.outfit,
-                    selectedLookData.celebrity,
-                    selectedLookData.celebrityData,
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-200 to-pink-200 overflow-hidden">
+                  <img
+                    src={
+                      selectedLookData.celebrityData?.image ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedLookData.celebrity || "StyleAI"}`
+                    }
+                    alt={selectedLookData.celebrity || "Style AI"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedLookData.celebrity || "StyleAI"}`;
+                    }}
+                  />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {selectedLookData.celebrity || "Style AI"} Look
+                  </h2>
+                  {selectedLookData.celebrityData?.fragrance && (
+                    <p className="text-violet-600 text-sm">
+                      🌸 {selectedLookData.celebrityData.fragrance}
+                    </p>
                   )}
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    saveLookToBoard(
+                      selectedLookData.outfit,
+                      selectedLookData.celebrity,
+                    )
+                  }
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg
+                    className="w-6 h-6 text-gray-400 hover:text-red-400 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowLookModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+            </div>
 
-                {/* Right: Details */}
-                <div className="space-y-6">
-                  {/* Celebrity Style Gallery */}
-                  {selectedLookData.celebrity &&
-                    celebrityMediaGallery[selectedLookData.celebrity] && (
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                          Style Inspiration Gallery
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3">
-                          {celebrityMediaGallery[selectedLookData.celebrity]
-                            .slice(0, 4)
-                            .map((media, index) => (
-                              <div
-                                key={index}
-                                className="aspect-square rounded-lg overflow-hidden bg-gray-100"
-                              >
-                                <img
-                                  src={media.src}
-                                  alt={media.title}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src =
-                                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80";
-                                  }}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Left Column - Outfit Description */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Outfit Description
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {selectedLookData.outfit.main_description}
+                  </p>
 
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                      Outfit Description
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed">
-                      {selectedLookData.outfit.main_description}
-                    </p>
-                  </div>
-
-                  {selectedLookData.celebrityData?.fragrance && (
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                        Signature Fragrance
-                      </h4>
-                      <p className="text-violet-600 font-medium">
-                        🌸 {selectedLookData.celebrityData.fragrance}
-                      </p>
+                  {/* Total Price */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 font-medium">
+                        Total Outfit Price:
+                      </span>
+                      <span className="text-2xl font-bold text-gray-900">
+                        $
+                        {(() => {
+                          const groupedItems = {
+                            tops: selectedLookData.outfit.tops || [],
+                            bottoms: selectedLookData.outfit.bottoms || [],
+                            shoes: selectedLookData.outfit.shoes || [],
+                            accessories:
+                              selectedLookData.outfit.accessories || [],
+                          };
+                          const allCategories = Object.entries(
+                            groupedItems,
+                          ).filter(([_, items]) => items.length > 0);
+                          const displayItems = allCategories.map(
+                            ([category, categoryItems]) => {
+                              return categoryItems[0];
+                            },
+                          );
+                          const totalPrice = displayItems.reduce(
+                            (sum, item) => {
+                              const price =
+                                parseFloat(item.price.replace(/[$,]/g, "")) ||
+                                0;
+                              return sum + price;
+                            },
+                            0,
+                          );
+                          return totalPrice.toLocaleString();
+                        })()}
+                      </span>
                     </div>
-                  )}
-
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                      Style Tips
-                    </h4>
-                    <ul className="space-y-2 text-gray-600">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Mix high-end pieces with affordable alternatives for the
-                        perfect balance
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Pay attention to fit and proportions for a polished look
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Accessories can make or break an outfit - choose wisely
-                      </li>
-                    </ul>
                   </div>
+                </div>
 
-                  <div className="pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() =>
-                        saveLookToBoard(
-                          selectedLookData.outfit,
-                          selectedLookData.celebrity,
-                        )
-                      }
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                      Save to My Looks
-                    </button>
+                {/* Right Column - Outfit Items */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Outfit Items
+                  </h3>
+                  <div className="space-y-4">
+                    {(() => {
+                      const groupedItems = {
+                        tops: selectedLookData.outfit.tops || [],
+                        bottoms: selectedLookData.outfit.bottoms || [],
+                        shoes: selectedLookData.outfit.shoes || [],
+                        accessories: selectedLookData.outfit.accessories || [],
+                      };
+                      const allCategories = Object.entries(groupedItems).filter(
+                        ([_, items]) => items.length > 0,
+                      );
+
+                      return allCategories.map(
+                        ([category, categoryItems], categoryIndex) => {
+                          const currentItem = categoryItems[0];
+
+                          return (
+                            <div
+                              key={categoryIndex}
+                              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            >
+                              <a
+                                href={currentItem.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-4 cursor-pointer"
+                              >
+                                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                  {currentItem.image_url ? (
+                                    <img
+                                      src={currentItem.image_url}
+                                      alt={currentItem.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        const target =
+                                          e.target as HTMLImageElement;
+                                        target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&h=100&fit=crop&auto=format`;
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <ShoppingBag className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-gray-900 text-lg mb-1">
+                                    {currentItem.brand}
+                                  </h4>
+                                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                                    {currentItem.name}
+                                  </p>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                      {currentItem.website}
+                                    </div>
+                                    {currentItem.availability ===
+                                      "Limited Stock" && (
+                                      <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        Limited
+                                      </div>
+                                    )}
+                                    {currentItem.availability ===
+                                      "In Stock" && (
+                                      <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        In Stock
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-bold text-gray-900 text-lg">
+                                      {currentItem.price}
+                                    </p>
+                                    <ExternalLink className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                </div>
+                              </a>
+
+                              {/* Show alternatives if available */}
+                              {categoryItems.length > 1 && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                  <p className="text-sm text-gray-500 mb-2">
+                                    +{categoryItems.length - 1} alternative
+                                    {categoryItems.length > 2 ? "s" : ""}{" "}
+                                    available
+                                  </p>
+                                  <div className="flex gap-2">
+                                    {categoryItems
+                                      .slice(1, 4)
+                                      .map((altItem, altIndex) => (
+                                        <a
+                                          key={altIndex}
+                                          href={altItem.website_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden hover:ring-2 hover:ring-violet-300 transition-all"
+                                        >
+                                          {altItem.image_url ? (
+                                            <img
+                                              src={altItem.image_url}
+                                              alt={altItem.name}
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                const target =
+                                                  e.target as HTMLImageElement;
+                                                target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=50&h=50&fit=crop&auto=format`;
+                                              }}
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                              <ShoppingBag className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                          )}
+                                        </a>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        },
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+      );
+  };
 }

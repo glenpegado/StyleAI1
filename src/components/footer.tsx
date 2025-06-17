@@ -142,7 +142,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-slate-800 to-slate-600 rounded-md flex items-center justify-center">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-md flex items-center justify-center">
                 <span className="text-white text-xs font-bold">U</span>
               </div>
               <span className="font-semibold text-gray-900 text-sm">
