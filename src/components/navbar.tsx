@@ -82,12 +82,10 @@ export default function Navbar() {
               onClick={() => handleNavigation("/")}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-slate-900 via-gray-800 to-zinc-900 rounded-lg flex items-center justify-center shadow-lg">
-                <Sparkles className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg">
+                <Sparkles className="w-4 h-4 text-yellow-400" />
               </div>
-              <span className="text-lg font-semibold bg-gradient-to-r from-gray-900 via-slate-800 to-zinc-800 bg-clip-text text-transparent">
-                peacedrobe
-              </span>
+              <span className="text-lg font-semibold text-black">Fitsio</span>
             </div>
           </div>
 
@@ -142,7 +140,7 @@ export default function Navbar() {
                 </div>
                 <div
                   onClick={() => handleNavigation("/sign-up")}
-                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-black hover:bg-gray-800 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign Up</span>

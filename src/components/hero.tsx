@@ -639,134 +639,118 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }
   }, [selectedCelebrity]);
 
-  // Celebrity trends data
-  const celebrityTrends: CelebrityTrend[] = [
+  // Trending looks and items data
+  const trendingContent: CelebrityTrend[] = [
     {
-      name: "Odell Beckham Jr",
+      name: "Luxury Athleisure Look",
       tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
+        { name: "Look", color: "bg-purple-100 text-purple-800" },
         { name: "Athletic", color: "bg-green-100 text-green-800" },
-        { name: "Fashion-Forward", color: "bg-indigo-100 text-indigo-800" },
+        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
       ],
-      platform: "Celebrity",
+      platform: "Trending",
       query:
-        "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
+        "Luxury athleisure outfit with designer joggers, premium sneakers and statement accessories",
       image: "/images/odell-beckham-jr-new-3.jpg",
       fragrance: "Champion Spirit",
     },
     {
-      name: "Drake",
+      name: "Vintage Denim Jacket",
       tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Rapper", color: "bg-yellow-100 text-yellow-800" },
-        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
+        { name: "Item", color: "bg-blue-100 text-blue-800" },
+        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
+        { name: "Denim", color: "bg-indigo-100 text-indigo-800" },
       ],
-      platform: "Celebrity",
+      platform: "Trending",
       query:
-        "Drake inspired luxury rapper outfit with designer hoodies, premium denim and statement jewelry",
+        "Vintage oversized denim jacket styled with modern pieces for a trendy streetwear look",
       image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      fragrance: "God's Plan",
+        "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&q=80",
+      fragrance: "Urban Edge",
     },
     {
-      name: "Charli D'Amelio",
+      name: "Y2K Revival Look",
       tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Gen-Z", color: "bg-pink-100 text-pink-800" },
+        { name: "Look", color: "bg-purple-100 text-purple-800" },
+        { name: "Y2K", color: "bg-pink-100 text-pink-800" },
         { name: "Trendy", color: "bg-green-100 text-green-800" },
       ],
       platform: "TikTok",
       query:
-        "Charli D'Amelio inspired Gen-Z trendy outfit with crop tops, high-waisted jeans and chunky sneakers",
+        "Y2K inspired outfit with low-rise jeans, crop tops and chunky platform sneakers",
       image:
         "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Sweet Dreams",
+      fragrance: "Nostalgic Vibes",
     },
     {
-      name: "Emma Chamberlain",
+      name: "Chunky Gold Chain",
       tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
-        { name: "Casual", color: "bg-gray-100 text-gray-800" },
+        { name: "Item", color: "bg-blue-100 text-blue-800" },
+        { name: "Jewelry", color: "bg-yellow-100 text-yellow-800" },
+        { name: "Statement", color: "bg-red-100 text-red-800" },
       ],
       platform: "Instagram",
       query:
-        "Emma Chamberlain inspired vintage casual outfit with thrifted pieces and effortless styling",
+        "Chunky gold chain necklace as a statement piece for layering and urban styling",
       image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      fragrance: "Coffee Shop Vibes",
+        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=80",
+      fragrance: "Golden Hour",
     },
     {
-      name: "Serena Williams",
+      name: "Power Suit Look",
       tags: [
-        { name: "Athlete", color: "bg-green-100 text-green-800" },
-        { name: "Powerful", color: "bg-red-100 text-red-800" },
-        { name: "Elegant", color: "bg-purple-100 text-purple-800" },
+        { name: "Look", color: "bg-purple-100 text-purple-800" },
+        { name: "Professional", color: "bg-gray-100 text-gray-800" },
+        { name: "Elegant", color: "bg-rose-100 text-rose-800" },
       ],
-      platform: "Celebrity",
+      platform: "Trending",
       query:
-        "Serena Williams inspired powerful elegant outfit with structured blazers and statement accessories",
-      image:
-        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
-      fragrance: "Champion's Grace",
-    },
-    {
-      name: "Zendaya",
-      tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Bold", color: "bg-orange-100 text-orange-800" },
-        { name: "Avant-garde", color: "bg-red-100 text-red-800" },
-      ],
-      platform: "Celebrity",
-      query:
-        "Zendaya inspired bold avant-garde outfit with statement pieces and unique silhouettes",
+        "Modern power suit with oversized blazer and tailored trousers for confident professional style",
       image:
         "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
-      fragrance: "Electric Nights",
+      fragrance: "Boss Energy",
     },
     {
-      name: "Taylor Swift",
+      name: "Cargo Pants",
       tags: [
-        {
-          name: "Celebrity",
-          color:
-            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
-        },
-        { name: "Vintage", color: "bg-pink-100 text-pink-800" },
-        { name: "Romantic", color: "bg-rose-100 text-rose-800" },
+        { name: "Item", color: "bg-blue-100 text-blue-800" },
+        { name: "Streetwear", color: "bg-green-100 text-green-800" },
+        { name: "Utility", color: "bg-orange-100 text-orange-800" },
       ],
-      platform: "Celebrity",
+      platform: "Trending",
       query:
-        "Taylor Swift inspired vintage romantic outfit with cardigans and flowing skirts",
+        "Baggy cargo pants styled with fitted tops and chunky sneakers for modern streetwear",
+      image:
+        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80",
+      fragrance: "Street Smart",
+    },
+    {
+      name: "Cottagecore Aesthetic",
+      tags: [
+        { name: "Look", color: "bg-purple-100 text-purple-800" },
+        { name: "Romantic", color: "bg-pink-100 text-pink-800" },
+        { name: "Vintage", color: "bg-green-100 text-green-800" },
+      ],
+      platform: "Pinterest",
+      query:
+        "Cottagecore inspired outfit with flowing midi skirts, cardigans and vintage accessories",
       image:
         "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Enchanted Garden",
+      fragrance: "Garden Dreams",
     },
     {
-      name: "MrBeast",
+      name: "White Sneakers",
       tags: [
-        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
-        { name: "Casual", color: "bg-gray-100 text-gray-800" },
-        { name: "Comfortable", color: "bg-green-100 text-green-800" },
+        { name: "Item", color: "bg-blue-100 text-blue-800" },
+        { name: "Footwear", color: "bg-gray-100 text-gray-800" },
+        { name: "Versatile", color: "bg-green-100 text-green-800" },
       ],
-      platform: "YouTube",
+      platform: "Trending",
       query:
-        "MrBeast inspired casual comfortable outfit with hoodies, joggers and comfortable sneakers",
+        "Clean white sneakers that go with everything from casual to smart-casual outfits",
       image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      fragrance: "Beast Mode",
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80",
+      fragrance: "Fresh Start",
     },
   ];
 
@@ -933,7 +917,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-800 text-lg truncate">
-              {celebrityName || "peacedrobe AI"}
+              {celebrityName || "Fitsio AI"}
             </h3>
             {celebrityData?.fragrance && (
               <p className="text-slate-600 text-sm mb-1">
@@ -1132,7 +1116,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               });
               setShowLookModal(true);
             }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm"
           >
             <svg
               className="w-4 h-4"
@@ -1173,9 +1157,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900">
-                    peacedrobe
-                  </span>
+                  <span className="text-black">Fitsio</span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
@@ -1188,7 +1170,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {showSearch && !outfitSuggestions && (
                 <div className="max-w-2xl mx-auto px-4 mb-12">
                   <form onSubmit={handleSearch} className="relative">
-                    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-slate-500/20 focus-within:border-slate-300">
+                    <div className="relative bg-white rounded-2xl border border-beige-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                       <textarea
                         value={searchQuery}
                         onChange={handleTextareaChange}
@@ -1212,7 +1194,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                         <button
                           type="submit"
                           disabled={isLoading || !searchQuery.trim()}
-                          className="px-2 sm:px-4 py-2 bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 text-white rounded-xl hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0"
+                          className="px-2 sm:px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0"
                         >
                           {isLoading ? (
                             <>
@@ -1288,7 +1270,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             outfitSuggestions,
                             selectedCelebrity || undefined,
                             selectedCelebrity
-                              ? celebrityTrends.find(
+                              ? trendingContent.find(
                                   (trend) => trend.name === selectedCelebrity,
                                 )
                               : undefined,
@@ -1422,7 +1404,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
                             {/* Footer */}
                             <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
                                 <svg
                                   className="w-5 h-5"
                                   fill="none"
@@ -1453,7 +1435,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
                     <div className="w-full max-w-4xl mx-auto px-4 transform transition-all duration-500 ease-in-out">
                       <form onSubmit={handleSearch} className="relative">
-                        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-slate-500/20 focus-within:border-slate-300">
+                        <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                           <textarea
                             value={searchQuery}
                             onChange={handleTextareaChange}
@@ -1472,7 +1454,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             <button
                               type="submit"
                               disabled={isLoading || !searchQuery.trim()}
-                              className="px-6 py-3 bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 text-white rounded-xl hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm shadow-lg hover:shadow-xl flex-shrink-0"
+                              className="px-6 py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                             >
                               {isLoading ? (
                                 <>
@@ -1499,10 +1481,11 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 <div className="max-w-6xl mx-auto px-4">
                   <div className="text-center mb-8">
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                      Trending Celebrity Styles
+                      Trending Looks & Items
                     </h2>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      Get inspired by your favorite celebrities' latest looks
+                      Discover the hottest fashion trends, complete looks, and
+                      must-have items
                     </p>
                   </div>
 
@@ -1520,7 +1503,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       onMouseLeave={() => setIsAutoScrolling(true)}
                     >
                       {/* Duplicate the array to create seamless loop */}
-                      {[...celebrityTrends, ...celebrityTrends].map(
+                      {[...trendingContent, ...trendingContent].map(
                         (trend, index) => (
                           <div
                             key={`${trend.name}-${index}`}
@@ -1552,21 +1535,21 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                         {tag.name}
                                       </span>
                                     ))}
-                                  {trend.platform !== "Celebrity" && (
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        trend.platform === "Instagram"
-                                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                          : trend.platform === "TikTok"
-                                            ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
-                                            : trend.platform === "YouTube"
-                                              ? "bg-red-600 text-white"
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      trend.platform === "Instagram"
+                                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                        : trend.platform === "TikTok"
+                                          ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
+                                          : trend.platform === "Pinterest"
+                                            ? "bg-red-600 text-white"
+                                            : trend.platform === "Trending"
+                                              ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
                                               : "bg-gray-100 text-gray-700"
-                                      }`}
-                                    >
-                                      {trend.platform}
-                                    </span>
-                                  )}
+                                    }`}
+                                  >
+                                    {trend.platform}
+                                  </span>
                                 </div>
                                 <div className="flex items-center text-slate-600 text-xs font-medium">
                                   <Sparkles className="w-3 h-3 mr-1" />
@@ -1687,7 +1670,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       outfitSuggestions,
                       selectedCelebrity || undefined,
                       selectedCelebrity
-                        ? celebrityTrends.find(
+                        ? trendingContent.find(
                             (trend) => trend.name === selectedCelebrity,
                           )
                         : undefined,
@@ -1737,11 +1720,11 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   />
                   <path
                     fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18c3.99 20.53 7.7 23 12 23c4.478 0 8.268-2.943 9.542-7-1.274-4.057-5.064-7-9.542-7-4.477 0-8.268 2.943-9.542 7z"
+                    d="M12 23c2.97 0 5.46.56 7.28 1.64l3.15-3.15c17.45 2.09 14.97 1 12 1c7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                   <path
                     fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18c1.43 8.55 1 10.22 1 12s.43 3.45 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07c1.43 8.55 1 10.22 1 12s.43 3.45 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                   <path
                     fill="#EA4335"
@@ -1761,7 +1744,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   });
                   if (error) console.error("Error:", error);
                 }}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
               >
                 <svg
                   className="w-5 h-5"
@@ -1892,7 +1875,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           selectedLookData.celebrity,
                         )
                       }
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-slate-900 via-gray-800 to-zinc-900 hover:from-slate-800 hover:via-gray-700 hover:to-zinc-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       <svg
                         className="w-5 h-5"

@@ -24,16 +24,21 @@ export default function DashboardNavbar() {
           href="/"
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-slate-900 via-gray-800 to-zinc-900 rounded-lg flex items-center justify-center shadow-lg">
-            <Sparkles className="w-3 h-3 text-white" />
+          <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center shadow-lg">
+            <Sparkles className="w-3 h-3 text-yellow-400" />
           </div>
-          <span className="text-sm font-semibold bg-gradient-to-r from-gray-900 via-slate-800 to-zinc-800 bg-clip-text text-transparent">
-            peacedrobe
-          </span>
+          <span className="text-sm font-semibold text-black">Fitsio</span>
         </Link>
 
-        {/* User Menu */}
+        {/* Navigation Links */}
         <div className="flex gap-4 items-center">
+          <Link
+            href="/dashboard/favorites"
+            className="text-sm text-gray-600 hover:text-black transition-colors"
+          >
+            My Looks
+          </Link>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
