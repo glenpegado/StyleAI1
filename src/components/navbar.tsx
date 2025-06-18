@@ -53,32 +53,31 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Logo in top left */}
-      <div className="fixed top-4 left-4 z-50">
-        <Link
-          href="/"
-          className="flex items-center gap-2 mb-2 p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-gray-900">
-            Urban Stylist AI
-          </span>
-        </Link>
+      {/* Top Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-3 h-3 text-white" />
+            </div>
+            <span className="text-sm font-semibold text-gray-900">
+              Urban Stylist AI
+            </span>
+          </Link>
 
-        {/* Mobile/Desktop Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          className="p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 w-full"
-        >
-          {isOpen ? (
-            <X className="w-4 h-4 sm:w-5 sm:h-5 mx-auto" />
-          ) : (
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5 mx-auto" />
-          )}
-        </button>
-      </div>
+          {/* Menu Toggle Button */}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </nav>
 
       {/* Overlay for mobile */}
       {isOpen && (
@@ -90,7 +89,7 @@ export default function Navbar() {
 
       {/* Sidebar */}
       <nav
-        className={`fixed top-0 left-0 h-full bg-white/95 backdrop-blur-xl border-r border-gray-200/50 z-40 transform transition-all duration-300 ease-out ${
+        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white/95 backdrop-blur-xl border-r border-gray-200/50 z-40 transform transition-all duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } w-64 sm:w-72 shadow-2xl`}
       >

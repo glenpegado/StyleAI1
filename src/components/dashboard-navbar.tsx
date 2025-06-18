@@ -17,12 +17,12 @@ export default function DashboardNavbar() {
   const router = useRouter();
 
   return (
-    <>
-      {/* Logo in top left */}
-      <div className="fixed top-4 left-4 z-50">
+    <nav className="w-full border-b border-gray-200 bg-white py-3">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
             <Home className="w-3 h-3 text-white" />
@@ -31,34 +31,28 @@ export default function DashboardNavbar() {
             Urban Stylist AI
           </span>
         </Link>
-      </div>
 
-      <nav className="w-full border-b border-gray-200 bg-white py-4">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            {/* Empty space for logo positioning */}
-          </div>
-          <div className="flex gap-4 items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <UserCircle className="h-6 w-6" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    router.push("/");
-                  }}
-                >
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        {/* User Menu */}
+        <div className="flex gap-4 items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <UserCircle className="h-6 w-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  router.push("/");
+                }}
+              >
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }
