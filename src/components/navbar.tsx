@@ -73,10 +73,6 @@ export default function Navbar() {
 
   const handleNavigation = (href: string) => {
     setIsOpen(false);
-    // Force navigation using window.location for immediate response
-    if (typeof window !== "undefined") {
-      window.location.href = href;
-    }
   };
 
   const navItems = [
@@ -96,16 +92,17 @@ export default function Navbar() {
 
       {/* Sidebar */}
       <nav
-        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-40 transform transition-all duration-300 ease-out ${
+        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transform transition-all duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } w-64 shadow-lg`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-100">
-            <div
-              onClick={() => handleNavigation("/")}
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+            <Link
+              href="/"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -113,7 +110,7 @@ export default function Navbar() {
               <span className="text-lg font-semibold text-black">
                 peacedrobe
               </span>
-            </div>
+            </Link>
           </div>
 
           {/* Navigation Items */}
@@ -122,14 +119,15 @@ export default function Navbar() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div
+                  <Link
                     key={item.href}
-                    onClick={() => handleNavigation(item.href)}
-                    className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 group text-sm font-medium cursor-pointer"
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 group text-sm font-medium"
                   >
                     <Icon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
                     <span className="truncate">{item.label}</span>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
@@ -157,49 +155,43 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="space-y-2">
-                <div
-                  onClick={() => handleNavigation("/sign-in")}
-                  className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 w-full text-sm font-medium cursor-pointer"
+                <Link
+                  href="/sign-in"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 w-full text-sm font-medium"
                 >
                   <LogIn className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign In</span>
-                </div>
-                <div
-                  onClick={() => handleNavigation("/sign-up")}
-                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-black hover:bg-gray-800 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg cursor-pointer"
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-black hover:bg-gray-800 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg"
                 >
                   <UserPlus className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign Up</span>
-                </div>
+                </Link>
               </div>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Top Bar with Logo and Menu Toggle */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3">
+      {/* Top Bar with Menu Toggle */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center px-4 py-3 max-w-7xl mx-auto">
           {/* Menu Toggle Button */}
           <button
             onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 shadow-sm bg-white"
+            aria-label="Toggle menu"
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isOpen ? (
+              <X className="w-5 h-5 text-gray-700" />
+            ) : (
+              <Menu className="w-5 h-5 text-gray-700" />
+            )}
           </button>
-
-          {/* Logo */}
-          <div
-            onClick={() => handleNavigation("/")}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
-          >
-            <div className="w-7 h-7 bg-gradient-to-br from-gray-800 to-black rounded-lg flex items-center justify-center shadow-lg">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-            </div>
-            <span className="text-lg font-semibold bg-gradient-to-r from-gray-800 to-black bg-clip-text text-transparent">
-              peacedrobe
-            </span>
-          </div>
         </div>
       </div>
     </>

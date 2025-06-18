@@ -21,10 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
       <body className={inter.className} suppressHydrationWarning>
+        <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
         <PromptProvider>
-          {children}
+          <Navbar />
+          <div className="pt-16">{children}</div>
           <TempoInit />
         </PromptProvider>
       </body>
