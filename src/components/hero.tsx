@@ -875,7 +875,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       platform: "Celebrity",
       query:
         "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
-      image: "/images/odell-beckham-jr-new-3.jpg",
+      image:
+        "/images/odell-beckham-jr-obj-monaco-friends-amfar-gala-cannes-f1-2025-2-1.jpg",
       fragrance: "Champion Spirit",
     },
     {
