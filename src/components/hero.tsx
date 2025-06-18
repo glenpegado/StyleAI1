@@ -912,7 +912,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }, 0);
 
     return (
-      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
+      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
         {/* Header with celebrity info */}
         <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0">
@@ -976,7 +976,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </button>
         </div>
         {/* Items List with Swipeable Alternatives */}
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+        <div className="p-3 space-y-2 flex-1 overflow-hidden">
           {allCategories.map(([category, categoryItems], categoryIndex) => {
             const currentIndex = currentItemIndices[categoryIndex] || 0;
             const currentItem = categoryItems[currentIndex] || categoryItems[0];
@@ -988,9 +988,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   href={currentItem.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block hover:bg-gray-50 rounded-lg transition-colors p-3 border border-gray-100"
+                  className="block hover:bg-gray-50 rounded-lg transition-colors p-2 border border-gray-100"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {/* Navigation Buttons */}
                     {hasAlternatives && (
                       <>
@@ -1000,9 +1000,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             e.stopPropagation();
                             navigateItem(categoryIndex, "prev", categoryItems);
                           }}
-                          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
+                          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
                         >
-                          <ChevronLeft className="w-4 h-4 text-gray-600" />
+                          <ChevronLeft className="w-3 h-3 text-gray-600" />
                         </button>
                         <button
                           onClick={(e) => {
@@ -1010,15 +1010,15 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             e.stopPropagation();
                             navigateItem(categoryIndex, "next", categoryItems);
                           }}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
                         >
-                          <ChevronRight className="w-4 h-4 text-gray-600" />
+                          <ChevronRight className="w-3 h-3 text-gray-600" />
                         </button>
                       </>
                     )}
 
                     {/* Item Image */}
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       {currentItem.image_url ? (
                         <img
                           src={currentItem.image_url}
@@ -1033,24 +1033,24 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           }}
                         />
                       ) : (
-                        <ShoppingBag className="w-6 h-6 text-gray-400" />
+                        <ShoppingBag className="w-4 h-4 text-gray-400" />
                       )}
                     </div>
 
                     {/* Item Details */}
-                    <div className="flex-1 min-w-0 mr-2">
+                    <div className="flex-1 min-w-0 mr-1">
                       <div className="flex items-start justify-between mb-1">
-                        <h4 className="font-semibold text-gray-900 text-base truncate">
+                        <h4 className="font-semibold text-gray-900 text-sm truncate">
                           {currentItem.brand}
                         </h4>
-                        <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+                        <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0 ml-1" />
                       </div>
-                      <p className="text-gray-600 text-sm truncate mb-1">
+                      <p className="text-gray-600 text-xs truncate mb-1">
                         {currentItem.name}
                       </p>
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1 mb-1">
                         <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
                             currentItem.store_badge ||
                             "bg-blue-100 text-blue-800"
                           }`}
@@ -1058,44 +1058,44 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           {currentItem.website}
                         </div>
                         {currentItem.celebrity_worn && (
-                          <div className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-800 px-2 py-1 rounded-full text-xs font-medium border border-slate-200">
-                            ⭐ Celebrity Worn
+                          <div className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-800 px-1.5 py-0.5 rounded-full text-xs font-medium border border-slate-200">
+                            ⭐ Celebrity
                           </div>
                         )}
                         {currentItem.availability === "Limited Stock" && (
-                          <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
                             Limited
                           </div>
                         )}
                         {currentItem.availability === "In Stock" && (
-                          <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
                             In Stock
                           </div>
                         )}
                         {currentItem.availability === "Sold Out" && (
-                          <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
                             Sold Out
                           </div>
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-gray-900 text-base">
+                        <div className="flex items-center gap-1">
+                          <p className="font-bold text-gray-900 text-sm">
                             {currentItem.price}
                           </p>
                           {currentItem.original_price && (
-                            <p className="text-sm text-gray-500 line-through">
+                            <p className="text-xs text-gray-500 line-through">
                               {currentItem.original_price}
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           {hasAlternatives && (
-                            <div className="flex gap-1">
+                            <div className="flex gap-0.5">
                               {categoryItems.map((_, index) => (
                                 <div
                                   key={index}
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                  className={`w-1 h-1 rounded-full transition-colors ${
                                     index === currentIndex
                                       ? "bg-gray-800"
                                       : "bg-gray-300"
@@ -1114,10 +1114,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           })}
         </div>
         {/* Total */}
-        <div className="border-t border-gray-200 p-4 flex-shrink-0">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-gray-600 text-base">Total:</span>
-            <span className="font-bold text-gray-900 text-xl">
+        <div className="border-t border-gray-200 p-3 flex-shrink-0">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-gray-600 text-sm">Total:</span>
+            <span className="font-bold text-gray-900 text-lg">
               ${totalPrice.toLocaleString()}
             </span>
           </div>
@@ -1132,10 +1132,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               });
               setShowLookModal(true);
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1247,7 +1247,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           // Show loading state
                           if ((outfitSuggestions as any)?.loading) {
                             return (
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
+                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
                                 {/* Header with celebrity info */}
                                 <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1301,7 +1301,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
                         {(outfitSuggestions as any)?.loading ? (
                           // Loading state for style inspiration
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1312,7 +1312,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
                             {/* Loading content */}
                             <div className="p-4 flex-1 flex flex-col">
-                              <div className="flex-1 bg-gray-200 rounded-lg animate-pulse" />
+                              <div className="w-full h-[400px] bg-gray-200 rounded-lg animate-pulse" />
                               <div className="mt-4 text-center flex-shrink-0">
                                 <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 mx-auto w-32" />
                                 <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-24" />
@@ -1324,7 +1324,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -1341,79 +1341,69 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
 
                             {/* Single Featured Content - Celebrity Images */}
-                            <div className="flex-1 p-6 flex flex-col">
+                            <div className="flex-1 flex flex-col p-4">
                               {selectedCelebrity &&
                               celebrityMediaGallery[selectedCelebrity] ? (
                                 // Show dynamic media for selected celebrity
-                                <div className="flex-1 w-full mb-6">
-                                  <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden relative shadow-lg border border-gray-200/50">
-                                    <div className="p-6 h-full">
-                                      <img
-                                        src={
-                                          celebrityMediaGallery[
-                                            selectedCelebrity
-                                          ][currentMediaIndex]?.src
-                                        }
-                                        alt={
-                                          celebrityMediaGallery[
-                                            selectedCelebrity
-                                          ][currentMediaIndex]?.title
-                                        }
-                                        className="w-full h-full object-contain transition-all duration-500 hover:scale-[1.02] rounded-xl shadow-md"
-                                        style={{
-                                          maxHeight: "calc(100% - 3rem)",
-                                        }}
-                                        onError={(e) => {
-                                          const target =
-                                            e.target as HTMLImageElement;
-                                          target.src =
-                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                        }}
+                                <div className="w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl">
+                                  <img
+                                    src={
+                                      celebrityMediaGallery[selectedCelebrity][
+                                        currentMediaIndex
+                                      ]?.src
+                                    }
+                                    alt={
+                                      celebrityMediaGallery[selectedCelebrity][
+                                        currentMediaIndex
+                                      ]?.title
+                                    }
+                                    className="w-full h-full object-cover transition-all duration-500 hover:scale-[1.02] rounded-2xl"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.src =
+                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                    }}
+                                  />
+
+                                  {/* Elegant overlay gradient */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
+
+                                  {/* Media indicators */}
+                                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                    {celebrityMediaGallery[
+                                      selectedCelebrity
+                                    ].map((_, index) => (
+                                      <div
+                                        key={index}
+                                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                                          index === currentMediaIndex
+                                            ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
+                                            : "bg-white/60 hover:bg-white/80"
+                                        }`}
                                       />
-                                    </div>
-
-                                    {/* Elegant overlay gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
-
-                                    {/* Media indicators */}
-                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                                      {celebrityMediaGallery[
-                                        selectedCelebrity
-                                      ].map((_, index) => (
-                                        <div
-                                          key={index}
-                                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                                            index === currentMediaIndex
-                                              ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
-                                              : "bg-white/60 hover:bg-white/80"
-                                          }`}
-                                        />
-                                      ))}
-                                    </div>
+                                    ))}
                                   </div>
                                 </div>
                               ) : (
                                 // Show default image for no celebrity selected
-                                <div className="flex-1 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg mb-6">
-                                  <div className="p-6 h-full relative">
-                                    <img
-                                      src="/images/style-inspiration.jpg"
-                                      alt="Featured style inspiration"
-                                      className="w-full h-full object-contain rounded-xl shadow-md"
-                                      style={{ maxHeight: "calc(100% - 3rem)" }}
-                                      onError={(e) => {
-                                        const target =
-                                          e.target as HTMLImageElement;
-                                        target.src =
-                                          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                      }}
-                                    />
-                                    {/* Elegant overlay */}
-                                    <div className="absolute inset-6 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-xl" />
-                                  </div>
+                                <div className="w-full h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
+                                  <img
+                                    src="/images/style-inspiration.jpg"
+                                    alt="Featured style inspiration"
+                                    className="w-full h-full object-cover rounded-2xl"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.src =
+                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                    }}
+                                  />
+                                  {/* Elegant overlay */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
                                 </div>
                               )}
-                              <div className="text-center flex-shrink-0 px-4 pb-2">
+                              <div className="text-center flex-shrink-0 pt-4">
                                 <h4 className="font-semibold text-gray-900 mb-2 text-lg leading-tight">
                                   {selectedCelebrity &&
                                   celebrityMediaGallery[selectedCelebrity]
@@ -1432,10 +1422,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
 
                             {/* Footer */}
-                            <div className="border-t border-gray-200/60 p-6 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm">
+                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
+                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-5 h-5"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -1748,7 +1738,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   />
                   <path
                     fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23c4.478 0 8.268-2.943 9.542-7-1.274-4.057-5.064-7-9.542-7-4.477 0-8.268 2.943-9.542 7z"
                   />
                   <path
                     fill="#FBBC05"
@@ -1779,7 +1769,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z" />
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12-12z" />
                 </svg>
                 Continue with GitHub
               </button>
@@ -1797,8 +1787,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       {/* Full Look Modal */}
       {showLookModal && selectedLookData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+          <div className="bg-white rounded-2xl w-full max-w-[95vw] h-[700px] flex flex-col">
+            <div className="flex-shrink-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
               <h3 className="text-xl font-bold text-gray-900">
                 {selectedLookData.celebrity || "Style AI"} Look
               </h3>
@@ -1810,8 +1800,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               </button>
             </div>
 
-            <div className="p-6">
-              <div className="grid md:grid-cols-2 gap-8">
+            <div className="flex-1 p-6 overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-8 h-full">
                 {/* Left: Outfit Card */}
                 <div className="flex justify-center">
                   {renderOutfitItems(
@@ -1822,7 +1812,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 </div>
 
                 {/* Right: Details */}
-                <div className="space-y-6">
+                <div className="space-y-6 mr-6">
                   {/* Celebrity Style Gallery */}
                   {selectedLookData.celebrity &&
                     celebrityMediaGallery[selectedLookData.celebrity] && (

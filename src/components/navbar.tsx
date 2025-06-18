@@ -53,17 +53,32 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Mobile/Desktop Toggle Button */}
-      <button
-        onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-      >
-        {isOpen ? (
-          <X className="w-4 h-4 sm:w-5 sm:h-5" />
-        ) : (
-          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
-        )}
-      </button>
+      {/* Logo in top left */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link
+          href="/"
+          className="flex items-center gap-2 mb-2 p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-white" />
+          </div>
+          <span className="text-sm font-semibold text-gray-900">
+            Urban Stylist AI
+          </span>
+        </Link>
+
+        {/* Mobile/Desktop Toggle Button */}
+        <button
+          onClick={toggleSidebar}
+          className="p-2 bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 w-full"
+        >
+          {isOpen ? (
+            <X className="w-4 h-4 sm:w-5 sm:h-5 mx-auto" />
+          ) : (
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 mx-auto" />
+          )}
+        </button>
+      </div>
 
       {/* Overlay for mobile */}
       {isOpen && (
