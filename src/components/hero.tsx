@@ -100,7 +100,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     // Show loading state immediately for both outfit and style
     setOutfitSuggestions({ loading: true } as any);
     setIsLoading(true);
-    setIsStyleLoading(true);
 
     // Increment prompt count after successful API call to prevent issues with auto-reset
     // incrementPrompt();
@@ -208,7 +207,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
       // Set both outfit suggestions and style loading to complete simultaneously
       setOutfitSuggestions(data);
-      setIsStyleLoading(false);
 
       // Increment prompt count after successful generation
       incrementPrompt();
@@ -234,7 +232,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       );
     } finally {
       setIsLoading(false);
-      setIsStyleLoading(false);
     }
   };
 
@@ -1242,20 +1239,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {outfitSuggestions && showSearch && (
                 <div className="w-full max-w-7xl mx-auto mb-12 px-4">
                   <div className="flex flex-col gap-8">
-                    {/* Top - Try Another Search button */}
-                    <div className="text-center">
-                      <button
-                        onClick={() => {
-                          setOutfitSuggestions(null);
-                          setSelectedCelebrity(null);
-                          setCurrentItemIndices({});
-                        }}
-                        className="text-slate-600 hover:text-slate-700 text-sm underline mb-4"
-                      >
-                        Try Another Search
-                      </button>
-                    </div>
-
                     {/* Content area with outfit display and style inspiration side by side */}
                     <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
                       {/* Left side - Outfit display */}
@@ -1316,7 +1299,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
                       {/* Right side - Style Inspiration Gallery */}
                       <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
-                        {isStyleLoading ? (
+                        {(outfitSuggestions as any)?.loading ? (
                           // Loading state for style inspiration
                           <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
                             {/* Header */}
@@ -1358,43 +1341,51 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
 
                             {/* Single Featured Content - Celebrity Images */}
-                            <div className="flex-1 p-4 flex flex-col">
+                            <div className="flex-1 p-6 flex flex-col">
                               {selectedCelebrity &&
                               celebrityMediaGallery[selectedCelebrity] ? (
                                 // Show dynamic media for selected celebrity
-                                <div className="flex-1 w-full">
-                                  <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
-                                    <img
-                                      src={
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ][currentMediaIndex]?.src
-                                      }
-                                      alt={
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ][currentMediaIndex]?.title
-                                      }
-                                      className="w-full h-full object-contain transition-opacity duration-500"
-                                      onError={(e) => {
-                                        const target =
-                                          e.target as HTMLImageElement;
-                                        target.src =
-                                          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                      }}
-                                    />
+                                <div className="flex-1 w-full mb-6">
+                                  <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden relative shadow-lg border border-gray-200/50">
+                                    <div className="p-6 h-full">
+                                      <img
+                                        src={
+                                          celebrityMediaGallery[
+                                            selectedCelebrity
+                                          ][currentMediaIndex]?.src
+                                        }
+                                        alt={
+                                          celebrityMediaGallery[
+                                            selectedCelebrity
+                                          ][currentMediaIndex]?.title
+                                        }
+                                        className="w-full h-full object-contain transition-all duration-500 hover:scale-[1.02] rounded-xl shadow-md"
+                                        style={{
+                                          maxHeight: "calc(100% - 3rem)",
+                                        }}
+                                        onError={(e) => {
+                                          const target =
+                                            e.target as HTMLImageElement;
+                                          target.src =
+                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                        }}
+                                      />
+                                    </div>
+
+                                    {/* Elegant overlay gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
 
                                     {/* Media indicators */}
-                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1">
+                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
                                       {celebrityMediaGallery[
                                         selectedCelebrity
                                       ].map((_, index) => (
                                         <div
                                           key={index}
-                                          className={`w-2 h-2 rounded-full transition-colors ${
+                                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                                             index === currentMediaIndex
-                                              ? "bg-white"
-                                              : "bg-white/50"
+                                              ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
+                                              : "bg-white/60 hover:bg-white/80"
                                           }`}
                                         />
                                       ))}
@@ -1403,22 +1394,27 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 </div>
                               ) : (
                                 // Show default image for no celebrity selected
-                                <div className="flex-1 rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer border border-gray-100">
-                                  <img
-                                    src="/images/style-inspiration.jpg"
-                                    alt="Featured style inspiration"
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.src =
-                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                    }}
-                                  />
+                                <div className="flex-1 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg mb-6">
+                                  <div className="p-6 h-full relative">
+                                    <img
+                                      src="/images/style-inspiration.jpg"
+                                      alt="Featured style inspiration"
+                                      className="w-full h-full object-contain rounded-xl shadow-md"
+                                      style={{ maxHeight: "calc(100% - 3rem)" }}
+                                      onError={(e) => {
+                                        const target =
+                                          e.target as HTMLImageElement;
+                                        target.src =
+                                          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                      }}
+                                    />
+                                    {/* Elegant overlay */}
+                                    <div className="absolute inset-6 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-xl" />
+                                  </div>
                                 </div>
                               )}
-                              <div className="mt-3 text-center flex-shrink-0">
-                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">
+                              <div className="text-center flex-shrink-0 px-4 pb-2">
+                                <h4 className="font-semibold text-gray-900 mb-2 text-lg leading-tight">
                                   {selectedCelebrity &&
                                   celebrityMediaGallery[selectedCelebrity]
                                     ? celebrityMediaGallery[selectedCelebrity][
@@ -1426,7 +1422,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                       ]?.title || "Celebrity Style"
                                     : "Street Style Vibes"}
                                 </h4>
-                                <p className="text-gray-600 text-xs">
+                                <p className="text-gray-600 text-sm leading-relaxed">
                                   {selectedCelebrity &&
                                   celebrityMediaGallery[selectedCelebrity]
                                     ? "Celebrity Fashion Moments"
@@ -1436,8 +1432,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
 
                             {/* Footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+                            <div className="border-t border-gray-200/60 p-6 flex-shrink-0">
+                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm">
                                 <svg
                                   className="w-4 h-4"
                                   fill="none"
