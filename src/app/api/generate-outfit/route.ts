@@ -241,7 +241,9 @@ Ensure you include both premium and affordable options. Use real brands and real
       throw new Error("No response content from AI service");
     }
 
-    // Clean and parse JSON response
+    // Clean and parse JSON response with enhanced error handling
+    console.log("Raw AI response content:", content);
+
     let cleanedContent = content
       .trim()
       .replace(/^```json\s*/gm, "")
@@ -249,30 +251,73 @@ Ensure you include both premium and affordable options. Use real brands and real
       .replace(/\s*```$/gm, "")
       .replace(/^`+|`+$/g, "")
       .replace(/`/g, "")
+      .replace(/\n/g, " ")
+      .replace(/\r/g, "")
+      .replace(/\t/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
+    // Remove any leading text before the JSON
     if (cleanedContent.startsWith("json")) {
       cleanedContent = cleanedContent.replace(/^json\s*/, "").trim();
     }
+
+    // Remove any text before the first {
+    const firstBraceIndex = cleanedContent.indexOf("{");
+    if (firstBraceIndex > 0) {
+      cleanedContent = cleanedContent.substring(firstBraceIndex);
+    }
+
+    // Remove any text after the last }
+    const lastBraceIndex = cleanedContent.lastIndexOf("}");
+    if (lastBraceIndex !== -1 && lastBraceIndex < cleanedContent.length - 1) {
+      cleanedContent = cleanedContent.substring(0, lastBraceIndex + 1);
+    }
+
+    console.log("Cleaned content for parsing:", cleanedContent);
 
     let outfitData;
     try {
       outfitData = JSON.parse(cleanedContent);
     } catch (parseError) {
-      // Try to extract JSON object
+      console.error("Initial JSON parse failed:", parseError);
+      console.error("Content that failed to parse:", cleanedContent);
+
+      // Try to extract JSON object with better brace matching
       let braceCount = 0;
       let startIndex = -1;
       let endIndex = -1;
+      let inString = false;
+      let escapeNext = false;
 
       for (let i = 0; i < cleanedContent.length; i++) {
-        if (cleanedContent[i] === "{") {
-          if (startIndex === -1) startIndex = i;
-          braceCount++;
-        } else if (cleanedContent[i] === "}") {
-          braceCount--;
-          if (braceCount === 0 && startIndex !== -1) {
-            endIndex = i;
-            break;
+        const char = cleanedContent[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === "\\") {
+          escapeNext = true;
+          continue;
+        }
+
+        if (char === '"' && !escapeNext) {
+          inString = !inString;
+          continue;
+        }
+
+        if (!inString) {
+          if (char === "{") {
+            if (startIndex === -1) startIndex = i;
+            braceCount++;
+          } else if (char === "}") {
+            braceCount--;
+            if (braceCount === 0 && startIndex !== -1) {
+              endIndex = i;
+              break;
+            }
           }
         }
       }
@@ -282,17 +327,57 @@ Ensure you include both premium and affordable options. Use real brands and real
           startIndex,
           endIndex + 1,
         );
+        console.log("Extracted JSON:", extractedJson);
         try {
           outfitData = JSON.parse(extractedJson);
-        } catch {
-          throw new Error("Failed to parse AI response as JSON");
+        } catch (secondParseError) {
+          console.error("Second JSON parse failed:", secondParseError);
+          console.error("Extracted content that failed:", extractedJson);
+
+          // Return a fallback response instead of throwing
+          return NextResponse.json(
+            {
+              error: "AI service returned invalid JSON format",
+              type: "json_parse_error",
+              details: `Parse error: ${secondParseError.message}`,
+              raw_content:
+                content.substring(0, 500) + (content.length > 500 ? "..." : ""),
+              timestamp: new Date().toISOString(),
+            },
+            { status: 502 },
+          );
         }
       } else {
-        throw new Error("Failed to parse AI response as JSON");
+        console.error(
+          "Could not find valid JSON structure in content:",
+          cleanedContent,
+        );
+
+        // Return a fallback response instead of throwing
+        return NextResponse.json(
+          {
+            error: "AI service returned invalid response format",
+            type: "json_structure_error",
+            details: "No valid JSON structure found in response",
+            raw_content:
+              content.substring(0, 500) + (content.length > 500 ? "..." : ""),
+            timestamp: new Date().toISOString(),
+          },
+          { status: 502 },
+        );
       }
     }
 
-    // Validate response structure
+    // Validate response structure with detailed logging
+    console.log("Parsed outfit data structure:", {
+      has_main_description: !!outfitData.main_description,
+      has_tops: Array.isArray(outfitData.tops),
+      has_bottoms: Array.isArray(outfitData.bottoms),
+      has_accessories: Array.isArray(outfitData.accessories),
+      has_shoes: Array.isArray(outfitData.shoes),
+      keys: Object.keys(outfitData),
+    });
+
     if (
       !outfitData.main_description ||
       !Array.isArray(outfitData.tops) ||
@@ -300,7 +385,18 @@ Ensure you include both premium and affordable options. Use real brands and real
       !Array.isArray(outfitData.accessories) ||
       !Array.isArray(outfitData.shoes)
     ) {
-      throw new Error("Invalid outfit data structure");
+      console.error("Invalid outfit data structure:", outfitData);
+
+      return NextResponse.json(
+        {
+          error: "AI service returned incomplete outfit data",
+          type: "data_structure_error",
+          details: "Missing required outfit categories",
+          received_structure: Object.keys(outfitData),
+          timestamp: new Date().toISOString(),
+        },
+        { status: 502 },
+      );
     }
 
     // Enhance images by scraping actual product images

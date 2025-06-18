@@ -1204,7 +1204,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             : currentTypingText ||
                               "Describe your style or ask for outfit ideas..."
                         }
-                        className="w-full px-4 sm:px-6 py-4 pr-32 sm:pr-36 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
+                        className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-52 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
                         disabled={isLoading}
                         rows={1}
                         style={{
@@ -1213,14 +1213,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           maxHeight: "120px",
                         }}
                       />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <div className="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
                           {promptCount}/7 free
                         </div>
                         <button
                           type="submit"
                           disabled={isLoading || !searchQuery.trim()}
-                          className="px-3 sm:px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0 min-w-[80px] sm:min-w-[100px] justify-center"
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0 min-w-[90px] sm:min-w-[120px] justify-center"
                         >
                           {isLoading ? (
                             <>
@@ -1474,7 +1474,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               }
                             }}
                             placeholder="Ask for another style or outfit idea..."
-                            className="w-full px-4 sm:px-6 py-4 pr-32 sm:pr-40 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
+                            className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-56 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
                             disabled={isLoading}
                             rows={1}
                             style={{
@@ -1483,14 +1483,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               maxHeight: "120px",
                             }}
                           />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                             <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
                               {promptCount}/7 free
                             </div>
                             <button
                               type="submit"
                               disabled={isLoading || !searchQuery.trim()}
-                              className="px-3 sm:px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 text-xs sm:text-sm flex-shrink-0 min-w-[80px] sm:min-w-[100px] justify-center"
+                              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 text-xs sm:text-sm flex-shrink-0 min-w-[95px] sm:min-w-[125px] justify-center"
                             >
                               {isLoading ? (
                                 <>
