@@ -1,4 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import * as cheerio from "cheerio";
+import crypto from "crypto";
+
+// In-memory cache for outfit suggestions
+const cache = new Map<string, { data: any; expiry: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function generateCacheKey(query: string): string {
+  const hash = crypto
+    .createHash("sha256")
+    .update(query.toLowerCase().trim())
+    .digest("hex");
+  return `outfit_${hash}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -6,6 +21,23 @@ export async function POST(request: NextRequest) {
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
+    }
+
+    // Check cache first
+    const cacheKey = generateCacheKey(query);
+    const now = Date.now();
+    const cached = cache.get(cacheKey);
+
+    if (cached && cached.expiry > now) {
+      console.log("Cache hit for query:", query);
+      return NextResponse.json(cached.data);
+    }
+
+    // Clean expired cache entries
+    for (const [key, value] of cache.entries()) {
+      if (value.expiry <= now) {
+        cache.delete(key);
+      }
     }
 
     // Check environment variables
@@ -24,70 +56,59 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are a Gen-Z fashion stylist AI specializing in streetwear and urban fashion. When given a fashion query, respond with a JSON object containing complete outfit suggestions.
+          content: `You are a Gen-Z fashion stylist AI that specializes in urban streetwear and trendy fashion. Your goal is to provide complete outfit suggestions that are both stylish and accessible.
 
-IMPORTANT RESPONSE FORMAT RULES:
-- Respond with ONLY valid JSON - no markdown, no code blocks, no backticks, no extra text
-- Start your response directly with { and end with }
-- Do not wrap your response in \`\`\`json or \`\`\` markers
-- Do not include any explanatory text before or after the JSON
-- Ensure all JSON is properly formatted with correct quotes and commas
+When a user asks about fashion inspiration (like "I want to dress like [celebrity]" or "What goes with [item]"), provide a complete outfit suggestion with multiple alternatives for each category.
 
-OUTFIT GENERATION LOGIC:
-- Unless the user specifies a particular item (like "Chrome Hearts jewelry" or "Jordan 1s"), always provide a COMPLETE outfit with alternatives for each category
-- A complete outfit should include: tops, bottoms, shoes, and accessories
-- For each category, provide 2-3 alternatives at different price points (high-end, mid-range, budget)
-- If user specifies a particular item, build the outfit around that item but still provide alternatives for other categories
+Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 
-The JSON response should include:
-- main_description: A brief description of the overall outfit vibe
-- tops: Array of 2-3 top items (t-shirts, hoodies, jackets, etc.)
-- bottoms: Array of 2-3 bottom items (jeans, pants, shorts, etc.)
-- shoes: Array of 2-3 shoe options
-- accessories: Array of 2-3 accessories (jewelry, bags, hats, etc.)
+{
+  "main_description": "Brief description of the overall style/vibe",
+  "tops": [
+    {
+      "name": "Item name",
+      "description": "Brief description",
+      "price": "$XX",
+      "brand": "Brand name",
+      "website": "Website name",
+      "website_url": "https://example.com/item",
+      "image_url": "https://example.com/image.jpg",
+      "availability": "In Stock" or "Limited" or "Sold Out"
+    }
+    // Include 2-3 alternatives with different price points
+  ],
+  "bottoms": [
+    // Same format as tops, 2-3 alternatives
+  ],
+  "accessories": [
+    // Same format, 2-3 alternatives including bags, jewelry, hats, etc.
+  ],
+  "shoes": [
+    // Same format, 2-3 alternatives
+  ]
+}
 
-Each item should have:
-- name: Specific item name
-- description: Brief style description
-- price: Exact price like "$89" or "$245"
-- original_price: Original price if on sale (optional)
-- website: Website name like "SSENSE", "END Clothing", "Farfetch", "ASOS", "Urban Outfitters"
-- website_url: Full product URL
-- image_url: REAL direct product image URL from the actual retailer website or high-quality fashion product images
-- brand: Brand name
-- availability: "In Stock" or "Limited Stock" or "Pre-order"
-
-IMPORTANT: For image_url, provide actual product images from real fashion retailers or high-quality product photography. Use direct image URLs from sites like:
-- SSENSE product images
-- END Clothing product images
-- Farfetch product images
-- Nike/Adidas official product images
-- Brand official website images
-- High-quality fashion photography from reputable sources
-
-DO NOT use generic Unsplash images. Focus on actual product photography that shows the real item being suggested.
-
-Include both high-end and budget alternatives from real streetwear retailers. Keep the style trendy and streetwear-focused.
-
-Example format (respond exactly like this, no extra formatting):
-{"main_description":"Elevated streetwear with luxury touches","tops":[{"name":"Fear of God Essentials Hoodie","description":"Oversized fit in cream","price":"$90","brand":"Fear of God Essentials","website":"SSENSE","website_url":"https://www.ssense.com/en-us/men/product/essentials/beige-hoodie/123456","image_url":"https://img.ssensemedia.com/images/b_white,c_lpad,g_center,h_706,w_514/c_scale,h_706,w_514/f_auto,q_auto/231319M202017_1/fear-of-god-essentials-beige-hoodie.jpg","availability":"In Stock"}],"bottoms":[{"name":"Levi's 501 Original Jeans","description":"Classic straight fit in vintage wash","price":"$98","brand":"Levi's","website":"Levi's","website_url":"https://www.levi.com/US/en_US/clothing/men/jeans/501-original-fit-mens-jeans/p/005010000","image_url":"https://lsco.scene7.com/is/image/lsco/005010000-front-pdp?fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&wid=750&hei=1000","availability":"In Stock"}],"accessories":[{"name":"Chrome Hearts Chain","description":"Sterling silver cross pendant","price":"$450","brand":"Chrome Hearts","website":"END Clothing","website_url":"https://www.endclothing.com/us/chrome-hearts-chain/123456","image_url":"https://media.endclothing.com/media/f_auto,q_auto:eco,w_400,h_400/prodmedia/media/catalog/product/0/5/05-12-2023_chromehearts_crosschainpendant_silver_ch-cp-001_hh_1.jpg","availability":"Limited Stock"}],"shoes":[{"name":"Jordan 1 High OG","description":"Chicago colorway","price":"$170","brand":"Nike Jordan","website":"Nike","website_url":"https://www.nike.com/t/air-jordan-1-retro-high-og/123456","image_url":"https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pph9VS.png","availability":"In Stock"}]}`,
+Ensure you include both premium and affordable options. Use real brands and realistic prices. Make sure all URLs are valid and accessible.`,
         },
         {
           role: "user",
-          content: `Create outfit suggestions for: ${query}`,
+          content: query,
         },
       ],
       temperature: 0.7,
       max_tokens: 2000,
     };
 
-    // Robust retry mechanism with exponential backoff
+    // Retry mechanism with exponential backoff
     const makeRequestWithRetry = async (maxRetries = 5) => {
       let attempt = 0;
       const baseDelay = 1000;
 
       while (attempt <= maxRetries) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
           const response = await fetch(
             "https://api.picaos.com/v1/passthrough/chat/completions",
             {
@@ -101,8 +122,11 @@ Example format (respond exactly like this, no extra formatting):
                   "conn_mod_def::GDzgi1QfvM4::4OjsWvZhRxmAVuLAuWgfVA",
               },
               body: JSON.stringify(requestBody),
+              signal: controller.signal,
             },
           );
+
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             return response;
@@ -139,23 +163,29 @@ Example format (respond exactly like this, no extra formatting):
             }
           }
 
-          // Retry on server errors (500, 502, 503, 504)
-          if (
-            [500, 502, 503, 504].includes(response.status) &&
-            attempt < maxRetries
-          ) {
-            const delay =
-              baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+          // Retry server errors (5xx) but only if we have attempts left
+          if (response.status >= 500 && attempt < maxRetries) {
+            console.warn(`Server error ${response.status}, will retry...`);
+            const delay = baseDelay * Math.pow(2, attempt);
             await new Promise((resolve) => setTimeout(resolve, delay));
             attempt++;
             continue;
           }
 
-          return response;
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: { message: errorText } };
+          }
+
+          throw new Error(
+            errorData.error || `Server error: ${response.status}`,
+          );
         } catch (error) {
           if (attempt < maxRetries) {
-            const delay =
-              baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+            const delay = baseDelay * Math.pow(2, attempt);
             await new Promise((resolve) => setTimeout(resolve, delay));
             attempt++;
             continue;
@@ -164,7 +194,7 @@ Example format (respond exactly like this, no extra formatting):
         }
       }
 
-      throw new Error("Max retries reached");
+      throw new Error("Max retries reached. Please try again later.");
     };
 
     const response = await makeRequestWithRetry();
@@ -273,58 +303,60 @@ Example format (respond exactly like this, no extra formatting):
       throw new Error("Invalid outfit data structure");
     }
 
-    // Try to enhance images if scraping service is available
-    try {
-      const allItems = [
-        ...outfitData.tops,
-        ...outfitData.bottoms,
-        ...outfitData.accessories,
-        ...outfitData.shoes,
-      ];
+    // Enhance images by scraping actual product images
+    const enhanceImages = async (items: any[]) => {
+      const enhanced = await Promise.all(
+        items.map(async (item) => {
+          try {
+            if (item.website_url && !item.image_url.includes("unsplash")) {
+              // Try to scrape actual product image
+              const scrapeResponse = await fetch("/api/scrape-images", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: item.website_url }),
+              });
 
-      const scrapeResponse = await fetch(
-        `${process.env.SUPABASE_URL}/functions/v1/scrape-images`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ items: allItems }),
-        },
+              if (scrapeResponse.ok) {
+                const { images } = await scrapeResponse.json();
+                if (images && images.length > 0) {
+                  item.image_url = images[0];
+                }
+              }
+            }
+          } catch (error) {
+            console.warn("Failed to enhance image for item:", item.name);
+          }
+          return item;
+        }),
       );
+      return enhanced;
+    };
 
-      if (scrapeResponse.ok) {
-        const { items: enhancedItems } = await scrapeResponse.json();
+    // Enhance all categories
+    const [enhancedTops, enhancedBottoms, enhancedAccessories, enhancedShoes] =
+      await Promise.all([
+        enhanceImages(outfitData.tops),
+        enhanceImages(outfitData.bottoms),
+        enhanceImages(outfitData.accessories),
+        enhanceImages(outfitData.shoes),
+      ]);
 
-        // Map enhanced items back to categories
-        let itemIndex = 0;
-        outfitData.tops = enhancedItems.slice(
-          itemIndex,
-          itemIndex + outfitData.tops.length,
-        );
-        itemIndex += outfitData.tops.length;
-        outfitData.bottoms = enhancedItems.slice(
-          itemIndex,
-          itemIndex + outfitData.bottoms.length,
-        );
-        itemIndex += outfitData.bottoms.length;
-        outfitData.accessories = enhancedItems.slice(
-          itemIndex,
-          itemIndex + outfitData.accessories.length,
-        );
-        itemIndex += outfitData.accessories.length;
-        outfitData.shoes = enhancedItems.slice(
-          itemIndex,
-          itemIndex + outfitData.shoes.length,
-        );
-      }
-    } catch (error) {
-      // Continue with original images if enhancement fails
-      console.warn("Image enhancement failed:", error);
-    }
+    const enhancedOutfitData = {
+      ...outfitData,
+      tops: enhancedTops,
+      bottoms: enhancedBottoms,
+      accessories: enhancedAccessories,
+      shoes: enhancedShoes,
+    };
 
-    return NextResponse.json(outfitData);
+    // Cache the successful response
+    cache.set(cacheKey, {
+      data: enhancedOutfitData,
+      expiry: now + CACHE_TTL_MS,
+    });
+    console.log("Cached new response for query:", query);
+
+    return NextResponse.json(enhancedOutfitData);
   } catch (error) {
     console.error("Error generating outfit:", error);
 

@@ -16,7 +16,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { usePrompt } from "@/contexts/PromptContext";
 import SignupPaymentDialog from "@/components/signup-payment-dialog";
 import { createClient } from "../../supabase/client";
@@ -915,7 +915,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }, 0);
 
     return (
-      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
+      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col">
         {/* Header with celebrity info */}
         <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0">
@@ -978,7 +978,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             </svg>
           </button>
         </div>
-
         {/* Items List with Swipeable Alternatives */}
         <div className="p-4 space-y-4 flex-1 overflow-y-auto">
           {allCategories.map(([category, categoryItems], categoryIndex) => {
@@ -1117,7 +1116,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             );
           })}
         </div>
-
         {/* Total */}
         <div className="border-t border-gray-200 p-4 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
@@ -1167,25 +1165,32 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
   return (
     <div className="bg-white">
-      <div className="relative pt-24 pb-32 sm:pt-32 sm:pb-40">
+      <div
+        className={`relative ${outfitSuggestions ? "pt-8 pb-16" : "pt-24 pb-32 sm:pt-32 sm:pb-40"}`}
+      >
         <div className="container mx-auto px-4">
           <div className="flex flex-col" id="hero-content">
             <div className="text-center max-w-4xl mx-auto w-full">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600">
-                  Urban Stylist
-                </span>{" "}
-                <span className="text-gray-900">AI</span>
-              </h1>
+              {/* Title and description - only show when no outfit suggestions */}
+              <div
+                className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
+              >
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600">
+                    Urban Stylist
+                  </span>{" "}
+                  <span className="text-gray-900">AI</span>
+                </h1>
 
-              <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-                Discover complete outfit ideas with high-end options and
-                budget-friendly alternatives
-              </p>
+                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+                  Discover complete outfit ideas with high-end options and
+                  budget-friendly alternatives
+                </p>
+              </div>
 
-              {/* AI Search Bar - Only show if showSearch is true */}
-              {showSearch && (
-                <div className="max-w-2xl mx-auto mb-12 px-4">
+              {/* AI Search Bar - Only show if showSearch is true and no outfit suggestions */}
+              {showSearch && !outfitSuggestions && (
+                <div className="max-w-2xl mx-auto px-4 mb-12">
                   <form onSubmit={handleSearch} className="relative">
                     <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-slate-500/20 focus-within:border-slate-300">
                       <textarea
@@ -1235,7 +1240,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
               {/* Outfit Suggestions Panel - Show below search area */}
               {outfitSuggestions && showSearch && (
-                <div className="container mx-auto mb-12 px-4">
+                <div className="w-full max-w-7xl mx-auto mb-12 px-4">
                   <div className="flex flex-col gap-8">
                     {/* Top - Try Another Search button */}
                     <div className="text-center">
@@ -1252,14 +1257,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     </div>
 
                     {/* Content area with outfit display and style inspiration side by side */}
-                    <div className="flex flex-col lg:flex-row gap-6 justify-center items-stretch">
+                    <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
                       {/* Left side - Outfit display */}
                       <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
                         {(() => {
                           // Show loading state
                           if ((outfitSuggestions as any)?.loading) {
                             return (
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
+                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col">
                                 {/* Header with celebrity info */}
                                 <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1268,7 +1273,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                     <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
                                   </div>
                                 </div>
-
                                 {/* Loading items */}
                                 <div className="p-4 space-y-4 flex-1 overflow-y-auto">
                                   {[1, 2, 3, 4].map((i) => (
@@ -1285,7 +1289,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                     </div>
                                   ))}
                                 </div>
-
                                 {/* Loading total */}
                                 <div className="border-t border-gray-200 p-4 flex-shrink-0">
                                   <div className="flex items-center justify-between mb-4">
@@ -1315,7 +1318,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
                         {isStyleLoading ? (
                           // Loading state for style inspiration
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[650px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1331,14 +1334,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 mx-auto w-32" />
                                 <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-24" />
                               </div>
-                            </div>
-                            {/* Loading footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
+                              {/* Loading footer */}
+                              <div className="border-t border-gray-200 p-4 flex-shrink-0">
+                                <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
+                              </div>
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-full flex flex-col">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[650px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -1360,7 +1363,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               celebrityMediaGallery[selectedCelebrity] ? (
                                 // Show dynamic media for selected celebrity
                                 <div className="flex-1 w-full">
-                                  <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative min-h-[400px]">
+                                  <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden relative">
                                     <img
                                       src={
                                         celebrityMediaGallery[
@@ -1405,7 +1408,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 </div>
                               ) : (
                                 // Show default image for no celebrity selected
-                                <div className="flex-1 rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer border border-gray-100 min-h-[400px]">
+                                <div className="flex-1 rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer border border-gray-100">
                                   <img
                                     src="/images/style-inspiration.jpg"
                                     alt="Featured style inspiration"
@@ -1465,6 +1468,47 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
+                    <div className="w-full max-w-4xl mx-auto px-4 transform transition-all duration-500 ease-in-out">
+                      <form onSubmit={handleSearch} className="relative">
+                        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-slate-500/20 focus-within:border-slate-300">
+                          <textarea
+                            value={searchQuery}
+                            onChange={handleTextareaChange}
+                            placeholder="Ask for another style or outfit idea..."
+                            className="w-full px-6 py-5 pr-32 text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
+                            disabled={isLoading}
+                            rows={1}
+                            style={{
+                              height: searchQuery ? textareaHeight : "64px",
+                            }}
+                          />
+                          <div className="absolute right-4 bottom-4 flex items-center gap-3">
+                            <div className="text-sm text-gray-400 hidden md:block">
+                              {promptCount}/7 free
+                            </div>
+                            <button
+                              type="submit"
+                              disabled={isLoading || !searchQuery.trim()}
+                              className="px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm shadow-lg hover:shadow-xl flex-shrink-0"
+                            >
+                              {isLoading ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span>Styling...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-5 h-5" />
+                                  <span>Style</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 </div>
@@ -1630,7 +1674,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
                             </div>
                           </div>
-
                           {/* Loading items */}
                           <div className="p-4 space-y-4">
                             {[1, 2, 3, 4].map((i) => (
@@ -1647,7 +1690,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               </div>
                             ))}
                           </div>
-
                           {/* Loading total */}
                           <div className="border-t border-gray-200 p-4">
                             <div className="flex items-center justify-between mb-4">
@@ -1677,13 +1719,11 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </div>
         </div>
       </div>
-
       {/* Signup/Payment Dialog */}
       <SignupPaymentDialog
         isOpen={showDialog}
         onClose={() => setShowDialog(false)}
       />
-
       {/* Sign In Dialog */}
       {showSignInDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1748,7 +1788,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12-12-12-12z" />
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z" />
                 </svg>
                 Continue with GitHub
               </button>
@@ -1763,7 +1803,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </div>
         </div>
       )}
-
       {/* Full Look Modal */}
       {showLookModal && selectedLookData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
