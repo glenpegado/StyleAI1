@@ -93,18 +93,236 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const [favoriteImages, setFavoriteImages] = useState<Set<string>>(new Set());
   const supabase = createClient();
 
+  // Hardcoded Odell Beckham outfit data
+  const odellBeckhamOutfit: OutfitSuggestion = {
+    main_description:
+      "Odell Beckham Jr's signature streetwear style featuring luxury designer pieces with artistic flair and premium accessories.",
+    tops: [
+      {
+        name: "Yearbook Camp Shirt",
+        description:
+          "Vintage-inspired camp shirt with artistic yearbook graphics",
+        price: "$260",
+        brand: "Samuel Zelig",
+        website: "WhatsOnTheStar",
+        website_url:
+          "https://whatsonthestar.com/item/samuel-zelig-257268/go/355433?platform=desktop",
+        image_url: "/images/odell-beckham-items.png",
+        availability: "In Stock",
+        celebrity_worn: true,
+        store_badge: "bg-purple-100 text-purple-800",
+      },
+      {
+        name: "Vintage Camp Shirt",
+        description: "Similar vintage camp shirt style",
+        price: "$89",
+        brand: "Urban Outfitters",
+        website: "Urban Outfitters",
+        website_url: "https://www.urbanoutfitters.com",
+        image_url:
+          "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-blue-100 text-blue-800",
+      },
+      {
+        name: "Graphic Camp Shirt",
+        description: "Affordable camp shirt with graphics",
+        price: "$35",
+        brand: "H&M",
+        website: "H&M",
+        website_url: "https://www2.hm.com",
+        image_url:
+          "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-green-100 text-green-800",
+      },
+    ],
+    bottoms: [
+      {
+        name: "Designer Cargo Pants",
+        description: "Premium cargo pants with utility pockets and tapered fit",
+        price: "$450",
+        brand: "Stone Island",
+        website: "WhatsOnTheStar",
+        website_url: "https://whatsonthestar.com",
+        image_url:
+          "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&q=80",
+        availability: "In Stock",
+        celebrity_worn: true,
+        store_badge: "bg-purple-100 text-purple-800",
+      },
+      {
+        name: "Utility Cargo Pants",
+        description: "Mid-range cargo pants with multiple pockets",
+        price: "$120",
+        brand: "Carhartt WIP",
+        website: "Urban Outfitters",
+        website_url: "https://www.urbanoutfitters.com",
+        image_url:
+          "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-blue-100 text-blue-800",
+      },
+      {
+        name: "Basic Cargo Pants",
+        description: "Affordable cargo pants with classic fit",
+        price: "$45",
+        brand: "Dickies",
+        website: "Target",
+        website_url: "https://www.target.com",
+        image_url:
+          "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-green-100 text-green-800",
+      },
+    ],
+    accessories: [
+      {
+        name: "Deader With Age Reconstructed Hat",
+        description: "Unique reconstructed cap with artistic patchwork design",
+        price: "$560",
+        brand: "Better With Age",
+        website: "WhatsOnTheStar",
+        website_url:
+          "https://whatsonthestar.com/item/better-with-age-257269/go/355434?platform=desktop",
+        image_url: "/images/odell-beckham-items.png",
+        availability: "Limited Stock",
+        celebrity_worn: true,
+        store_badge: "bg-purple-100 text-purple-800",
+      },
+      {
+        name: "Intrecciato Rectangular Sunglasses",
+        description: "Luxury woven leather sunglasses with distinctive design",
+        price: "$400",
+        brand: "Bottega Veneta",
+        website: "WhatsOnTheStar",
+        website_url:
+          "https://whatsonthestar.com/item/bottega-257267/go/355432?platform=desktop",
+        image_url: "/images/odell-beckham-items.png",
+        availability: "In Stock",
+        celebrity_worn: true,
+        store_badge: "bg-purple-100 text-purple-800",
+      },
+      {
+        name: "Patchwork Baseball Cap",
+        description: "Artistic patchwork cap similar style",
+        price: "$125",
+        brand: "Stussy",
+        website: "Stussy",
+        website_url: "https://www.stussy.com",
+        image_url:
+          "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-blue-100 text-blue-800",
+      },
+      {
+        name: "Rectangular Sunglasses",
+        description: "Designer-inspired rectangular sunglasses",
+        price: "$89",
+        brand: "Ray-Ban",
+        website: "Ray-Ban",
+        website_url: "https://www.ray-ban.com",
+        image_url:
+          "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-blue-100 text-blue-800",
+      },
+      {
+        name: "Vintage Baseball Cap",
+        description: "Classic vintage-style baseball cap",
+        price: "$25",
+        brand: "New Era",
+        website: "New Era",
+        website_url: "https://www.neweracap.com",
+        image_url:
+          "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-green-100 text-green-800",
+      },
+      {
+        name: "Classic Sunglasses",
+        description: "Affordable classic sunglasses",
+        price: "$19",
+        brand: "Uniqlo",
+        website: "Uniqlo",
+        website_url: "https://www.uniqlo.com",
+        image_url:
+          "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-green-100 text-green-800",
+      },
+    ],
+    shoes: [
+      {
+        name: "Saint Michael Socks",
+        description: "Premium designer socks with Saint Michael branding",
+        price: "$85",
+        brand: "Saint Michael",
+        website: "WhatsOnTheStar",
+        website_url:
+          "https://whatsonthestar.com/item/saint-michael-257270/go/355435?platform=desktop",
+        image_url: "/images/odell-beckham-items.png",
+        availability: "In Stock",
+        celebrity_worn: true,
+        store_badge: "bg-purple-100 text-purple-800",
+      },
+      {
+        name: "Designer Crew Socks",
+        description: "Premium crew socks with logo",
+        price: "$35",
+        brand: "Off-White",
+        website: "SSENSE",
+        website_url: "https://www.ssense.com",
+        image_url:
+          "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-blue-100 text-blue-800",
+      },
+      {
+        name: "Crew Socks Pack",
+        description: "Basic crew socks 3-pack",
+        price: "$12",
+        brand: "Nike",
+        website: "Nike",
+        website_url: "https://www.nike.com",
+        image_url:
+          "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=400&q=80",
+        availability: "In Stock",
+        store_badge: "bg-green-100 text-green-800",
+      },
+    ],
+  };
+
   const generateOutfit = async (query: string) => {
     if (hasReachedLimit) {
       setShowDialog(true);
       return;
     }
 
+    // Check if this is an Odell Beckham query
+    if (
+      query.toLowerCase().includes("odell beckham") ||
+      query.toLowerCase().includes("obj")
+    ) {
+      setIsLoading(true);
+      setOutfitSuggestions({ loading: true } as any);
+
+      // Simulate loading time
+      setTimeout(() => {
+        setOutfitSuggestions(odellBeckhamOutfit);
+        setIsLoading(false);
+        incrementPrompt();
+
+        if (promptCount + 1 >= 7) {
+          setShowDialog(true);
+        }
+      }, 1500);
+      return;
+    }
+
     // Show loading state immediately for both outfit and style
     setOutfitSuggestions({ loading: true } as any);
     setIsLoading(true);
-
-    // Increment prompt count after successful API call to prevent issues with auto-reset
-    // incrementPrompt();
 
     // Simplified retry logic with better error handling
     const makeRequestWithRetry = async (maxRetries = 3) => {
