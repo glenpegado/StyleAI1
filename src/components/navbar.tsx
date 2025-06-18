@@ -44,6 +44,14 @@ export default function Navbar() {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  const handleNavigation = (href: string) => {
+    setIsOpen(false);
+    // Force navigation using window.location for immediate response
+    if (typeof window !== "undefined") {
+      window.location.href = href;
+    }
+  };
+
   const navItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/dashboard", label: "Style Generator", icon: Sparkles },
@@ -70,10 +78,9 @@ export default function Navbar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-100">
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            <div
+              onClick={() => handleNavigation("/")}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
@@ -81,7 +88,7 @@ export default function Navbar() {
               <span className="text-lg font-semibold text-gray-900">
                 Urban Stylist AI
               </span>
-            </Link>
+            </div>
           </div>
 
           {/* Navigation Items */}
@@ -90,16 +97,14 @@ export default function Navbar() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
+                  <div
                     key={item.href}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 group text-sm font-medium"
-                    prefetch={true}
+                    onClick={() => handleNavigation(item.href)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 group text-sm font-medium cursor-pointer"
                   >
                     <Icon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
                     <span className="truncate">{item.label}</span>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -128,22 +133,20 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="space-y-2">
-                <Link
-                  href="/sign-in"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 w-full text-sm font-medium"
+                <div
+                  onClick={() => handleNavigation("/sign-in")}
+                  className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 w-full text-sm font-medium cursor-pointer"
                 >
                   <LogIn className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign In</span>
-                </Link>
-                <Link
-                  href="/sign-up"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg"
+                </div>
+                <div
+                  onClick={() => handleNavigation("/sign-up")}
+                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign Up</span>
-                </Link>
+                </div>
               </div>
             )}
           </div>
