@@ -21,6 +21,7 @@ import { User } from "@supabase/supabase-js";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -29,14 +30,40 @@ export default function Navbar() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      if (user) {
+        // Fetch user profile from the database
+        const { data: profile, error } = await supabase
+          .from("users")
+          .select("full_name, name, email")
+          .eq("user_id", user.id)
+          .single();
+
+        console.log("Profile data:", profile, "Error:", error);
+        setUserProfile(profile);
+      }
     };
 
     getUser();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        // Fetch user profile from the database
+        const { data: profile, error } = await supabase
+          .from("users")
+          .select("full_name, name, email")
+          .eq("user_id", session.user.id)
+          .single();
+
+        console.log("Profile data:", profile, "Error:", error);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -53,8 +80,6 @@ export default function Navbar() {
   };
 
   const navItems = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/dashboard", label: "Style Generator", icon: Sparkles },
     { href: "/dashboard/favorites", label: "Favorites", icon: Heart },
     { href: "/pricing", label: "Pricing", icon: CreditCard },
   ];
@@ -120,10 +145,9 @@ export default function Navbar() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {user.email?.split("@")[0]}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {user.email}
+                      {userProfile?.full_name ||
+                        userProfile?.name ||
+                        "Ana Volta"}
                     </p>
                   </div>
                 </div>
@@ -153,13 +177,31 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Menu Toggle Button - Fixed position */}
-      <button
-        onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 p-2 bg-white hover:bg-gray-100 rounded-lg transition-colors shadow-md border border-gray-200"
-      >
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+      {/* Top Bar with Logo and Menu Toggle */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Menu Toggle Button */}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Logo */}
+          <div
+            onClick={() => handleNavigation("/")}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            <div className="w-7 h-7 bg-gradient-to-br from-gray-800 to-black rounded-lg flex items-center justify-center shadow-lg">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+            </div>
+            <span className="text-lg font-semibold bg-gradient-to-r from-gray-800 to-black bg-clip-text text-transparent">
+              peacedrobe
+            </span>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

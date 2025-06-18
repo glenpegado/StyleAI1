@@ -36,6 +36,16 @@ export async function middleware(req: NextRequest) {
     // Auth session error handling without console.error
   }
 
+  // Skip middleware for auth callback routes to prevent redirect loops
+  if (req.nextUrl.pathname.startsWith("/auth/callback")) {
+    return res;
+  }
+
+  // protected routes
+  if (req.nextUrl.pathname.startsWith("/dashboard") && (!session || error)) {
+    return NextResponse.redirect(new URL("/sign-in", req.url));
+  }
+
   return res;
 }
 

@@ -1,5 +1,6 @@
 import { TempoInit } from "@/components/tempo-init";
 import { PromptProvider } from "@/contexts/PromptContext";
+import Navbar from "@/components/navbar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -8,8 +9,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tempo - Modern SaaS Starter",
-  description: "A modern full-stack starter template powered by Next.js",
+  title: "peacedrobe - Urban Fashion AI",
+  description:
+    "Discover complete outfit ideas with high-end options and budget-friendly alternatives",
 };
 
 export default function RootLayout({

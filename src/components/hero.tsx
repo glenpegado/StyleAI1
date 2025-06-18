@@ -276,6 +276,42 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         availability: "In Stock",
       },
     ],
+    fragrance: [
+      {
+        name: "Champion Spirit",
+        description: "Signature masculine fragrance with woody and spicy notes",
+        price: "$120",
+        brand: "Tom Ford",
+        website: "SEPHORA",
+        website_url: "https://www.sephora.com/product/oud-wood-P393613",
+        image_url:
+          "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&q=80",
+        availability: "In Stock",
+        celebrity_worn: true,
+      },
+      {
+        name: "Woody Cologne",
+        description: "Premium woody fragrance with masculine appeal",
+        price: "$75",
+        brand: "Versace",
+        website: "ULTA",
+        website_url: "https://www.ulta.com",
+        image_url:
+          "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&q=80",
+        availability: "In Stock",
+      },
+      {
+        name: "Fresh Cologne",
+        description: "Affordable fresh scent for everyday wear",
+        price: "$25",
+        brand: "Axe",
+        website: "TARGET",
+        website_url: "https://www.target.com",
+        image_url:
+          "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=400&q=80",
+        availability: "In Stock",
+      },
+    ],
   };
 
   const generateOutfit = async (query: string) => {
@@ -1099,6 +1135,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       bottoms: outfitData.bottoms || [],
       shoes: outfitData.shoes || [],
       accessories: outfitData.accessories || [],
+      fragrance: outfitData.fragrance || [],
     };
 
     const allCategories = Object.entries(groupedItems).filter(
@@ -1141,30 +1178,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             <h3 className="font-semibold text-gray-800 text-lg truncate">
               {celebrityName || "peacedrobe AI"}
             </h3>
-            {celebrityData?.fragrance && (
-              <div className="flex items-center gap-2 mt-1">
-                <a
-                  href="https://www.fragrantica.com/perfume/Tom-Ford/Oud-Wood-1826.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1541643600914-78b084683601?w=32&h=32&fit=crop&crop=center"
-                    alt="Champion Spirit Perfume"
-                    className="w-6 h-6 rounded object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src =
-                        "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=32&h=32&fit=crop&crop=center";
-                    }}
-                  />
-                  <span className="text-slate-600 text-xs font-medium">
-                    {celebrityData.fragrance}
-                  </span>
-                </a>
-              </div>
-            )}
           </div>
           <button
             onClick={() => saveLookToBoard(outfitData, celebrityName)}
@@ -1315,39 +1328,41 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             </span>
           </div>
 
-          {/* View Full Look Button */}
-          <button
-            onClick={() => {
-              setSelectedLookData({
-                outfit: outfitData,
-                celebrity: celebrityName,
-                celebrityData,
-              });
-              setShowLookModal(true);
-            }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {/* View Full Look Button - Subtle hover overlay */}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                setSelectedLookData({
+                  outfit: outfitData,
+                  celebrity: celebrityName,
+                  celebrityData,
+                });
+                setShowLookModal(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-100/60 hover:bg-black/80 text-gray-600 hover:text-white rounded-xl font-medium transition-all duration-300 text-sm border border-gray-200/50 hover:border-white/40"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-            View Full Look
-          </button>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <span>View Full Look</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1366,7 +1381,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                  <span className="text-black">peacedrobe</span>
+                  <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-black bg-clip-text text-transparent animate-pulse">
+                    peacedrobe
+                  </span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
@@ -1379,7 +1396,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {showSearch && !outfitSuggestions && (
                 <div className="max-w-2xl mx-auto px-4 mb-12">
                   <form onSubmit={handleSearch} className="relative">
-                    <div className="relative bg-white rounded-2xl border border-beige-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
+                    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-500/20 focus-within:border-gray-300">
                       <textarea
                         value={searchQuery}
                         onChange={handleTextareaChange}
@@ -1413,20 +1430,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                         <button
                           type="submit"
                           disabled={isLoading || !searchQuery.trim()}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0 min-w-[90px] sm:min-w-[120px] justify-center"
+                          className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-white rounded-full hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg flex-shrink-0"
                         >
                           {isLoading ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                              <span className="hidden sm:inline">
-                                Styling...
-                              </span>
-                            </>
+                            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                           ) : (
-                            <>
-                              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                              <span className="hidden sm:inline">Style</span>
-                            </>
+                            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                           )}
                         </button>
                       </div>
@@ -1748,7 +1757,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
                     <div className="w-full max-w-4xl mx-auto px-4 mb-6 transform transition-all duration-500 ease-in-out">
                       <form onSubmit={handleSearch} className="relative">
-                        <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
+                        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-500/20 focus-within:border-gray-300">
                           <textarea
                             value={searchQuery}
                             onChange={handleTextareaChange}
@@ -1777,22 +1786,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             <button
                               type="submit"
                               disabled={isLoading || !searchQuery.trim()}
-                              className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 text-xs sm:text-sm flex-shrink-0 min-w-[95px] sm:min-w-[125px] justify-center"
+                              className="w-10 h-10 sm:w-12 sm:h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center flex-shrink-0"
                             >
                               {isLoading ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                                  <span className="hidden sm:inline">
-                                    Styling...
-                                  </span>
-                                </>
+                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                               ) : (
-                                <>
-                                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                  <span className="hidden sm:inline">
-                                    Style
-                                  </span>
-                                </>
+                                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                               )}
                             </button>
                           </div>
@@ -1808,7 +1807,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 <div className="max-w-5xl mx-auto px-4">
                   <div className="text-center mb-6">
                     <h2 className="text-lg font-light text-gray-700 mb-2 tracking-wide">
-                      trending
+                      Trending
                     </h2>
                   </div>
 
@@ -2187,9 +2186,28 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
                         Signature Fragrance
                       </h4>
-                      <p className="text-sm sm:text-base text-violet-600 font-medium">
-                        🌸 {selectedLookData.celebrityData.fragrance}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href="https://www.fragrantica.com/perfume/Tom-Ford/Oud-Wood-1826.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                        >
+                          <img
+                            src="https://images.unsplash.com/photo-1541643600914-78b084683601?w=32&h=32&fit=crop&crop=center"
+                            alt="Champion Spirit Perfume"
+                            className="w-6 h-6 rounded object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src =
+                                "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=32&h=32&fit=crop&crop=center";
+                            }}
+                          />
+                          <span className="text-sm sm:text-base text-violet-600 font-medium">
+                            🌸 {selectedLookData.celebrityData.fragrance}
+                          </span>
+                        </a>
+                      </div>
                     </div>
                   )}
 
