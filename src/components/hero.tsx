@@ -89,6 +89,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const mediaTransitionRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentStyleImageIndex, setCurrentStyleImageIndex] = useState(0);
+  const [favoriteImages, setFavoriteImages] = useState<Set<string>>(new Set());
   const supabase = createClient();
 
   const generateOutfit = async (query: string) => {
@@ -1352,7 +1354,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               {selectedCelebrity &&
                               celebrityMediaGallery[selectedCelebrity] ? (
                                 // Show dynamic media for selected celebrity
-                                <div className="w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl">
+                                <div className="w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl">
                                   <img
                                     src={
                                       celebrityMediaGallery[selectedCelebrity][
@@ -1373,6 +1375,83 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                     }}
                                   />
 
+                                  {/* Navigation arrows */}
+                                  <button
+                                    onClick={() => {
+                                      const gallery =
+                                        celebrityMediaGallery[
+                                          selectedCelebrity
+                                        ];
+                                      setCurrentMediaIndex((prev) =>
+                                        prev === 0
+                                          ? gallery.length - 1
+                                          : prev - 1,
+                                      );
+                                    }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                  >
+                                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const gallery =
+                                        celebrityMediaGallery[
+                                          selectedCelebrity
+                                        ];
+                                      setCurrentMediaIndex((prev) =>
+                                        prev === gallery.length - 1
+                                          ? 0
+                                          : prev + 1,
+                                      );
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                  >
+                                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                                  </button>
+
+                                  {/* Favorite button */}
+                                  <button
+                                    onClick={() => {
+                                      const imageKey = `${selectedCelebrity}-${currentMediaIndex}`;
+                                      setFavoriteImages((prev) => {
+                                        const newSet = new Set(prev);
+                                        if (newSet.has(imageKey)) {
+                                          newSet.delete(imageKey);
+                                        } else {
+                                          newSet.add(imageKey);
+                                        }
+                                        return newSet;
+                                      });
+                                    }}
+                                    className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                  >
+                                    <svg
+                                      className={`w-5 h-5 transition-colors ${
+                                        favoriteImages.has(
+                                          `${selectedCelebrity}-${currentMediaIndex}`,
+                                        )
+                                          ? "text-red-500 fill-current"
+                                          : "text-gray-600 hover:text-red-400"
+                                      }`}
+                                      fill={
+                                        favoriteImages.has(
+                                          `${selectedCelebrity}-${currentMediaIndex}`,
+                                        )
+                                          ? "currentColor"
+                                          : "none"
+                                      }
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                      />
+                                    </svg>
+                                  </button>
+
                                   {/* Elegant overlay gradient */}
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
 
@@ -1383,18 +1462,21 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                     ].map((_, index) => (
                                       <div
                                         key={index}
-                                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                                           index === currentMediaIndex
                                             ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
                                             : "bg-white/60 hover:bg-white/80"
                                         }`}
+                                        onClick={() =>
+                                          setCurrentMediaIndex(index)
+                                        }
                                       />
                                     ))}
                                   </div>
                                 </div>
                               ) : (
                                 // Show default image for no celebrity selected
-                                <div className="w-full h-[400px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
+                                <div className="w-full h-[500px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
                                   <img
                                     src="/images/style-inspiration.jpg"
                                     alt="Featured style inspiration"
@@ -1406,6 +1488,46 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                         "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
                                     }}
                                   />
+
+                                  {/* Favorite button for default image */}
+                                  <button
+                                    onClick={() => {
+                                      const imageKey = "default-style";
+                                      setFavoriteImages((prev) => {
+                                        const newSet = new Set(prev);
+                                        if (newSet.has(imageKey)) {
+                                          newSet.delete(imageKey);
+                                        } else {
+                                          newSet.add(imageKey);
+                                        }
+                                        return newSet;
+                                      });
+                                    }}
+                                    className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                  >
+                                    <svg
+                                      className={`w-5 h-5 transition-colors ${
+                                        favoriteImages.has("default-style")
+                                          ? "text-red-500 fill-current"
+                                          : "text-gray-600 hover:text-red-400"
+                                      }`}
+                                      fill={
+                                        favoriteImages.has("default-style")
+                                          ? "currentColor"
+                                          : "none"
+                                      }
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                      />
+                                    </svg>
+                                  </button>
+
                                   {/* Elegant overlay */}
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
                                 </div>
@@ -1426,32 +1548,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                     : "Effortless urban fashion"}
                                 </p>
                               </div>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  />
-                                </svg>
-                                View More Styles
-                              </button>
                             </div>
                           </div>
                         )}
@@ -1518,21 +1614,40 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
               {/* Celebrity Trends Section - Only show if no outfit suggestions and showSearch is true */}
               {!outfitSuggestions && showSearch && (
-                <div className="max-w-6xl mx-auto px-4">
-                  <div className="text-center mb-8">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                      Trending Celebrity Styles
+                <div className="max-w-7xl mx-auto px-4">
+                  <div className="text-left mb-8">
+                    <h2 className="text-2xl sm:text-3xl font-light text-gray-900 mb-2 tracking-wide">
+                      Trending this Week
                     </h2>
-                    <p className="text-gray-600 text-sm sm:text-base">
-                      Get inspired by your favorite celebrities' latest looks
-                    </p>
                   </div>
 
-                  {/* Auto-scrolling celebrity cards */}
+                  {/* Navigation arrows */}
                   <div className="relative">
+                    <button
+                      onClick={() => {
+                        if (scrollContainerRef.current) {
+                          scrollContainerRef.current.scrollLeft -= 320;
+                        }
+                      }}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 border border-gray-200"
+                    >
+                      <ChevronLeft className="w-6 h-6 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (scrollContainerRef.current) {
+                          scrollContainerRef.current.scrollLeft += 320;
+                        }
+                      }}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 border border-gray-200"
+                    >
+                      <ChevronRight className="w-6 h-6 text-gray-700" />
+                    </button>
+
+                    {/* Auto-scrolling celebrity cards */}
                     <div
                       ref={scrollContainerRef}
-                      className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
+                      className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 px-16"
                       style={{
                         scrollBehavior: "smooth",
                         scrollbarWidth: "none",
@@ -1546,54 +1661,23 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                         (trend, index) => (
                           <div
                             key={`${trend.name}-${index}`}
-                            className="flex-shrink-0 w-40 cursor-pointer group"
+                            className="flex-shrink-0 w-72 cursor-pointer group"
                             onClick={() =>
                               handleStyleClick(trend.query, trend.name)
                             }
                           >
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                              <div className="aspect-square overflow-hidden">
+                            <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 border border-gray-100">
+                              <div className="aspect-[4/3] overflow-hidden bg-gray-50">
                                 <img
                                   src={trend.image}
                                   alt={trend.name}
-                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                               </div>
-                              <div className="p-3">
-                                <h3 className="font-semibold text-gray-900 text-sm mb-2 truncate">
-                                  {trend.name}
+                              <div className="p-6">
+                                <h3 className="font-normal text-gray-900 text-base mb-1 tracking-wide">
+                                  {trend.name.toLowerCase()}
                                 </h3>
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                  {trend.tags
-                                    .slice(0, 1)
-                                    .map((tag, tagIndex) => (
-                                      <span
-                                        key={tagIndex}
-                                        className={`px-2 py-1 rounded-full text-xs font-medium ${tag.color}`}
-                                      >
-                                        {tag.name}
-                                      </span>
-                                    ))}
-                                  {trend.platform !== "Celebrity" && (
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        trend.platform === "Instagram"
-                                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                          : trend.platform === "TikTok"
-                                            ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
-                                            : trend.platform === "YouTube"
-                                              ? "bg-red-600 text-white"
-                                              : "bg-gray-100 text-gray-700"
-                                      }`}
-                                    >
-                                      {trend.platform}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center text-slate-600 text-xs font-medium">
-                                  <Sparkles className="w-3 h-3 mr-1" />
-                                  Get the look
-                                </div>
                               </div>
                             </div>
                           </div>
