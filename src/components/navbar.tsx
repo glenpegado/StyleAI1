@@ -69,12 +69,6 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
-
-  const handleNavigation = (href: string) => {
-    setIsOpen(false);
-  };
-
   const navItems = [
     { href: "/dashboard/favorites", label: "Favorites", icon: Heart },
     { href: "/pricing", label: "Pricing", icon: CreditCard },
@@ -82,19 +76,19 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
+      {/* Hover trigger area */}
+      <div
+        className="fixed top-0 left-0 w-4 h-full z-40"
+        onMouseEnter={() => setIsOpen(true)}
+      />
 
       {/* Sidebar */}
       <nav
         className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transform transition-all duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } w-64 shadow-lg`}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -114,7 +108,7 @@ export default function Navbar() {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 py-6">
+          <div className="flex-1 py-6 overflow-y-auto">
             <div className="px-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -177,21 +171,22 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Top Bar with Menu Toggle */}
+      {/* Top Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center px-4 py-3 max-w-7xl mx-auto">
-          {/* Menu Toggle Button */}
-          <button
-            onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 shadow-sm bg-white"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <X className="w-5 h-5 text-gray-700" />
-            ) : (
-              <Menu className="w-5 h-5 text-gray-700" />
-            )}
-          </button>
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Left side - Peacedrobe Name */}
+          <div className="flex items-center gap-3">
+            {/* Peacedrobe Name */}
+            <Link
+              href="/"
+              className="text-lg font-semibold text-black hover:opacity-80 transition-opacity"
+            >
+              peacedrobe
+            </Link>
+          </div>
+
+          {/* Right side - empty for now */}
+          <div></div>
         </div>
       </div>
     </>

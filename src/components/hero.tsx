@@ -1207,7 +1207,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </button>
         </div>
         {/* Items List with Swipeable Alternatives */}
-        <div className="p-3 space-y-2 flex-1 overflow-hidden">
+        <div className="p-3 space-y-2 flex-1 overflow-y-auto">
           {allCategories.map(([category, categoryItems], categoryIndex) => {
             const currentIndex = currentItemIndices[categoryIndex] || 0;
             const currentItem = categoryItems[currentIndex] || categoryItems[0];
