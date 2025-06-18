@@ -55,51 +55,35 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-        if (userError) {
-          console.error("Error getting user:", userError);
-          setError("Failed to authenticate user");
-          setLoading(false);
-          return;
-        }
-
-        if (!user) {
-          // Let SubscriptionCheck handle the redirect
-          setLoading(false);
-          return;
-        }
-
-        setUser(user);
-
-        // Fetch saved looks
-        const { data: savedLooks, error } = await supabase
-          .from("saved_looks")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching saved looks:", error);
-          setError("Failed to load favorites. Please try again.");
-        } else {
-          setSavedLooks(savedLooks || []);
-          setError(null);
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setError("An unexpected error occurred. Please try again.");
-      } finally {
-        setLoading(false);
+      if (!user) {
+        router.push("/sign-in");
+        return;
       }
+
+      setUser(user);
+
+      // Fetch saved looks
+      const { data: savedLooks, error } = await supabase
+        .from("saved_looks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching saved looks:", error);
+      } else {
+        setSavedLooks(savedLooks || []);
+      }
+
+      setLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [router, supabase]);
 
   const removeFavorite = async (favoriteId: string) => {
     if (!user) return;
@@ -176,33 +160,6 @@ export default function FavoritesPage() {
             <div className="text-center py-16">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading your favorites...</p>
-            </div>
-          </div>
-        </main>
-      </SubscriptionCheck>
-    );
-  }
-
-  if (error && !savedLooks) {
-    return (
-      <SubscriptionCheck>
-        <DashboardNavbar />
-        <main className="w-full bg-gray-50 min-h-screen">
-          <div className="container mx-auto px-4 py-8">
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X className="w-8 h-8 text-red-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Unable to Load Favorites
-              </h3>
-              <p className="text-gray-600 mb-6">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                Try Again
-              </button>
             </div>
           </div>
         </main>

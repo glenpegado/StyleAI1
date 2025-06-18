@@ -1,6 +1,5 @@
 import { TempoInit } from "@/components/tempo-init";
 import { PromptProvider } from "@/contexts/PromptContext";
-import Navbar from "@/components/navbar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -9,9 +8,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "peacedrobe - Urban Fashion AI",
-  description:
-    "Discover complete outfit ideas with high-end options and budget-friendly alternatives",
+  title: "Tempo - Modern SaaS Starter",
+  description: "A modern full-stack starter template powered by Next.js",
 };
 
 export default function RootLayout({
@@ -21,11 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
       <body className={inter.className} suppressHydrationWarning>
-        <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
         <PromptProvider>
-          <Navbar />
-          <div className="pt-16">{children}</div>
+          {children}
           <TempoInit />
         </PromptProvider>
       </body>

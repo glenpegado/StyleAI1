@@ -1207,7 +1207,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </button>
         </div>
         {/* Items List with Swipeable Alternatives */}
-        <div className="p-3 space-y-2 flex-1 overflow-y-auto">
+        <div className="p-3 space-y-2 flex-1 overflow-hidden">
           {allCategories.map(([category, categoryItems], categoryIndex) => {
             const currentIndex = currentItemIndices[categoryIndex] || 0;
             const currentItem = categoryItems[currentIndex] || categoryItems[0];
@@ -1381,9 +1381,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                  <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-black bg-clip-text text-transparent animate-pulse-slow">
-                    peacedrobe
-                  </span>
+                  <span className="text-black">peacedrobe</span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">

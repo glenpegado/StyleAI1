@@ -17,13 +17,10 @@ export function SubscriptionCheck({
   const [user, setUser] = useState<User | null>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasChecked, setHasChecked] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    if (hasChecked) return;
-
     const checkSubscription = async () => {
       try {
         const {
@@ -31,8 +28,6 @@ export function SubscriptionCheck({
         } = await supabase.auth.getUser();
 
         if (!user) {
-          setHasChecked(true);
-          setLoading(false);
           router.push("/sign-in");
           return;
         }
@@ -51,24 +46,19 @@ export function SubscriptionCheck({
         setIsSubscribed(subscribed);
 
         if (!subscribed) {
-          setHasChecked(true);
-          setLoading(false);
           router.push(redirectTo);
           return;
         }
-
-        setHasChecked(true);
-        setLoading(false);
       } catch (error) {
         console.error("Error checking subscription:", error);
-        setHasChecked(true);
-        setLoading(false);
         router.push("/sign-in");
+      } finally {
+        setLoading(false);
       }
     };
 
     checkSubscription();
-  }, [hasChecked, redirectTo, router, supabase]);
+  }, [router, redirectTo, supabase]);
 
   if (loading) {
     return (
