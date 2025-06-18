@@ -1394,7 +1394,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {showSearch && !outfitSuggestions && (
                 <div className="max-w-2xl mx-auto px-4 mb-12">
                   <form onSubmit={handleSearch} className="relative">
-                    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-500/20 focus-within:border-gray-300">
+                    <div className="relative bg-white rounded-2xl border border-beige-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                       <textarea
                         value={searchQuery}
                         onChange={handleTextareaChange}
@@ -1755,7 +1755,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
                     <div className="w-full max-w-4xl mx-auto px-4 mb-6 transform transition-all duration-500 ease-in-out">
                       <form onSubmit={handleSearch} className="relative">
-                        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-500/20 focus-within:border-gray-300">
+                        <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                           <textarea
                             value={searchQuery}
                             onChange={handleTextareaChange}
@@ -1805,7 +1805,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 <div className="max-w-5xl mx-auto px-4">
                   <div className="text-center mb-6">
                     <h2 className="text-lg font-light text-gray-700 mb-2 tracking-wide">
-                      Trending
+                      trending
                     </h2>
                   </div>
 

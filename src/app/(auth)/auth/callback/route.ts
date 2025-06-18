@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign in process completes
-  const redirectTo = redirect_to || "/dashboard";
+  const redirectTo = redirect_to || "/pricing";
 
   // Use the webapp URL instead of request origin to avoid localhost issues
   const redirectUrl = new URL(
@@ -45,9 +45,6 @@ export async function GET(request: Request) {
     "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
   );
   console.log("Redirecting to:", redirectUrl.toString());
-
-  // Add a small delay to ensure session is properly set
-  await new Promise((resolve) => setTimeout(resolve, 100));
 
   return NextResponse.redirect(redirectUrl);
 }

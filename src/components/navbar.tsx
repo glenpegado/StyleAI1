@@ -21,7 +21,6 @@ import { User } from "@supabase/supabase-js";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -30,40 +29,14 @@ export default function Navbar() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-
-      if (user) {
-        // Fetch user profile from the database
-        const { data: profile, error } = await supabase
-          .from("users")
-          .select("full_name, name, email")
-          .eq("user_id", user.id)
-          .single();
-
-        console.log("Profile data:", profile, "Error:", error);
-        setUserProfile(profile);
-      }
     };
 
     getUser();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-
-      if (session?.user) {
-        // Fetch user profile from the database
-        const { data: profile, error } = await supabase
-          .from("users")
-          .select("full_name, name, email")
-          .eq("user_id", session.user.id)
-          .single();
-
-        console.log("Profile data:", profile, "Error:", error);
-        setUserProfile(profile);
-      } else {
-        setUserProfile(null);
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -145,9 +118,10 @@ export default function Navbar() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {userProfile?.full_name ||
-                        userProfile?.name ||
-                        "Ana Volta"}
+                      {user.email?.split("@")[0]}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user.email}
                     </p>
                   </div>
                 </div>
