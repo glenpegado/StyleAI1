@@ -915,7 +915,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }, 0);
 
     return (
-      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
         {/* Header with celebrity info */}
         <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0">
@@ -1259,12 +1259,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     {/* Content area with outfit display and style inspiration side by side */}
                     <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
                       {/* Left side - Outfit display */}
-                      <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
+                      <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
                         {(() => {
                           // Show loading state
                           if ((outfitSuggestions as any)?.loading) {
                             return (
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col">
+                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
                                 {/* Header with celebrity info */}
                                 <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1315,10 +1315,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       </div>
 
                       {/* Right side - Style Inspiration Gallery */}
-                      <div className="w-full lg:w-auto lg:min-w-[500px] lg:max-w-[500px] flex">
+                      <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
                         {isStyleLoading ? (
                           // Loading state for style inspiration
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[650px]">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
@@ -1329,19 +1329,19 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             </div>
                             {/* Loading content */}
                             <div className="p-4 flex-1 flex flex-col">
-                              <div className="flex-1 bg-gray-200 rounded-lg animate-pulse min-h-[400px]" />
+                              <div className="flex-1 bg-gray-200 rounded-lg animate-pulse" />
                               <div className="mt-4 text-center flex-shrink-0">
                                 <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 mx-auto w-32" />
                                 <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-24" />
                               </div>
-                              {/* Loading footer */}
-                              <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                                <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                              </div>
+                            </div>
+                            {/* Loading footer */}
+                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
+                              <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[650px]">
+                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[580px]">
                             {/* Header */}
                             <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -1375,12 +1375,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                           selectedCelebrity
                                         ][currentMediaIndex]?.title
                                       }
-                                      className="w-full h-full object-cover transition-opacity duration-500"
-                                      style={{
-                                        objectFit: "cover",
-                                        width: "100%",
-                                        height: "100%",
-                                      }}
+                                      className="w-full h-full object-contain transition-opacity duration-500"
                                       onError={(e) => {
                                         const target =
                                           e.target as HTMLImageElement;
@@ -1412,7 +1407,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                   <img
                                     src="/images/style-inspiration.jpg"
                                     alt="Featured style inspiration"
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain"
                                     onError={(e) => {
                                       const target =
                                         e.target as HTMLImageElement;
@@ -1422,8 +1417,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                   />
                                 </div>
                               )}
-                              <div className="mt-4 text-center flex-shrink-0">
-                                <h4 className="font-semibold text-gray-900 mb-1">
+                              <div className="mt-3 text-center flex-shrink-0">
+                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">
                                   {selectedCelebrity &&
                                   celebrityMediaGallery[selectedCelebrity]
                                     ? celebrityMediaGallery[selectedCelebrity][
@@ -1431,7 +1426,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                       ]?.title || "Celebrity Style"
                                     : "Street Style Vibes"}
                                 </h4>
-                                <p className="text-gray-600 text-sm">
+                                <p className="text-gray-600 text-xs">
                                   {selectedCelebrity &&
                                   celebrityMediaGallery[selectedCelebrity]
                                     ? "Celebrity Fashion Moments"
@@ -1442,9 +1437,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
                             {/* Footer */}
                             <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                              <button className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                                 <svg
-                                  className="w-5 h-5"
+                                  className="w-4 h-4"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
