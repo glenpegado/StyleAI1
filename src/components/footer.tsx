@@ -55,7 +55,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@urbanstylist.ai"
+                  href="mailto:hello@peacedrobe.ai"
                   className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors"
                 >
                   Contact
@@ -142,18 +142,18 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-md flex items-center justify-center">
-                <span className="text-white text-xs font-bold">U</span>
+              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-slate-900 via-gray-800 to-zinc-900 rounded-md flex items-center justify-center shadow-lg">
+                <span className="text-white text-xs font-bold">P</span>
               </div>
-              <span className="font-semibold text-gray-900 text-sm">
-                Urban Stylist AI
+              <span className="font-semibold bg-gradient-to-r from-gray-900 via-slate-800 to-zinc-800 bg-clip-text text-transparent text-sm">
+                peacedrobe
               </span>
             </div>
 
             {/* Copyright and Social */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
               <div className="text-gray-500 text-xs">
-                © {currentYear} Urban Stylist AI. All rights reserved.
+                © {currentYear} peacedrobe. All rights reserved.
               </div>
 
               {/* Social Links */}
@@ -180,7 +180,7 @@ export default function Footer() {
                   <Github className="w-4 h-4" />
                 </a>
                 <a
-                  href="mailto:hello@urbanstylist.ai"
+                  href="mailto:hello@peacedrobe.ai"
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label="Email"
                 >

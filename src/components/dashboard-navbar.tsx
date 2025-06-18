@@ -24,11 +24,11 @@ export default function DashboardNavbar() {
           href="/"
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
+          <div className="w-6 h-6 bg-gradient-to-br from-slate-900 via-gray-800 to-zinc-900 rounded-lg flex items-center justify-center shadow-lg">
             <Sparkles className="w-3 h-3 text-white" />
           </div>
-          <span className="text-sm font-semibold text-gray-900">
-            Urban Stylist AI
+          <span className="text-sm font-semibold bg-gradient-to-r from-gray-900 via-slate-800 to-zinc-800 bg-clip-text text-transparent">
+            peacedrobe
           </span>
         </Link>
 
