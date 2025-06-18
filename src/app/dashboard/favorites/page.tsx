@@ -5,7 +5,14 @@ import { createClient } from "../../../../supabase/client";
 import { useRouter } from "next/navigation";
 import { SubscriptionCheck } from "@/components/subscription-check";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import { Heart, X, ExternalLink, ShoppingBag } from "lucide-react";
+import {
+  Heart,
+  X,
+  ExternalLink,
+  ShoppingBag,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User } from "@supabase/supabase-js";
@@ -50,6 +57,11 @@ export default function FavoritesPage() {
   const [savedLooks, setSavedLooks] = useState<SavedLook[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentLook, setCurrentLook] = useState<SavedLook | null>(null);
+  const [currentItemIndices, setCurrentItemIndices] = useState<{
+    [key: number]: number;
+  }>({});
   const router = useRouter();
   const supabase = createClient();
 
@@ -223,6 +235,13 @@ export default function FavoritesPage() {
                     quadrantItems={quadrantItems}
                     formatDate={formatDate}
                     onRemove={removeFavorite}
+                    onOpenModal={(look) => {
+                      setCurrentLook(look);
+                      setCurrentItemIndices(
+                        look.look_data.selected_items || {},
+                      );
+                      setIsOpen(true);
+                    }}
                   />
                 );
               })}
@@ -230,7 +249,17 @@ export default function FavoritesPage() {
           )}
         </div>
       </main>
-      <FavoriteModal />
+      <FavoriteModal
+        isOpen={isOpen}
+        currentLook={currentLook}
+        currentItemIndices={currentItemIndices}
+        setCurrentItemIndices={setCurrentItemIndices}
+        onClose={() => {
+          setIsOpen(false);
+          setCurrentLook(null);
+          setCurrentItemIndices({});
+        }}
+      />
     </SubscriptionCheck>
   );
 }
@@ -240,18 +269,26 @@ function FavoriteCard({
   quadrantItems,
   formatDate,
   onRemove,
+  onOpenModal,
 }: {
   look: SavedLook;
   quadrantItems: (OutfitItem | null)[];
   formatDate: (date: string) => string;
   onRemove: (id: string) => void;
+  onOpenModal: (look: SavedLook) => void;
 }) {
-  const handleCardClick = () => {
-    // Create and dispatch a custom event to open the modal
-    const event = new CustomEvent("openFavoriteModal", {
-      detail: { look },
-    });
-    window.dispatchEvent(event);
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent event if clicking on the remove button
+    if (
+      (e.target as HTMLElement).closest(
+        'button[aria-label="Remove from favorites"]',
+      )
+    ) {
+      return;
+    }
+
+    // Call the onOpenModal function directly
+    onOpenModal(look);
   };
 
   return (
@@ -329,43 +366,50 @@ function FavoriteCard({
   );
 }
 
-function FavoriteModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentLook, setCurrentLook] = useState<SavedLook | null>(null);
+function FavoriteModal({
+  isOpen,
+  currentLook,
+  currentItemIndices,
+  setCurrentItemIndices,
+  onClose,
+}: {
+  isOpen: boolean;
+  currentLook: SavedLook | null;
+  currentItemIndices: { [key: number]: number };
+  setCurrentItemIndices: React.Dispatch<
+    React.SetStateAction<{ [key: number]: number }>
+  >;
+  onClose: () => void;
+}) {
+  const navigateItem = (
+    itemIndex: number,
+    direction: "prev" | "next",
+    allItems: OutfitItem[],
+  ) => {
+    const currentIndex = currentItemIndices[itemIndex] || 0;
+    let newIndex;
 
-  useEffect(() => {
-    const handleOpenModal = (event: CustomEvent) => {
-      setCurrentLook(event.detail.look);
-      setIsOpen(true);
-    };
+    if (direction === "next") {
+      newIndex = currentIndex + 1 >= allItems.length ? 0 : currentIndex + 1;
+    } else {
+      newIndex = currentIndex - 1 < 0 ? allItems.length - 1 : currentIndex - 1;
+    }
 
-    window.addEventListener(
-      "openFavoriteModal",
-      handleOpenModal as EventListener,
-    );
-    return () => {
-      window.removeEventListener(
-        "openFavoriteModal",
-        handleOpenModal as EventListener,
-      );
-    };
-  }, []);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    setCurrentLook(null);
+    setCurrentItemIndices((prev) => ({
+      ...prev,
+      [itemIndex]: newIndex,
+    }));
   };
 
   if (!isOpen || !currentLook) return null;
 
   const outfit = currentLook.look_data.outfit;
-  const selectedItems = currentLook.look_data.selected_items || {};
-
   const groupedItems = {
     tops: outfit.tops || [],
     bottoms: outfit.bottoms || [],
     shoes: outfit.shoes || [],
     accessories: outfit.accessories || [],
+    fragrance: outfit.fragrance || [],
   };
 
   const allCategories = Object.entries(groupedItems).filter(
@@ -373,7 +417,9 @@ function FavoriteModal() {
   );
   const displayItems = allCategories.map(([category, categoryItems]) => {
     const currentIndex =
-      selectedItems[allCategories.findIndex(([cat]) => cat === category)] || 0;
+      currentItemIndices[
+        allCategories.findIndex(([cat]) => cat === category)
+      ] || 0;
     return categoryItems[currentIndex] || categoryItems[0];
   });
 
@@ -382,155 +428,262 @@ function FavoriteModal() {
     return sum + price;
   }, 0);
 
+  const renderOutfitCard = () => {
+    return (
+      <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
+        {/* Header with celebrity info */}
+        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+            <img
+              src={
+                currentLook.celebrity_name === "Odell Beckham Jr"
+                  ? "/images/odell-beckham-jr-profile-new.png"
+                  : `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "StyleAI"}`
+              }
+              alt={currentLook.celebrity_name || "Style AI"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "StyleAI"}`;
+              }}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-800 text-lg truncate">
+              {currentLook.celebrity_name || "peacedrobe AI"}
+            </h3>
+          </div>
+        </div>
+        {/* Items List with Swipeable Alternatives */}
+        <div className="p-3 space-y-2 flex-1 overflow-y-auto">
+          {allCategories.map(([category, categoryItems], categoryIndex) => {
+            const currentIndex = currentItemIndices[categoryIndex] || 0;
+            const currentItem = categoryItems[currentIndex] || categoryItems[0];
+            const hasAlternatives = categoryItems.length > 1;
+
+            return (
+              <div key={category} className="relative">
+                <a
+                  href={currentItem.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:bg-gray-50 rounded-lg transition-colors p-2 border border-gray-100"
+                >
+                  <div className="flex items-center gap-2">
+                    {/* Navigation Buttons */}
+                    {hasAlternatives && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigateItem(categoryIndex, "prev", categoryItems);
+                          }}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
+                        >
+                          <ChevronLeft className="w-3 h-3 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigateItem(categoryIndex, "next", categoryItems);
+                          }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 hover:scale-110"
+                        >
+                          <ChevronRight className="w-3 h-3 text-gray-600" />
+                        </button>
+                      </>
+                    )}
+
+                    {/* Item Image */}
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      {currentItem.image_url ? (
+                        <img
+                          src={currentItem.image_url}
+                          alt={currentItem.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            target.nextElementSibling?.classList.remove(
+                              "hidden",
+                            );
+                          }}
+                        />
+                      ) : (
+                        <ShoppingBag className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+
+                    {/* Item Details */}
+                    <div className="flex-1 min-w-0 mr-1">
+                      <div className="flex items-start justify-between mb-1">
+                        <h4 className="font-semibold text-gray-900 text-sm truncate">
+                          {currentItem.brand}
+                        </h4>
+                        <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0 ml-1" />
+                      </div>
+                      <p className="text-gray-600 text-xs truncate mb-1">
+                        {currentItem.name}
+                      </p>
+                      <div className="flex items-center gap-1 mb-1">
+                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          {currentItem.website}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <p className="font-bold text-gray-900 text-sm">
+                            {currentItem.price}
+                          </p>
+                          {currentItem.original_price && (
+                            <p className="text-xs text-gray-500 line-through">
+                              {currentItem.original_price}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {hasAlternatives && (
+                            <div className="flex gap-0.5">
+                              {categoryItems.map((_, index) => (
+                                <div
+                                  key={index}
+                                  className={`w-1 h-1 rounded-full transition-colors ${
+                                    index === currentIndex
+                                      ? "bg-gray-800"
+                                      : "bg-gray-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            );
+          })}
+        </div>
+        {/* Total */}
+        <div className="border-t border-gray-200 p-3 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600 text-sm">Total:</span>
+            <span className="font-bold text-gray-900 text-lg">
+              ${totalPrice.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
-    >
-      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-          <h3 className="text-xl font-bold text-gray-900">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-2xl w-full max-w-[95vw] max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 p-3 sm:p-6 flex items-center justify-between">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
             {currentLook.celebrity_name || "peacedrobe AI"} Look
           </h3>
           <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            onClick={onClose}
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 ml-2"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
-        <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Left: Outfit Details */}
-            <div>
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  Search Query
-                </h4>
-                <p className="text-gray-600">{currentLook.search_query}</p>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-semibold text-gray-900">Outfit Items</h4>
-                {displayItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {item.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove(
-                              "hidden",
-                            );
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className={`w-full h-full flex items-center justify-center ${item.image_url ? "hidden" : ""}`}
-                      >
-                        <ShoppingBag className="w-6 h-6 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold text-gray-900 truncate">
-                        {item.brand}
-                      </h5>
-                      <p className="text-gray-600 text-sm truncate">
-                        {item.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-bold text-gray-900">
-                          {item.price}
-                        </span>
-                        {item.original_price && (
-                          <span className="text-sm text-gray-500 line-through">
-                            {item.original_price}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <a
-                      href={item.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4 text-gray-600" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-900">
-                    Total Price:
-                  </span>
-                  <span className="text-xl font-bold text-gray-900">
-                    ${totalPrice.toLocaleString()}
-                  </span>
-                </div>
-              </div>
+        <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+            {/* Left: Outfit Card */}
+            <div className="flex justify-center order-2 lg:order-1">
+              <div className="w-full max-w-md">{renderOutfitCard()}</div>
             </div>
 
-            {/* Right: Four-quadrant image */}
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Look Preview</h4>
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <div className="grid grid-cols-2 h-full">
-                  {displayItems.slice(0, 4).map((item, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden"
-                    >
-                      {item?.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove(
-                              "hidden",
-                            );
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className={`w-full h-full flex items-center justify-center ${item?.image_url ? "hidden" : ""}`}
-                      >
-                        <ShoppingBag className="w-8 h-8 text-gray-400" />
-                      </div>
-                    </div>
-                  ))}
-                  {Array(4 - Math.min(displayItems.length, 4))
-                    .fill(0)
-                    .map((_, index) => (
-                      <div
-                        key={`empty-${index}`}
-                        className="bg-gray-50 border border-gray-200 flex items-center justify-center"
-                      >
-                        <ShoppingBag className="w-8 h-8 text-gray-400" />
-                      </div>
-                    ))}
+            {/* Right: Details */}
+            <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
+              <div>
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                  Search Query
+                </h4>
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                  <p className="text-sm sm:text-base text-gray-600">
+                    {currentLook.search_query}
+                  </p>
                 </div>
               </div>
 
-              <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">
+              <div>
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                  Outfit Description
+                </h4>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  {outfit.main_description ||
+                    "A curated outfit selection with premium and affordable alternatives."}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                  Style Tips
+                </h4>
+                <ul className="space-y-2 text-sm sm:text-base text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Mix high-end pieces with affordable alternatives for the
+                    perfect balance
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Pay attention to fit and proportions for a polished look
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Accessories can make or break an outfit - choose wisely
+                  </li>
+                </ul>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-gray-600 text-sm text-center">
                   Saved on{" "}
                   {new Date(currentLook.created_at).toLocaleDateString(
                     "en-US",
