@@ -85,7 +85,9 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
               </div>
-              <span className="text-lg font-semibold text-black">Fitsio</span>
+              <span className="text-lg font-semibold text-black">
+                peacedrobe
+              </span>
             </div>
           </div>
 

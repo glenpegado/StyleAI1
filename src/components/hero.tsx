@@ -639,118 +639,134 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }
   }, [selectedCelebrity]);
 
-  // Trending looks and items data
-  const trendingContent: CelebrityTrend[] = [
+  // Celebrity trends data
+  const celebrityTrends: CelebrityTrend[] = [
     {
-      name: "Luxury Athleisure Look",
+      name: "Odell Beckham Jr",
       tags: [
-        { name: "Look", color: "bg-purple-100 text-purple-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
         { name: "Athletic", color: "bg-green-100 text-green-800" },
-        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
+        { name: "Fashion-Forward", color: "bg-indigo-100 text-indigo-800" },
       ],
-      platform: "Trending",
+      platform: "Celebrity",
       query:
-        "Luxury athleisure outfit with designer joggers, premium sneakers and statement accessories",
+        "Odell Beckham Jr inspired athletic fashion-forward outfit with designer athleisure and statement accessories",
       image: "/images/odell-beckham-jr-new-3.jpg",
       fragrance: "Champion Spirit",
     },
     {
-      name: "Vintage Denim Jacket",
+      name: "Drake",
       tags: [
-        { name: "Item", color: "bg-blue-100 text-blue-800" },
-        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
-        { name: "Denim", color: "bg-indigo-100 text-indigo-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Rapper", color: "bg-yellow-100 text-yellow-800" },
+        { name: "Luxury", color: "bg-amber-100 text-amber-800" },
       ],
-      platform: "Trending",
+      platform: "Celebrity",
       query:
-        "Vintage oversized denim jacket styled with modern pieces for a trendy streetwear look",
+        "Drake inspired luxury rapper outfit with designer hoodies, premium denim and statement jewelry",
       image:
-        "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&q=80",
-      fragrance: "Urban Edge",
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      fragrance: "God's Plan",
     },
     {
-      name: "Y2K Revival Look",
+      name: "Charli D'Amelio",
       tags: [
-        { name: "Look", color: "bg-purple-100 text-purple-800" },
-        { name: "Y2K", color: "bg-pink-100 text-pink-800" },
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Gen-Z", color: "bg-pink-100 text-pink-800" },
         { name: "Trendy", color: "bg-green-100 text-green-800" },
       ],
       platform: "TikTok",
       query:
-        "Y2K inspired outfit with low-rise jeans, crop tops and chunky platform sneakers",
+        "Charli D'Amelio inspired Gen-Z trendy outfit with crop tops, high-waisted jeans and chunky sneakers",
       image:
         "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Nostalgic Vibes",
+      fragrance: "Sweet Dreams",
     },
     {
-      name: "Chunky Gold Chain",
+      name: "Emma Chamberlain",
       tags: [
-        { name: "Item", color: "bg-blue-100 text-blue-800" },
-        { name: "Jewelry", color: "bg-yellow-100 text-yellow-800" },
-        { name: "Statement", color: "bg-red-100 text-red-800" },
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Vintage", color: "bg-orange-100 text-orange-800" },
+        { name: "Casual", color: "bg-gray-100 text-gray-800" },
       ],
       platform: "Instagram",
       query:
-        "Chunky gold chain necklace as a statement piece for layering and urban styling",
+        "Emma Chamberlain inspired vintage casual outfit with thrifted pieces and effortless styling",
       image:
-        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=80",
-      fragrance: "Golden Hour",
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+      fragrance: "Coffee Shop Vibes",
     },
     {
-      name: "Power Suit Look",
+      name: "Serena Williams",
       tags: [
-        { name: "Look", color: "bg-purple-100 text-purple-800" },
-        { name: "Professional", color: "bg-gray-100 text-gray-800" },
-        { name: "Elegant", color: "bg-rose-100 text-rose-800" },
+        { name: "Athlete", color: "bg-green-100 text-green-800" },
+        { name: "Powerful", color: "bg-red-100 text-red-800" },
+        { name: "Elegant", color: "bg-purple-100 text-purple-800" },
       ],
-      platform: "Trending",
+      platform: "Celebrity",
       query:
-        "Modern power suit with oversized blazer and tailored trousers for confident professional style",
+        "Serena Williams inspired powerful elegant outfit with structured blazers and statement accessories",
       image:
         "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
-      fragrance: "Boss Energy",
+      fragrance: "Champion's Grace",
     },
     {
-      name: "Cargo Pants",
+      name: "Zendaya",
       tags: [
-        { name: "Item", color: "bg-blue-100 text-blue-800" },
-        { name: "Streetwear", color: "bg-green-100 text-green-800" },
-        { name: "Utility", color: "bg-orange-100 text-orange-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Bold", color: "bg-orange-100 text-orange-800" },
+        { name: "Avant-garde", color: "bg-red-100 text-red-800" },
       ],
-      platform: "Trending",
+      platform: "Celebrity",
       query:
-        "Baggy cargo pants styled with fitted tops and chunky sneakers for modern streetwear",
+        "Zendaya inspired bold avant-garde outfit with statement pieces and unique silhouettes",
       image:
-        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80",
-      fragrance: "Street Smart",
+        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
+      fragrance: "Electric Nights",
     },
     {
-      name: "Cottagecore Aesthetic",
+      name: "Taylor Swift",
       tags: [
-        { name: "Look", color: "bg-purple-100 text-purple-800" },
-        { name: "Romantic", color: "bg-pink-100 text-pink-800" },
-        { name: "Vintage", color: "bg-green-100 text-green-800" },
+        {
+          name: "Celebrity",
+          color:
+            "bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 text-yellow-800 border border-yellow-200",
+        },
+        { name: "Vintage", color: "bg-pink-100 text-pink-800" },
+        { name: "Romantic", color: "bg-rose-100 text-rose-800" },
       ],
-      platform: "Pinterest",
+      platform: "Celebrity",
       query:
-        "Cottagecore inspired outfit with flowing midi skirts, cardigans and vintage accessories",
+        "Taylor Swift inspired vintage romantic outfit with cardigans and flowing skirts",
       image:
         "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400",
-      fragrance: "Garden Dreams",
+      fragrance: "Enchanted Garden",
     },
     {
-      name: "White Sneakers",
+      name: "MrBeast",
       tags: [
-        { name: "Item", color: "bg-blue-100 text-blue-800" },
-        { name: "Footwear", color: "bg-gray-100 text-gray-800" },
-        { name: "Versatile", color: "bg-green-100 text-green-800" },
+        { name: "Influencer", color: "bg-blue-100 text-blue-800" },
+        { name: "Casual", color: "bg-gray-100 text-gray-800" },
+        { name: "Comfortable", color: "bg-green-100 text-green-800" },
       ],
-      platform: "Trending",
+      platform: "YouTube",
       query:
-        "Clean white sneakers that go with everything from casual to smart-casual outfits",
+        "MrBeast inspired casual comfortable outfit with hoodies, joggers and comfortable sneakers",
       image:
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80",
-      fragrance: "Fresh Start",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      fragrance: "Beast Mode",
     },
   ];
 
@@ -917,7 +933,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-800 text-lg truncate">
-              {celebrityName || "Fitsio AI"}
+              {celebrityName || "peacedrobe AI"}
             </h3>
             {celebrityData?.fragrance && (
               <p className="text-slate-600 text-sm mb-1">
@@ -1157,7 +1173,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                  <span className="text-black">Fitsio</span>
+                  <span className="text-black">peacedrobe</span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
@@ -1270,7 +1286,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             outfitSuggestions,
                             selectedCelebrity || undefined,
                             selectedCelebrity
-                              ? trendingContent.find(
+                              ? celebrityTrends.find(
                                   (trend) => trend.name === selectedCelebrity,
                                 )
                               : undefined,
@@ -1481,11 +1497,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 <div className="max-w-6xl mx-auto px-4">
                   <div className="text-center mb-8">
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                      Trending Looks & Items
+                      Trending Celebrity Styles
                     </h2>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      Discover the hottest fashion trends, complete looks, and
-                      must-have items
+                      Get inspired by your favorite celebrities' latest looks
                     </p>
                   </div>
 
@@ -1503,7 +1518,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       onMouseLeave={() => setIsAutoScrolling(true)}
                     >
                       {/* Duplicate the array to create seamless loop */}
-                      {[...trendingContent, ...trendingContent].map(
+                      {[...celebrityTrends, ...celebrityTrends].map(
                         (trend, index) => (
                           <div
                             key={`${trend.name}-${index}`}
@@ -1535,21 +1550,21 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                         {tag.name}
                                       </span>
                                     ))}
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      trend.platform === "Instagram"
-                                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                        : trend.platform === "TikTok"
-                                          ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
-                                          : trend.platform === "Pinterest"
-                                            ? "bg-red-600 text-white"
-                                            : trend.platform === "Trending"
-                                              ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
+                                  {trend.platform !== "Celebrity" && (
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        trend.platform === "Instagram"
+                                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                          : trend.platform === "TikTok"
+                                            ? "bg-gradient-to-r from-gray-800 to-gray-600 text-white"
+                                            : trend.platform === "YouTube"
+                                              ? "bg-red-600 text-white"
                                               : "bg-gray-100 text-gray-700"
-                                    }`}
-                                  >
-                                    {trend.platform}
-                                  </span>
+                                      }`}
+                                    >
+                                      {trend.platform}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex items-center text-slate-600 text-xs font-medium">
                                   <Sparkles className="w-3 h-3 mr-1" />
@@ -1670,7 +1685,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       outfitSuggestions,
                       selectedCelebrity || undefined,
                       selectedCelebrity
-                        ? trendingContent.find(
+                        ? celebrityTrends.find(
                             (trend) => trend.name === selectedCelebrity,
                           )
                         : undefined,

@@ -27,18 +27,11 @@ export default function DashboardNavbar() {
           <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center shadow-lg">
             <Sparkles className="w-3 h-3 text-yellow-400" />
           </div>
-          <span className="text-sm font-semibold text-black">Fitsio</span>
+          <span className="text-sm font-semibold text-black">peacedrobe</span>
         </Link>
 
-        {/* Navigation Links */}
+        {/* User Menu */}
         <div className="flex gap-4 items-center">
-          <Link
-            href="/dashboard/favorites"
-            className="text-sm text-gray-600 hover:text-black transition-colors"
-          >
-            My Looks
-          </Link>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">

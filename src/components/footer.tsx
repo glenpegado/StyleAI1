@@ -55,7 +55,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@fitsio.ai"
+                  href="mailto:hello@peacedrobe.ai"
                   className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors"
                 >
                   Contact
@@ -145,13 +145,15 @@ export default function Footer() {
               <div className="w-5 h-5 sm:w-6 sm:h-6 bg-black rounded-md flex items-center justify-center shadow-lg">
                 <span className="text-yellow-400 text-xs font-bold">P</span>
               </div>
-              <span className="font-semibold text-black text-sm">Fitsio</span>
+              <span className="font-semibold text-black text-sm">
+                peacedrobe
+              </span>
             </div>
 
             {/* Copyright and Social */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
               <div className="text-gray-500 text-xs">
-                © {currentYear} Fitsio. All rights reserved.
+                © {currentYear} peacedrobe. All rights reserved.
               </div>
 
               {/* Social Links */}
@@ -178,7 +180,7 @@ export default function Footer() {
                   <Github className="w-4 h-4" />
                 </a>
                 <a
-                  href="mailto:hello@fitsio.ai"
+                  href="mailto:hello@peacedrobe.ai"
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label="Email"
                 >
