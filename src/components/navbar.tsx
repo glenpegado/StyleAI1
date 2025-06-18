@@ -53,32 +53,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-gray-900">
-              Urban Stylist AI
-            </span>
-          </Link>
-
-          {/* Menu Toggle Button */}
-          <button
-            onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </nav>
-
       {/* Overlay for mobile */}
       {isOpen && (
         <div
@@ -89,30 +63,30 @@ export default function Navbar() {
 
       {/* Sidebar */}
       <nav
-        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white/95 backdrop-blur-xl border-r border-gray-200/50 z-40 transform transition-all duration-300 ease-out ${
+        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-40 transform transition-all duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } w-64 sm:w-72 shadow-2xl`}
+        } w-64 shadow-lg`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-4 sm:p-6 border-b border-gray-100/50">
+          <div className="p-6 border-b border-gray-100">
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 sm:gap-3"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <span className="text-base sm:text-lg font-semibold text-gray-900">
+              <span className="text-lg font-semibold text-gray-900">
                 Urban Stylist AI
               </span>
             </Link>
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 py-4">
-            <div className="px-2 sm:px-3 space-y-1">
+          <div className="flex-1 py-6">
+            <div className="px-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -120,9 +94,10 @@ export default function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2.5 text-gray-700 hover:bg-gray-100/70 hover:text-gray-900 rounded-xl transition-all duration-200 group text-sm font-medium"
+                    className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 group text-sm font-medium"
+                    prefetch={true}
                   >
-                    <Icon className="w-4 h-4 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
+                    <Icon className="w-5 h-5 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 );
@@ -131,15 +106,15 @@ export default function Navbar() {
           </div>
 
           {/* User Section */}
-          <div className="border-t border-gray-100/50 p-3 sm:p-4">
+          <div className="border-t border-gray-100 p-4">
             {user ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-gray-50/70 rounded-xl">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                    <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
+                <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-4 h-4 text-gray-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {user.email?.split("@")[0]}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
@@ -147,7 +122,7 @@ export default function Navbar() {
                     </p>
                   </div>
                 </div>
-                <div className="px-2 sm:px-3">
+                <div className="px-3">
                   <UserProfile />
                 </div>
               </div>
@@ -156,7 +131,7 @@ export default function Navbar() {
                 <Link
                   href="/sign-in"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2.5 text-gray-700 hover:bg-gray-100/70 rounded-xl transition-all duration-200 w-full text-sm font-medium"
+                  className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 w-full text-sm font-medium"
                 >
                   <LogIn className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign In</span>
@@ -164,7 +139,7 @@ export default function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2.5 text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 rounded-xl transition-all duration-200 w-full text-sm font-medium shadow-lg"
+                  className="flex items-center gap-3 px-3 py-2.5 text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 rounded-lg transition-all duration-200 w-full text-sm font-medium shadow-lg"
                 >
                   <UserPlus className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">Sign Up</span>
@@ -174,6 +149,14 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* Menu Toggle Button - Fixed position */}
+      <button
+        onClick={toggleSidebar}
+        className="fixed top-4 left-4 z-50 p-2 bg-white hover:bg-gray-100 rounded-lg transition-colors shadow-md border border-gray-200"
+      >
+        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
     </>
   );
 }

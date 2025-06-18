@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { UserCircle, Home } from "lucide-react";
+import { UserCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function DashboardNavbar() {
@@ -25,7 +25,7 @@ export default function DashboardNavbar() {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <div className="w-6 h-6 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Home className="w-3 h-3 text-white" />
+            <Sparkles className="w-3 h-3 text-white" />
           </div>
           <span className="text-sm font-semibold text-gray-900">
             Urban Stylist AI
