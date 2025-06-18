@@ -355,7 +355,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     // Auto-resize textarea
     const textarea = e.target;
     textarea.style.height = "auto";
-    const newHeight = Math.min(textarea.scrollHeight, 120); // Max height of ~3 lines
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 120); // Min 48px, Max height of ~3 lines
     textarea.style.height = `${newHeight}px`;
     setTextareaHeight(`${newHeight}px`);
 
@@ -1190,38 +1190,48 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       <textarea
                         value={searchQuery}
                         onChange={handleTextareaChange}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            if (searchQuery.trim()) {
+                              handleSearch(e as any);
+                            }
+                          }
+                        }}
                         placeholder={
                           searchQuery.trim()
                             ? "Describe your style or ask for outfit ideas..."
                             : currentTypingText ||
                               "Describe your style or ask for outfit ideas..."
                         }
-                        className="w-full px-4 sm:px-6 py-4 pr-20 sm:pr-32 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
+                        className="w-full px-4 sm:px-6 py-4 pr-32 sm:pr-36 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
                         disabled={isLoading}
                         rows={1}
                         style={{
                           height: searchQuery ? textareaHeight : "56px",
+                          minHeight: "56px",
+                          maxHeight: "120px",
                         }}
                       />
-                      <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 flex items-center gap-1 sm:gap-2">
-                        <div className="text-xs text-gray-400 hidden md:block">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <div className="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
                           {promptCount}/7 free
                         </div>
                         <button
                           type="submit"
                           disabled={isLoading || !searchQuery.trim()}
-                          className="px-2 sm:px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0"
+                          className="px-3 sm:px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-xs sm:text-sm shadow-md hover:shadow-lg flex-shrink-0 min-w-[80px] sm:min-w-[100px] justify-center"
                         >
                           {isLoading ? (
                             <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                               <span className="hidden sm:inline">
                                 Styling...
                               </span>
                             </>
                           ) : (
                             <>
-                              <Sparkles className="w-4 h-4" />
+                              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               <span className="hidden sm:inline">Style</span>
                             </>
                           )}
@@ -1449,38 +1459,52 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     </div>
 
                     {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
-                    <div className="w-full max-w-4xl mx-auto px-4 transform transition-all duration-500 ease-in-out">
+                    <div className="w-full max-w-4xl mx-auto px-4 mb-6 transform transition-all duration-500 ease-in-out">
                       <form onSubmit={handleSearch} className="relative">
                         <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                           <textarea
                             value={searchQuery}
                             onChange={handleTextareaChange}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                if (searchQuery.trim()) {
+                                  handleSearch(e as any);
+                                }
+                              }
+                            }}
                             placeholder="Ask for another style or outfit idea..."
-                            className="w-full px-6 py-5 pr-32 text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
+                            className="w-full px-4 sm:px-6 py-4 pr-32 sm:pr-40 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
                             disabled={isLoading}
                             rows={1}
                             style={{
-                              height: searchQuery ? textareaHeight : "64px",
+                              height: searchQuery ? textareaHeight : "56px",
+                              minHeight: "56px",
+                              maxHeight: "120px",
                             }}
                           />
-                          <div className="absolute right-4 bottom-4 flex items-center gap-3">
-                            <div className="text-sm text-gray-400 hidden md:block">
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
                               {promptCount}/7 free
                             </div>
                             <button
                               type="submit"
                               disabled={isLoading || !searchQuery.trim()}
-                              className="px-6 py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                              className="px-3 sm:px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 text-xs sm:text-sm flex-shrink-0 min-w-[80px] sm:min-w-[100px] justify-center"
                             >
                               {isLoading ? (
                                 <>
-                                  <Loader2 className="w-5 h-5 animate-spin" />
-                                  <span>Styling...</span>
+                                  <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                                  <span className="hidden sm:inline">
+                                    Styling...
+                                  </span>
                                 </>
                               ) : (
                                 <>
-                                  <Sparkles className="w-5 h-5" />
-                                  <span>Style</span>
+                                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                  <span className="hidden sm:inline">
+                                    Style
+                                  </span>
                                 </>
                               )}
                             </button>
@@ -1705,12 +1729,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       {/* Sign In Dialog */}
       {showSignInDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                 Save Your Looks
               </h3>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Sign in to save and organize your favorite outfit combinations
               </p>
             </div>
@@ -1726,7 +1750,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   });
                   if (error) console.error("Error:", error);
                 }}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -1759,7 +1783,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   });
                   if (error) console.error("Error:", error);
                 }}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                className="w-full flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
               >
                 <svg
                   className="w-5 h-5"
@@ -1774,7 +1798,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
             <button
               onClick={() => setShowSignInDialog(false)}
-              className="w-full mt-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+              className="w-full mt-3 sm:mt-4 py-2 text-sm sm:text-base text-gray-500 hover:text-gray-700 transition-colors"
             >
               Maybe later
             </button>
@@ -1783,41 +1807,43 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       )}
       {/* Full Look Modal */}
       {showLookModal && selectedLookData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-[95vw] h-[700px] flex flex-col">
-            <div className="flex-shrink-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-[95vw] max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+            <div className="flex-shrink-0 bg-white border-b border-gray-200 p-3 sm:p-6 flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 {selectedLookData.celebrity || "Style AI"} Look
               </h3>
               <button
                 onClick={() => setShowLookModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 ml-2"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="flex-1 p-6 overflow-hidden">
-              <div className="grid md:grid-cols-2 gap-8 h-full">
+            <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Left: Outfit Card */}
-                <div className="flex justify-center">
-                  {renderOutfitItems(
-                    selectedLookData.outfit,
-                    selectedLookData.celebrity,
-                    selectedLookData.celebrityData,
-                  )}
+                <div className="flex justify-center order-2 lg:order-1">
+                  <div className="w-full max-w-md">
+                    {renderOutfitItems(
+                      selectedLookData.outfit,
+                      selectedLookData.celebrity,
+                      selectedLookData.celebrityData,
+                    )}
+                  </div>
                 </div>
 
                 {/* Right: Details */}
-                <div className="space-y-6 mr-6">
+                <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
                   {/* Celebrity Style Gallery */}
                   {selectedLookData.celebrity &&
                     celebrityMediaGallery[selectedLookData.celebrity] && (
                       <div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
                           Style Inspiration Gallery
                         </h4>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                           {celebrityMediaGallery[selectedLookData.celebrity]
                             .slice(0, 4)
                             .map((media, index) => (
@@ -1842,30 +1868,30 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     )}
 
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
                       Outfit Description
                     </h4>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                       {selectedLookData.outfit.main_description}
                     </p>
                   </div>
 
                   {selectedLookData.celebrityData?.fragrance && (
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
                         Signature Fragrance
                       </h4>
-                      <p className="text-violet-600 font-medium">
+                      <p className="text-sm sm:text-base text-violet-600 font-medium">
                         🌸 {selectedLookData.celebrityData.fragrance}
                       </p>
                     </div>
                   )}
 
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
                       Style Tips
                     </h4>
-                    <ul className="space-y-2 text-gray-600">
+                    <ul className="space-y-2 text-sm sm:text-base text-gray-600">
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                         Mix high-end pieces with affordable alternatives for the
@@ -1882,7 +1908,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     </ul>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-200">
+                  <div className="pt-3 sm:pt-4 border-t border-gray-200">
                     <button
                       onClick={() =>
                         saveLookToBoard(
@@ -1890,10 +1916,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                           selectedLookData.celebrity,
                         )
                       }
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-3 sm:px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm sm:text-base"
                     >
                       <svg
-                        className="w-5 h-5"
+                        className="w-4 h-4 sm:w-5 sm:h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
