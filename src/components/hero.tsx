@@ -1447,9 +1447,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 <div className="w-full max-w-7xl mx-auto mb-12 px-4">
                   <div className="flex flex-col gap-8">
                     {/* Content area with outfit display and style inspiration side by side */}
-                    <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
+                    <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
                       {/* Left side - Outfit display */}
-                      <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
+                      <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
                         {(() => {
                           // Show loading state
                           if ((outfitSuggestions as any)?.loading) {
@@ -1505,7 +1505,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       </div>
 
                       {/* Right side - Style Inspiration Gallery */}
-                      <div className="w-full lg:w-auto lg:min-w-[450px] lg:max-w-[450px] flex">
+                      <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
                         {(outfitSuggestions as any)?.loading ? (
                           // Loading state for style inspiration
                           <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
@@ -1515,9 +1515,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 <h3 className="font-semibold text-gray-800 text-lg truncate">
                                   Style Inspiration
                                 </h3>
-                                <p className="text-gray-500 text-sm">
-                                  Trending looks
-                                </p>
                               </div>
                             </div>
                             {/* Loading content */}
@@ -1541,9 +1538,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 <h3 className="font-semibold text-gray-800 text-lg truncate">
                                   Style Inspiration
                                 </h3>
-                                <p className="text-gray-500 text-sm">
-                                  Trending looks
-                                </p>
                               </div>
                             </div>
 
@@ -1552,7 +1546,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               {selectedCelebrity &&
                               celebrityMediaGallery[selectedCelebrity] ? (
                                 // Show dynamic media for selected celebrity
-                                <div className="w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl group">
+                                <div className="w-full h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl group">
                                   <img
                                     src={
                                       celebrityMediaGallery[selectedCelebrity][
@@ -1674,7 +1668,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                 </div>
                               ) : (
                                 // Show default image for no celebrity selected
-                                <div className="w-full h-[500px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
+                                <div className="w-full h-[600px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
                                   <img
                                     src="/images/style-inspiration.jpg"
                                     alt="Featured style inspiration"
@@ -1739,12 +1733,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                       ]?.title || "Celebrity Style"
                                     : "Street Style Vibes"}
                                 </h4>
-                                <p className="text-gray-600 text-sm leading-relaxed">
-                                  {selectedCelebrity &&
-                                  celebrityMediaGallery[selectedCelebrity]
-                                    ? "Celebrity Fashion Moments"
-                                    : "Effortless urban fashion"}
-                                </p>
                               </div>
                             </div>
                           </div>
@@ -1803,12 +1791,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {/* Celebrity Trends Section - Only show if no outfit suggestions and showSearch is true */}
               {!outfitSuggestions && showSearch && (
                 <div className="max-w-5xl mx-auto px-4">
-                  <div className="text-center mb-6">
-                    <h2 className="text-lg font-light text-gray-700 mb-2 tracking-wide">
-                      trending
-                    </h2>
-                  </div>
-
                   {/* Navigation arrows - only show on hover */}
                   <div
                     className="relative group"
@@ -2097,9 +2079,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
             </div>
 
             <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                 {/* Left: Outfit Card */}
-                <div className="flex justify-center order-2 lg:order-1">
+                <div className="flex justify-center order-2 md:order-1">
                   <div className="w-full max-w-md">
                     {renderOutfitItems(
                       selectedLookData.outfit,
@@ -2110,7 +2092,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 </div>
 
                 {/* Right: Details */}
-                <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
+                <div className="space-y-4 sm:space-y-6 order-1 md:order-2">
                   {/* Celebrity Style Gallery */}
                   {selectedLookData.celebrity &&
                     celebrityMediaGallery[selectedLookData.celebrity] && (
