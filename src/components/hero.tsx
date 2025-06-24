@@ -72,7 +72,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [textareaHeight, setTextareaHeight] = useState("auto");
+
   const [selectedCelebrity, setSelectedCelebrity] = useState<string | null>(
     null,
   );
@@ -345,100 +345,46 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     setOutfitSuggestions({ loading: true } as any);
     setIsLoading(true);
 
-    // Simplified retry logic with better error handling
-    const makeRequestWithRetry = async (maxRetries = 3) => {
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
+    // Simple request with timeout
+    const makeRequest = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          if (attempt > 0) {
-            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-            console.log(
-              `Retrying request (${attempt + 1}/${maxRetries + 1}) after ${delay}ms`,
-            );
-            await sleep(delay);
-          }
+      try {
+        const response = await fetch("/api/generate-outfit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query }),
+          signal: controller.signal,
+        });
 
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000);
+        clearTimeout(timeoutId);
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorData;
           try {
-            const response = await fetch("/api/generate-outfit", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ query }),
-              signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              return response;
-            }
-
-            // Handle non-200 responses
-            const errorText = await response.text();
-            let errorData;
-            try {
-              errorData = JSON.parse(errorText);
-            } catch {
-              errorData = { error: errorText };
-            }
-
-            // Don't retry client errors (4xx)
-            if (response.status >= 400 && response.status < 500) {
-              throw new Error(
-                errorData.error || `Client error: ${response.status}`,
-              );
-            }
-
-            // Retry server errors (5xx) but only if we have attempts left
-            if (response.status >= 500 && attempt < maxRetries) {
-              console.warn(`Server error ${response.status}, will retry...`);
-              continue;
-            }
-
-            throw new Error(
-              errorData.error || `Server error: ${response.status}`,
-            );
-          } finally {
-            clearTimeout(timeoutId);
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText };
           }
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.name === "AbortError") {
-              if (attempt < maxRetries) {
-                console.warn("Request timeout, retrying...");
-                continue;
-              }
-              throw new Error("Request timeout. Please try again.");
-            }
-
-            // Don't retry for non-network errors
-            if (
-              !error.message.includes("fetch") &&
-              !error.message.includes("network")
-            ) {
-              throw error;
-            }
-
-            // Retry network errors
-            if (attempt < maxRetries) {
-              console.warn("Network error, retrying...");
-              continue;
-            }
-          }
-
-          throw error;
+          throw new Error(
+            errorData.error || `Request failed: ${response.status}`,
+          );
         }
-      }
 
-      throw new Error("Max retries reached. Please try again later.");
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === "AbortError") {
+          throw new Error("Request timeout. Please try again.");
+        }
+        throw error;
+      }
     };
 
     try {
-      const response = await makeRequestWithRetry();
+      const response = await makeRequest();
 
       const data = await response.json();
 
@@ -592,13 +538,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-
-    // Auto-resize textarea
-    const textarea = e.target;
-    textarea.style.height = "auto";
-    const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 120); // Min 48px, Max height of ~3 lines
-    textarea.style.height = `${newHeight}px`;
-    setTextareaHeight(`${newHeight}px`);
 
     // Stop typing animation when user starts typing
     if (value.trim() && isTyping) {
@@ -1124,6 +1063,36 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     }));
   };
 
+  // Helper function to check if search query is for a celebrity/influencer
+  const isCelebritySearch = (query: string, celebrityName?: string) => {
+    if (celebrityName) return true;
+
+    // Check if query contains celebrity/influencer names or keywords
+    const celebrityKeywords = [
+      "odell beckham",
+      "obj",
+      "drake",
+      "charli",
+      "emma chamberlain",
+      "serena williams",
+      "zendaya",
+      "taylor swift",
+      "mrbeast",
+      "messi",
+      "ronaldo",
+      "lebron",
+      "kanye",
+      "kim kardashian",
+      "rihanna",
+      "beyonce",
+      "justin bieber",
+      "ariana grande",
+    ];
+
+    const lowerQuery = query.toLowerCase();
+    return celebrityKeywords.some((keyword) => lowerQuery.includes(keyword));
+  };
+
   const renderOutfitItems = (
     outfitData: OutfitSuggestion,
     celebrityName?: string,
@@ -1154,31 +1123,45 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       return sum + price;
     }, 0);
 
+    const showCelebrityHeader = isCelebritySearch(searchQuery, celebrityName);
+
     return (
       <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-        {/* Header with celebrity info */}
+        {/* Header - always show, but different content based on search type */}
         <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-            <img
-              src={
-                celebrityName === "Odell Beckham Jr"
-                  ? "/images/odell-beckham-jr-profile-new.png"
-                  : celebrityData?.image ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`
-              }
-              alt={celebrityName || "Style AI"}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`;
-              }}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-800 text-lg truncate">
-              {celebrityName || "peacedrobe AI"}
-            </h3>
-          </div>
+          {showCelebrityHeader ? (
+            // Celebrity/Influencer header with profile picture and name
+            <>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img
+                  src={
+                    celebrityName === "Odell Beckham Jr"
+                      ? "/images/odell-beckham-jr-profile-new.png"
+                      : celebrityData?.image ||
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`
+                  }
+                  alt={celebrityName || "Style AI"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`;
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-800 text-lg truncate">
+                  {celebrityName || "peacedrobe AI"}
+                </h3>
+              </div>
+            </>
+          ) : (
+            // Generic header for non-celebrity searches
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-800 text-lg truncate">
+                Items
+              </h3>
+            </div>
+          )}
           <button
             onClick={() => saveLookToBoard(outfitData, celebrityName)}
             className="absolute top-3 right-3 p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 z-10"
@@ -1408,18 +1391,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                         }}
                         placeholder={
                           searchQuery.trim()
-                            ? "Describe your style or ask for outfit ideas..."
+                            ? ""
                             : currentTypingText ||
                               "Describe your style or ask for outfit ideas..."
                         }
-                        className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-52 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
+                        className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-52 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed h-14 min-h-14 max-h-30"
                         disabled={isLoading}
                         rows={1}
-                        style={{
-                          height: searchQuery ? textareaHeight : "56px",
-                          minHeight: "56px",
-                          maxHeight: "120px",
-                        }}
+                        suppressHydrationWarning
                       />
                       <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <div className="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
@@ -1444,7 +1423,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
               {/* Outfit Suggestions Panel - Show below search area */}
               {outfitSuggestions && showSearch && (
-                <div className="w-full max-w-7xl mx-auto mb-12 px-4">
+                <div className="w-full max-w-7xl mx-auto mb-32 px-4">
                   <div className="flex flex-col gap-8">
                     {/* Content area with outfit display and style inspiration side by side */}
                     <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
@@ -1741,48 +1720,46 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     </div>
 
                     {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
-                    <div className="w-full max-w-4xl mx-auto px-4 mb-6 transform transition-all duration-500 ease-in-out">
-                      <form onSubmit={handleSearch} className="relative">
-                        <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
-                          <textarea
-                            value={searchQuery}
-                            onChange={handleTextareaChange}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                if (searchQuery.trim()) {
-                                  handleSearch(e as any);
+                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+                      <div className="w-full max-w-4xl mx-auto">
+                        <form onSubmit={handleSearch} className="relative">
+                          <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
+                            <textarea
+                              value={searchQuery}
+                              onChange={handleTextareaChange}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  if (searchQuery.trim()) {
+                                    handleSearch(e as any);
+                                  }
                                 }
-                              }
-                            }}
-                            placeholder="Ask for another style or outfit idea..."
-                            className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-56 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed"
-                            disabled={isLoading}
-                            rows={1}
-                            style={{
-                              height: searchQuery ? textareaHeight : "56px",
-                              minHeight: "56px",
-                              maxHeight: "120px",
-                            }}
-                          />
-                          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
-                              {promptCount}/7 free
+                              }}
+                              placeholder="Ask for another style or outfit idea..."
+                              className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-56 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed h-14 min-h-14 max-h-30"
+                              disabled={isLoading}
+                              rows={1}
+                              suppressHydrationWarning
+                            />
+                            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                              <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
+                                {promptCount}/7 free
+                              </div>
+                              <button
+                                type="submit"
+                                disabled={isLoading || !searchQuery.trim()}
+                                className="w-10 h-10 sm:w-12 sm:h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center flex-shrink-0"
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                                )}
+                              </button>
                             </div>
-                            <button
-                              type="submit"
-                              disabled={isLoading || !searchQuery.trim()}
-                              className="w-10 h-10 sm:w-12 sm:h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center flex-shrink-0"
-                            >
-                              {isLoading ? (
-                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                              ) : (
-                                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                              )}
-                            </button>
                           </div>
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
