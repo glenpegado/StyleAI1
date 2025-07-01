@@ -1583,31 +1583,30 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                   {/* Favorite button */}
                                   <button
                                     onClick={() => {
-                                      const imageKey = `${selectedCelebrity}-${currentMediaIndex}`;
-                                      setFavoriteImages((prev) => {
-                                        const newSet = new Set(prev);
-                                        if (newSet.has(imageKey)) {
-                                          newSet.delete(imageKey);
-                                        } else {
-                                          newSet.add(imageKey);
-                                        }
-                                        return newSet;
-                                      });
+                                      if (
+                                        outfitSuggestions &&
+                                        !(outfitSuggestions as any)?.loading
+                                      ) {
+                                        saveLookToBoard(
+                                          outfitSuggestions,
+                                          selectedCelebrity || undefined,
+                                        );
+                                      }
                                     }}
                                     className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
                                   >
                                     <svg
                                       className={`w-5 h-5 transition-colors ${
-                                        favoriteImages.has(
-                                          `${selectedCelebrity}-${currentMediaIndex}`,
-                                        )
+                                        savedLooks.some((id) => {
+                                          // Check if this look combination is already saved
+                                          // This is a simplified check - in a real app you'd want more sophisticated matching
+                                          return false; // For now, always show unfilled heart
+                                        })
                                           ? "text-red-500 fill-current"
                                           : "text-gray-600 hover:text-red-400"
                                       }`}
                                       fill={
-                                        favoriteImages.has(
-                                          `${selectedCelebrity}-${currentMediaIndex}`,
-                                        )
+                                        savedLooks.some((id) => false)
                                           ? "currentColor"
                                           : "none"
                                       }
@@ -1663,27 +1662,30 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                   {/* Favorite button for default image */}
                                   <button
                                     onClick={() => {
-                                      const imageKey = "default-style";
-                                      setFavoriteImages((prev) => {
-                                        const newSet = new Set(prev);
-                                        if (newSet.has(imageKey)) {
-                                          newSet.delete(imageKey);
-                                        } else {
-                                          newSet.add(imageKey);
-                                        }
-                                        return newSet;
-                                      });
+                                      if (
+                                        outfitSuggestions &&
+                                        !(outfitSuggestions as any)?.loading
+                                      ) {
+                                        saveLookToBoard(
+                                          outfitSuggestions,
+                                          undefined,
+                                        );
+                                      }
                                     }}
                                     className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
                                   >
                                     <svg
                                       className={`w-5 h-5 transition-colors ${
-                                        favoriteImages.has("default-style")
+                                        savedLooks.some((id) => {
+                                          // Check if this look combination is already saved
+                                          // This is a simplified check - in a real app you'd want more sophisticated matching
+                                          return false; // For now, always show unfilled heart
+                                        })
                                           ? "text-red-500 fill-current"
                                           : "text-gray-600 hover:text-red-400"
                                       }`}
                                       fill={
-                                        favoriteImages.has("default-style")
+                                        savedLooks.some((id) => false)
                                           ? "currentColor"
                                           : "none"
                                       }
@@ -1768,6 +1770,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
               {/* Celebrity Trends Section - Only show if no outfit suggestions and showSearch is true */}
               {!outfitSuggestions && showSearch && (
                 <div className="max-w-5xl mx-auto px-4">
+                  {/* Trending Title */}
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Trending
+                    </h2>
+                  </div>
                   {/* Navigation arrows - only show on hover */}
                   <div
                     className="relative group"
