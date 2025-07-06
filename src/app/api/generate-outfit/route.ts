@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean expired cache entries
-    for (const [key, value] of cache.entries()) {
+    Array.from(cache.entries()).forEach(([key, value]) => {
       if (value.expiry <= now) {
         cache.delete(key);
       }
-    }
+    });
 
     // Check environment variables
     if (
@@ -339,7 +339,7 @@ Ensure you include both premium and affordable options. Use real brands and real
             {
               error: "AI service returned invalid JSON format",
               type: "json_parse_error",
-              details: `Parse error: ${secondParseError.message}`,
+              details: `Parse error: ${secondParseError instanceof Error ? secondParseError.message : String(secondParseError)}`,
               raw_content:
                 content.substring(0, 500) + (content.length > 500 ? "..." : ""),
               timestamp: new Date().toISOString(),

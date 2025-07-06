@@ -131,7 +131,7 @@ export default function FavoritesPage() {
     });
   };
 
-  const generateQuadrantImage = (look: SavedLook) => {
+  const generateQuadrantImage = (look: SavedLook): (OutfitItem | null)[] => {
     const { outfit, selected_items } = look.look_data;
     const groupedItems = {
       tops: outfit.tops || [],
@@ -153,7 +153,7 @@ export default function FavoritesPage() {
     });
 
     // Take up to 4 items for the quadrants
-    const quadrantItems = displayItems.slice(0, 4);
+    const quadrantItems: (OutfitItem | null)[] = displayItems.slice(0, 4);
 
     // Fill remaining quadrants with placeholder if needed
     while (quadrantItems.length < 4) {
@@ -409,7 +409,6 @@ function FavoriteModal({
     bottoms: outfit.bottoms || [],
     shoes: outfit.shoes || [],
     accessories: outfit.accessories || [],
-    fragrance: outfit.fragrance || [],
   };
 
   const allCategories = Object.entries(groupedItems).filter(

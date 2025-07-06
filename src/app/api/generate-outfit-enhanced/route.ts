@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "../../../../supabase/server";
-import { affiliateService } from "../../../../lib/affiliate-service";
-import { undocumentedAPIService } from "../../../../lib/undocumented-api-service";
+import { affiliateService } from "@/lib/affiliate-service";
+import { undocumentedAPIService } from "@/lib/undocumented-api-service";
 
 // In-memory cache for outfit suggestions
 const cache = new Map<string, { data: any; expiry: number }>();
@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean expired cache entries
-    for (const [key, value] of cache.entries()) {
+    Array.from(cache.entries()).forEach(([key, value]) => {
       if (value.expiry <= now) {
         cache.delete(key);
       }
-    }
+    });
 
     // Check environment variables
     if (!process.env.PICA_SECRET_KEY || !process.env.PICA_OPENAI_CONNECTION_KEY) {

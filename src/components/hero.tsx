@@ -57,6 +57,14 @@ interface HeroProps {
   showSearch?: boolean;
 }
 
+// Add this type above the celebrityMediaGallery declaration
+interface CelebrityMediaItem {
+  type: string;
+  src: string;
+  duration: number;
+  title: string;
+}
+
 export default function Hero({ showSearch = true }: HeroProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDialog, setShowDialog] = useState(false);
@@ -92,6 +100,242 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const [currentStyleImageIndex, setCurrentStyleImageIndex] = useState(0);
   const [favoriteImages, setFavoriteImages] = useState<Set<string>>(new Set());
   const supabase = createClient();
+
+  // Update the celebrityMediaGallery declaration
+  const celebrityMediaGallery: { [key: string]: CelebrityMediaItem[] } = {
+    "Odell Beckham Jr": [
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-new-3.jpg",
+        duration: 4000,
+        title: "Courtside Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-1.jpg",
+        duration: 4000,
+        title: "Monaco Vibes",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-2.jpg",
+        duration: 4000,
+        title: "AmfAR Gala Cannes",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-3.jpg",
+        duration: 4000,
+        title: "Luxury Lifestyle",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-4.jpg",
+        duration: 4000,
+        title: "Yacht Life",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-5.jpg",
+        duration: 4000,
+        title: "Monaco Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-6.jpg",
+        duration: 4000,
+        title: "Casual Elegance",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-7.jpg",
+        duration: 4000,
+        title: "Street Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-8.jpg",
+        duration: 4000,
+        title: "Fashion Forward",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-9.jpg",
+        duration: 4000,
+        title: "Luxury Details",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-10.jpg",
+        duration: 4000,
+        title: "Designer Pieces",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-11.jpg",
+        duration: 4000,
+        title: "Signature Style",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-12.jpg",
+        duration: 4000,
+        title: "Casual Cool",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-13.jpg",
+        duration: 4000,
+        title: "Luxury Timepiece",
+      },
+      {
+        type: "image",
+        src: "/images/odell-beckham-jr-obj-monaco-14.jpg",
+        duration: 4000,
+        title: "Formal Elegance",
+      },
+    ],
+    Drake: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Studio Sessions",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Luxury Lifestyle",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Designer Fits",
+      },
+    ],
+    "Charli D'Amelio": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "TikTok Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Gen-Z Fashion",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Casual Chic",
+      },
+    ],
+    "Emma Chamberlain": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Vintage Vibes",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Thrift Finds",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Effortless Style",
+      },
+    ],
+    "Serena Williams": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Power Dressing",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Athletic Elegance",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Red Carpet Ready",
+      },
+    ],
+    Zendaya: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Avant-garde Fashion",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Bold Statements",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "High Fashion",
+      },
+    ],
+    "Taylor Swift": [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Romantic Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Vintage Romance",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Cottagecore Chic",
+      },
+    ],
+    MrBeast: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Casual Comfort",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Streetwear Style",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+        duration: 4000,
+        title: "Relaxed Vibes",
+      },
+    ],
+  };
 
   // Hardcoded Odell Beckham outfit data
   const odellBeckhamOutfit: OutfitSuggestion = {
@@ -273,42 +517,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         website_url: "https://www.nike.com",
         image_url:
           "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&q=80",
-        availability: "In Stock",
-      },
-    ],
-    fragrance: [
-      {
-        name: "Champion Spirit",
-        description: "Signature masculine fragrance with woody and spicy notes",
-        price: "$120",
-        brand: "Tom Ford",
-        website: "SEPHORA",
-        website_url: "https://www.sephora.com/product/oud-wood-P393613",
-        image_url:
-          "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&q=80",
-        availability: "In Stock",
-        celebrity_worn: true,
-      },
-      {
-        name: "Woody Cologne",
-        description: "Premium woody fragrance with masculine appeal",
-        price: "$75",
-        brand: "Versace",
-        website: "ULTA",
-        website_url: "https://www.ulta.com",
-        image_url:
-          "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&q=80",
-        availability: "In Stock",
-      },
-      {
-        name: "Fresh Cologne",
-        description: "Affordable fresh scent for everyday wear",
-        price: "$25",
-        brand: "Axe",
-        website: "TARGET",
-        website_url: "https://www.target.com",
-        image_url:
-          "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=400&q=80",
         availability: "In Stock",
       },
     ],
@@ -546,242 +754,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
     } else if (!value.trim() && !isTyping) {
       setIsTyping(true);
     }
-  };
-
-  // Celebrity media gallery
-  const celebrityMediaGallery = {
-    "Odell Beckham Jr": [
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-new-3.jpg",
-        duration: 4000,
-        title: "Courtside Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-1.jpg",
-        duration: 4000,
-        title: "Monaco Vibes",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-2.jpg",
-        duration: 4000,
-        title: "AmfAR Gala Cannes",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-3.jpg",
-        duration: 4000,
-        title: "Luxury Lifestyle",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-4.jpg",
-        duration: 4000,
-        title: "Yacht Life",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-5.jpg",
-        duration: 4000,
-        title: "Monaco Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-6.jpg",
-        duration: 4000,
-        title: "Casual Elegance",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-7.jpg",
-        duration: 4000,
-        title: "Street Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-8.jpg",
-        duration: 4000,
-        title: "Fashion Forward",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-9.jpg",
-        duration: 4000,
-        title: "Luxury Details",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-10.jpg",
-        duration: 4000,
-        title: "Designer Pieces",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-11.jpg",
-        duration: 4000,
-        title: "Signature Style",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-12.jpg",
-        duration: 4000,
-        title: "Casual Cool",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-13.jpg",
-        duration: 4000,
-        title: "Luxury Timepiece",
-      },
-      {
-        type: "image",
-        src: "/images/odell-beckham-jr-obj-monaco-14.jpg",
-        duration: 4000,
-        title: "Formal Elegance",
-      },
-    ],
-    Drake: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Studio Sessions",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Luxury Lifestyle",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Designer Fits",
-      },
-    ],
-    "Charli D'Amelio": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "TikTok Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Gen-Z Fashion",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Casual Chic",
-      },
-    ],
-    "Emma Chamberlain": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Vintage Vibes",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Thrift Finds",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Effortless Style",
-      },
-    ],
-    "Serena Williams": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Power Dressing",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Athletic Elegance",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Red Carpet Ready",
-      },
-    ],
-    Zendaya: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Avant-garde Fashion",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Bold Statements",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "High Fashion",
-      },
-    ],
-    "Taylor Swift": [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1494790108755-2616c9c1e4a3?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Romantic Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Vintage Romance",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Cottagecore Chic",
-      },
-    ],
-    MrBeast: [
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Casual Comfort",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Streetwear Style",
-      },
-      {
-        type: "image",
-        src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-        duration: 4000,
-        title: "Relaxed Vibes",
-      },
-    ],
   };
 
   // Auto-transition media effect
@@ -1104,7 +1076,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       bottoms: outfitData.bottoms || [],
       shoes: outfitData.shoes || [],
       accessories: outfitData.accessories || [],
-      fragrance: outfitData.fragrance || [],
     };
 
     const allCategories = Object.entries(groupedItems).filter(
@@ -1318,7 +1289,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 setSelectedLookData({
                   outfit: outfitData,
                   celebrity: celebrityName,
-                  celebrityData,
+                  celebrityData: celebrityData ? { ...celebrityData, fragrance: celebrityData.fragrance ?? "" } : undefined,
                 });
                 setShowLookModal(true);
               }}
@@ -1475,9 +1446,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             outfitSuggestions,
                             selectedCelebrity || undefined,
                             selectedCelebrity
-                              ? celebrityTrends.find(
-                                  (trend) => trend.name === selectedCelebrity,
-                                )
+                              ? (() => {
+                                  const trend = celebrityTrends.find((trend) => trend.name === selectedCelebrity);
+                                  return trend ? { ...trend, fragrance: trend.fragrance ?? "" } : undefined;
+                                })()
                               : undefined,
                           );
                         })()}
@@ -1951,9 +1923,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       outfitSuggestions,
                       selectedCelebrity || undefined,
                       selectedCelebrity
-                        ? celebrityTrends.find(
-                            (trend) => trend.name === selectedCelebrity,
-                          )
+                        ? (() => {
+                            const trend = celebrityTrends.find((trend) => trend.name === selectedCelebrity);
+                            return trend ? { ...trend, fragrance: trend.fragrance ?? "" } : undefined;
+                          })()
                         : undefined,
                     );
                   })()}
@@ -1965,8 +1938,8 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       </div>
       {/* Signup/Payment Dialog */}
       <SignupPaymentDialog
-        isOpen={showDialog}
-        onClose={() => setShowDialog(false)}
+        open={showDialog}
+        onOpenChange={() => setShowDialog(false)}
       />
       {/* Sign In Dialog */}
       {showSignInDialog && (
