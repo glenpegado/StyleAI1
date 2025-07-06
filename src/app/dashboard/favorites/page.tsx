@@ -438,13 +438,13 @@ function FavoriteModal({
               src={
                 currentLook.celebrity_name === "Odell Beckham Jr"
                   ? "/images/odell-beckham-jr-profile-new.png"
-                  : `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "StyleAI"}`
+                  : `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "peacedrobe"}`
               }
               alt={currentLook.celebrity_name || "Style AI"}
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "StyleAI"}`;
+                                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "peacedrobe"}`;
               }}
             />
           </div>

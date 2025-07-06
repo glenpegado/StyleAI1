@@ -1,8 +1,8 @@
-# Complete Setup Guide for StyleAI1 Product Integration
+# Complete Setup Guide for peacedrobe Product Integration
 
 ## 🎯 What You Now Have
 
-Your StyleAI1 app now includes a complete product integration system with:
+Your peacedrobe app now includes a complete product integration system with:
 
 ### ✅ **Real Product Data** (ShopStyle API)
 - Product images, prices, and affiliate links
@@ -42,7 +42,7 @@ Your StyleAI1 app now includes a complete product integration system with:
 2. Click "Create a search engine"
 3. Configure for fashion sites:
    - **Sites to search**: `*.vogue.com, *.pinterest.com, *.grailed.com, *.hypebeast.com, *.complex.com`
-   - **Name**: "StyleAI1 Fashion Search"
+   - **Name**: "peacedrobe Fashion Search"
    - **Language**: English
 4. Copy your Search Engine ID (cx)
 
@@ -271,4 +271,4 @@ Both components include analytics events:
 - **Technical Issues**: Check browser console and server logs
 - **API Limits**: Monitor usage in respective dashboards
 
-Your StyleAI1 app now has the same capabilities as ShopEncore and WhatsOnTheStar! 🎉 
+Your peacedrobe app now has the same capabilities as ShopEncore and WhatsOnTheStar! 🎉 

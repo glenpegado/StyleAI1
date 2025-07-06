@@ -1,4 +1,4 @@
-// Product Fetcher Module for StyleAI1
+// Product Fetcher Module for peacedrobe
 // Fetches real product data from ShopStyle API and other sources
 
 import axios from 'axios';

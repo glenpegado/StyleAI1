@@ -4,7 +4,7 @@ import { StyleImageGallery } from '@/components/style-image-gallery';
 export default function TestProductsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">StyleAI1 - Complete Integration Test</h1>
+      <h1 className="text-3xl font-bold mb-8">peacedrobe - Complete Integration Test</h1>
       
       <div className="space-y-16">
         {/* Products Section */}

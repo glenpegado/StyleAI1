@@ -1,7 +1,7 @@
-# Product Integration Guide for StyleAI1
+# Product Integration Guide for peacedrobe
 
 ## Overview
-This guide explains how to integrate real product data (images, prices, links) into your StyleAI1 app using the ShopStyle API.
+This guide explains how to integrate real product data (images, prices, links) into your peacedrobe app using the ShopStyle API.
 
 ## What's Been Added
 

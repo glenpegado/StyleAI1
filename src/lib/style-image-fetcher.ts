@@ -1,4 +1,4 @@
-// Style Image Fetcher for StyleAI1
+// Style Image Fetcher for peacedrobe
 // Fetches fashion inspiration, celebrity, and lookbook images using Google Custom Search API
 
 import axios from 'axios';

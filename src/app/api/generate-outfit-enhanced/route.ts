@@ -259,7 +259,7 @@ async function enhanceWithAffiliateProducts(aiOutfitData: any, celebrityName?: s
             ...aiItem,
             price: 0,
             currency: 'USD',
-            website: 'StyleAI',
+            website: 'peacedrobe',
             website_url: '#',
             affiliate_url: '#',
             availability: 'Check Availability',
@@ -269,16 +269,16 @@ async function enhanceWithAffiliateProducts(aiOutfitData: any, celebrityName?: s
       } catch (error) {
         console.warn(`Failed to enhance ${category} item:`, error);
         // Fallback to AI suggestion
-        enhancedOutfit[category].push({
-          ...aiItem,
-          price: 0,
-          currency: 'USD',
-          website: 'StyleAI',
-          website_url: '#',
-          affiliate_url: '#',
-          availability: 'Check Availability',
-          real_product: false
-        });
+                  enhancedOutfit[category].push({
+            ...aiItem,
+            price: 0,
+            currency: 'USD',
+            website: 'peacedrobe',
+            website_url: '#',
+            affiliate_url: '#',
+            availability: 'Check Availability',
+            real_product: false
+          });
       }
     }
   }

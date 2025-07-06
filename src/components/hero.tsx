@@ -1138,13 +1138,13 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                     celebrityName === "Odell Beckham Jr"
                       ? "/images/odell-beckham-jr-profile-new.png"
                       : celebrityData?.image ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "peacedrobe"}`
                   }
                   alt={celebrityName || "Style AI"}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "StyleAI"}`;
+                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${celebrityName || "peacedrobe"}`;
                   }}
                 />
               </div>
