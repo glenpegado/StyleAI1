@@ -1411,16 +1411,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                               <>
                                 {/* Desktop: Combined modal */}
                                 <div className="hidden md:flex bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-[700px]">
-                                  {/* Style inspiration loading - Right on desktop */}
-                                  <div className="w-1/2 flex flex-col">
-                                    <div className="p-4 flex-1 flex flex-col">
-                                      <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse" />
-                                    </div>
-                                  </div>
-
-                                  {/* Dividing line - vertical on desktop */}
-                                  <div className="w-px bg-gray-200 flex-shrink-0" />
-
                                   {/* Outfit display loading - Left on desktop */}
                                   <div className="w-1/2 flex flex-col">
                                     {/* Header with celebrity info */}
@@ -1454,6 +1444,16 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                         <div className="h-6 bg-gray-200 rounded animate-pulse w-20" />
                                       </div>
                                       <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
+                                    </div>
+                                  </div>
+
+                                  {/* Dividing line - vertical on desktop */}
+                                  <div className="w-px bg-gray-200 flex-shrink-0" />
+
+                                  {/* Style inspiration loading - Right on desktop */}
+                                  <div className="w-1/2 flex flex-col">
+                                    <div className="p-4 flex-1 flex flex-col">
+                                      <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse" />
                                     </div>
                                   </div>
                                 </div>
@@ -1512,7 +1512,33 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                             <>
                               {/* Desktop: Combined modal */}
                               <div className="hidden md:flex bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden h-[700px]">
-                                {/* Style Inspiration Gallery - Left on desktop */}
+                                {/* Outfit display - Left on desktop */}
+                                <div className="w-1/2 flex flex-col">
+                                  {renderOutfitItems(
+                                    outfitSuggestions,
+                                    selectedCelebrity || undefined,
+                                    selectedCelebrity
+                                      ? (() => {
+                                          const trend = celebrityTrends.find(
+                                            (trend) =>
+                                              trend.name === selectedCelebrity,
+                                          );
+                                          return trend
+                                            ? {
+                                                ...trend,
+                                                fragrance:
+                                                  trend.fragrance ?? "",
+                                              }
+                                            : undefined;
+                                        })()
+                                      : undefined,
+                                  )}
+                                </div>
+
+                                {/* Dividing line - vertical on desktop */}
+                                <div className="w-px bg-gray-200 flex-shrink-0" />
+
+                                {/* Style Inspiration Gallery - Right on desktop */}
                                 <div className="w-1/2 flex flex-col">
                                   <div className="flex-1 flex flex-col">
                                     {selectedCelebrity &&
@@ -1701,32 +1727,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                       </div>
                                     )}
                                   </div>
-                                </div>
-
-                                {/* Dividing line - vertical on desktop */}
-                                <div className="w-px bg-gray-200 flex-shrink-0" />
-
-                                {/* Outfit display - Right on desktop */}
-                                <div className="w-1/2 flex flex-col">
-                                  {renderOutfitItems(
-                                    outfitSuggestions,
-                                    selectedCelebrity || undefined,
-                                    selectedCelebrity
-                                      ? (() => {
-                                          const trend = celebrityTrends.find(
-                                            (trend) =>
-                                              trend.name === selectedCelebrity,
-                                          );
-                                          return trend
-                                            ? {
-                                                ...trend,
-                                                fragrance:
-                                                  trend.fragrance ?? "",
-                                              }
-                                            : undefined;
-                                        })()
-                                      : undefined,
-                                  )}
                                 </div>
                               </div>
 
