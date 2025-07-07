@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      prompts: {
+        Row: {
+          celebrity_name: string | null
+          created_at: string | null
+          id: string
+          query: string
+          response_data: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          celebrity_name?: string | null
+          created_at?: string | null
+          id?: string
+          query: string
+          response_data?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          celebrity_name?: string | null
+          created_at?: string | null
+          id?: string
+          query?: string
+          response_data?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       saved_looks: {
         Row: {
           celebrity_name: string | null

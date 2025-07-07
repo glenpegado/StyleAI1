@@ -542,11 +542,40 @@ export default function Hero({
     ],
   };
 
+  // Function to save prompt to database
+  const savePromptToDatabase = async (
+    query: string,
+    celebrityName?: string,
+    responseData?: any,
+  ) => {
+    if (!user) return; // Only save if user is logged in
+
+    try {
+      const { error } = await supabase.from("prompts").insert({
+        user_id: user.id,
+        query: query,
+        celebrity_name: celebrityName || null,
+        response_data: responseData || null,
+      });
+
+      if (error) {
+        console.error("Error saving prompt:", error);
+      } else {
+        console.log("Prompt saved successfully");
+      }
+    } catch (error) {
+      console.error("Failed to save prompt:", error);
+    }
+  };
+
   const generateOutfit = async (query: string) => {
     if (hasReachedLimit) {
       setShowDialog(true);
       return;
     }
+
+    // Save prompt to database if user is logged in
+    await savePromptToDatabase(query, selectedCelebrity || undefined);
 
     // Show loading state immediately
     setIsLoading(true);
@@ -591,7 +620,7 @@ export default function Hero({
       query.toLowerCase().includes("obj")
     ) {
       // Simulate loading time
-      setTimeout(() => {
+      setTimeout(async () => {
         const historyItem: SearchHistoryItem = {
           id: Date.now().toString(),
           query,
@@ -606,6 +635,15 @@ export default function Hero({
           timestamp: Date.now(),
           currentItemIndices: {},
         };
+
+        // Update saved prompt with response data if user is logged in
+        if (user) {
+          await savePromptToDatabase(
+            query,
+            "Odell Beckham Jr",
+            odellBeckhamOutfit,
+          );
+        }
 
         // Replace the loading item with the actual result (only if we created one)
         if (loadingHistoryItem) {
@@ -702,6 +740,11 @@ export default function Hero({
         timestamp: Date.now(),
         currentItemIndices: {},
       };
+
+      // Update saved prompt with response data if user is logged in
+      if (user) {
+        await savePromptToDatabase(query, selectedCelebrity || undefined, data);
+      }
 
       // Replace the loading item with the actual result (only if we created one)
       if (loadingHistoryItem) {
@@ -950,6 +993,31 @@ export default function Hero({
       generateOutfit(initialQuery);
     }
   }, [initialQuery]);
+
+  // Listen for prompt updates from navbar
+  useEffect(() => {
+    const handlePromptUpdate = (event: CustomEvent) => {
+      const { query, celebrity } = event.detail;
+      setSearchQuery(query);
+      setSelectedCelebrity(celebrity || null);
+
+      // Mark as user-initiated and generate outfit
+      setIsUserInitiatedPrompt(true);
+      generateOutfit(query);
+    };
+
+    window.addEventListener(
+      "promptUpdate",
+      handlePromptUpdate as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "promptUpdate",
+        handlePromptUpdate as EventListener,
+      );
+    };
+  }, []);
 
   // Celebrity trends data
   const celebrityTrends: CelebrityTrend[] = [
@@ -1540,6 +1608,7 @@ export default function Hero({
                         disabled={isLoading}
                         rows={1}
                         suppressHydrationWarning
+                        autoFocus={searchHistory.length === 0}
                       />
                       <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <div className="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
@@ -1884,6 +1953,7 @@ export default function Hero({
                                 disabled={isLoading}
                                 rows={1}
                                 suppressHydrationWarning
+                                autoFocus
                               />
                               <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                 <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
