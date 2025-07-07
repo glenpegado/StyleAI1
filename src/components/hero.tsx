@@ -1864,7 +1864,7 @@ export default function Hero({
                                         // Show default image for no celebrity selected - Full modal height
                                         <div className="w-full h-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer relative">
                                           <img
-                                            src="/images/style-inspiration.jpg"
+                                            src="/images/affordable-streetwear.png"
                                             alt="Featured style inspiration"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
@@ -2080,28 +2080,28 @@ export default function Hero({
                         {/* Style inspiration images */}
                         <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
                           <img
-                            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80"
+                            src="/images/affordable-streetwear.png"
                             alt="Street style inspiration"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
                           <img
-                            src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&q=80"
+                            src="/images/affordable-streetwear.png"
                             alt="Casual chic inspiration"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
                           <img
-                            src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80"
+                            src="/images/affordable-streetwear.png"
                             alt="Urban fashion inspiration"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform duration-200 cursor-pointer">
                           <img
-                            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80"
+                            src="/images/affordable-streetwear.png"
                             alt="Trendy outfit inspiration"
                             className="w-full h-full object-cover"
                           />

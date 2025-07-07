@@ -434,13 +434,10 @@ export default function HomepageHero() {
     e.preventDefault();
     if (searchQuery.trim()) {
       const query = searchQuery.trim();
-      // Show loading state immediately
-      setIsLoading(true);
-
-      // Navigate to prompt page with query
+      // Navigate directly to prompt page with query
       const params = new URLSearchParams();
       params.set("query", query);
-      router.replace(`/prompt?${params.toString()}`);
+      router.push(`/prompt?${params.toString()}`);
     }
   };
 
@@ -618,9 +615,8 @@ export default function HomepageHero() {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
     setIsTyping(false);
-    setIsLoading(true);
 
-    // Trigger search immediately
+    // Navigate directly to prompt page
     const params = new URLSearchParams();
     params.set("query", suggestion);
     router.push(`/prompt?${params.toString()}`);
@@ -686,19 +682,7 @@ export default function HomepageHero() {
 
   return (
     <div className="bg-white">
-      {/* Loading Overlay - Completely hide homepage content */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-600 font-medium">Loading your style...</p>
-          </div>
-        </div>
-      )}
-
-      <div
-        className={`relative pt-24 pb-16 sm:pt-32 sm:pb-20 ${isLoading ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-      >
+      <div className="relative pt-24 pb-16 sm:pt-32 sm:pb-20">
         <div className="container mx-auto px-4">
           <div className="flex flex-col">
             <div className="text-center max-w-4xl mx-auto w-full">
@@ -738,7 +722,7 @@ export default function HomepageHero() {
                             : "Describe your style or ask for outfit ideas..."
                       }
                       className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-52 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed h-14 min-h-14 max-h-30"
-                      disabled={isLoading}
+                      disabled={false}
                       rows={1}
                       autoFocus={isMounted}
                     />
@@ -748,14 +732,10 @@ export default function HomepageHero() {
                       </div>
                       <button
                         type="submit"
-                        disabled={isLoading || !searchQuery.trim()}
+                        disabled={!searchQuery.trim()}
                         className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-white rounded-full hover:bg-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg flex-shrink-0"
                       >
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                        ) : (
-                          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                        )}
+                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
