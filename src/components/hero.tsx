@@ -1583,272 +1583,274 @@ export default function Hero({
                           </div>
                         </div>
 
-                        {/* Outfit Results */}
+                        {/* Outfit Results - Combined Modal */}
                         <div className="ml-11">
-                          <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
-                            {/* Left side - Outfit display */}
-                            <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
+                          <div className="flex justify-center">
+                            {/* Single Combined Modal */}
+                            <div className="w-full max-w-[900px] flex">
                               {(historyItem.outfit as any)?.loading ? (
                                 // Instagram-style loading with greyed-out preview items
-                                <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-                                  {/* Header */}
-                                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-1 w-24" />
+                                <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex h-[700px]">
+                                  {/* Left side - Loading outfit items */}
+                                  <div className="flex-1 flex flex-col">
+                                    {/* Header */}
+                                    <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
+                                      <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="h-4 bg-gray-200 rounded animate-pulse mb-1 w-24" />
+                                      </div>
                                     </div>
-                                  </div>
-                                  {/* Loading items with greyed-out preview */}
-                                  <div className="p-3 space-y-2 flex-1 overflow-y-auto">
-                                    {[1, 2, 3, 4].map((i) => (
-                                      <div key={i} className="relative">
-                                        <div className="block rounded-lg p-2 border border-gray-100">
-                                          <div className="flex items-center gap-2">
-                                            {/* Item Image */}
-                                            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
-                                            {/* Item Details */}
-                                            <div className="flex-1 min-w-0 mr-1">
-                                              <div className="flex items-start justify-between mb-1">
-                                                <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
-                                              </div>
-                                              <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-32" />
-                                              <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-16" />
-                                              <div className="flex items-center justify-between">
-                                                <div className="h-3 bg-gray-200 rounded animate-pulse w-12" />
+                                    {/* Loading items with greyed-out preview */}
+                                    <div className="p-3 space-y-2 flex-1 overflow-y-auto">
+                                      {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="relative">
+                                          <div className="block rounded-lg p-2 border border-gray-100">
+                                            <div className="flex items-center gap-2">
+                                              {/* Item Image */}
+                                              <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
+                                              {/* Item Details */}
+                                              <div className="flex-1 min-w-0 mr-1">
+                                                <div className="flex items-start justify-between mb-1">
+                                                  <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                                                </div>
+                                                <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-32" />
+                                                <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-16" />
+                                                <div className="flex items-center justify-between">
+                                                  <div className="h-3 bg-gray-200 rounded animate-pulse w-12" />
+                                                </div>
                                               </div>
                                             </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  {/* Total */}
-                                  <div className="border-t border-gray-200 p-3 flex-shrink-0">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <div className="h-3 bg-gray-200 rounded animate-pulse w-10" />
-                                      <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
+                                      ))}
                                     </div>
-                                    <div className="h-10 bg-gray-200 rounded-xl animate-pulse" />
+                                    {/* Total */}
+                                    <div className="border-t border-gray-200 p-3 flex-shrink-0">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div className="h-3 bg-gray-200 rounded animate-pulse w-10" />
+                                        <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
+                                      </div>
+                                      <div className="h-10 bg-gray-200 rounded-xl animate-pulse" />
+                                    </div>
+                                  </div>
+
+                                  {/* Vertical separator line */}
+                                  <div className="w-px bg-gray-200 flex-shrink-0"></div>
+
+                                  {/* Right side - Loading style inspiration */}
+                                  <div className="flex-1 flex flex-col">
+                                    {/* Header */}
+                                    <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
+                                      <div className="flex-1 min-w-0">
+                                        {/* Title removed */}
+                                      </div>
+                                    </div>
+                                    {/* Loading image - Full height */}
+                                    <div className="flex-1 flex flex-col">
+                                      <div className="w-full h-full bg-gray-200 overflow-hidden relative animate-pulse">
+                                        {/* Loading placeholder */}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               ) : (
-                                renderOutfitItems(
-                                  historyItem.outfit,
-                                  historyItem.celebrity,
-                                  historyItem.celebrityData,
-                                )
-                              )}
-                            </div>
+                                // Combined actual content
+                                <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex h-[700px]">
+                                  {/* Left side - Outfit items */}
+                                  <div className="flex-1 flex flex-col">
+                                    {renderOutfitItems(
+                                      historyItem.outfit,
+                                      historyItem.celebrity,
+                                      historyItem.celebrityData,
+                                    )}
+                                  </div>
 
-                            {/* Right side - Style Inspiration Gallery */}
-                            <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-                                {/* Header */}
-                                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                                  <div className="flex-1 min-w-0">
-                                    {/* Title removed */}
+                                  {/* Right side - Style inspiration */}
+                                  <div className="flex-1 flex flex-col">
+                                    {/* Single Featured Content - Celebrity Images - Full Height */}
+                                    <div className="flex-1 flex flex-col">
+                                      {historyItem.celebrity &&
+                                      celebrityMediaGallery[
+                                        historyItem.celebrity
+                                      ] ? (
+                                        // Show dynamic media for selected celebrity - Full modal height
+                                        <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative group">
+                                          <img
+                                            src={
+                                              celebrityMediaGallery[
+                                                historyItem.celebrity
+                                              ][currentMediaIndex]?.src
+                                            }
+                                            alt={
+                                              celebrityMediaGallery[
+                                                historyItem.celebrity
+                                              ][currentMediaIndex]?.title
+                                            }
+                                            className="w-full h-full object-cover transition-all duration-500 hover:scale-[1.02]"
+                                            onError={(e) => {
+                                              const target =
+                                                e.target as HTMLImageElement;
+                                              target.src =
+                                                "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                            }}
+                                          />
+
+                                          {/* Navigation arrows - hidden by default, shown on hover */}
+                                          <button
+                                            onClick={() => {
+                                              const gallery =
+                                                celebrityMediaGallery[
+                                                  historyItem.celebrity!
+                                                ];
+                                              setCurrentMediaIndex((prev) =>
+                                                prev === 0
+                                                  ? gallery.length - 1
+                                                  : prev - 1,
+                                              );
+                                            }}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                                          >
+                                            <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              const gallery =
+                                                celebrityMediaGallery[
+                                                  historyItem.celebrity!
+                                                ];
+                                              setCurrentMediaIndex((prev) =>
+                                                prev === gallery.length - 1
+                                                  ? 0
+                                                  : prev + 1,
+                                              );
+                                            }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                                          >
+                                            <ChevronRight className="w-5 h-5 text-gray-700" />
+                                          </button>
+
+                                          {/* Favorite button */}
+                                          <button
+                                            onClick={() => {
+                                              saveLookToBoard(
+                                                historyItem.outfit,
+                                                historyItem.celebrity,
+                                              );
+                                            }}
+                                            className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                          >
+                                            <svg
+                                              className={`w-5 h-5 transition-colors ${
+                                                savedLooks.some((id) => {
+                                                  // Check if this look combination is already saved
+                                                  // This is a simplified check - in a real app you'd want more sophisticated matching
+                                                  return false; // For now, always show unfilled heart
+                                                })
+                                                  ? "text-red-500 fill-current"
+                                                  : "text-gray-600 hover:text-red-400"
+                                              }`}
+                                              fill={
+                                                savedLooks.some((id) => false)
+                                                  ? "currentColor"
+                                                  : "none"
+                                              }
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                              />
+                                            </svg>
+                                          </button>
+
+                                          {/* Elegant overlay gradient */}
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none" />
+
+                                          {/* Media indicators */}
+                                          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                            {celebrityMediaGallery[
+                                              historyItem.celebrity
+                                            ].map((_, mediaIndex) => (
+                                              <div
+                                                key={mediaIndex}
+                                                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                                                  mediaIndex ===
+                                                  currentMediaIndex
+                                                    ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
+                                                    : "bg-white/60 hover:bg-white/80"
+                                                }`}
+                                                onClick={() =>
+                                                  setCurrentMediaIndex(
+                                                    mediaIndex,
+                                                  )
+                                                }
+                                              />
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        // Show default image for no celebrity selected - Full modal height
+                                        <div className="w-full h-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer relative">
+                                          <img
+                                            src="/images/style-inspiration.jpg"
+                                            alt="Featured style inspiration"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              const target =
+                                                e.target as HTMLImageElement;
+                                              target.src =
+                                                "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                            }}
+                                          />
+
+                                          {/* Favorite button for default image */}
+                                          <button
+                                            onClick={() => {
+                                              saveLookToBoard(
+                                                historyItem.outfit,
+                                                undefined,
+                                              );
+                                            }}
+                                            className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                          >
+                                            <svg
+                                              className={`w-5 h-5 transition-colors ${
+                                                savedLooks.some((id) => {
+                                                  // Check if this look combination is already saved
+                                                  // This is a simplified check - in a real app you'd want more sophisticated matching
+                                                  return false; // For now, always show unfilled heart
+                                                })
+                                                  ? "text-red-500 fill-current"
+                                                  : "text-gray-600 hover:text-red-400"
+                                              }`}
+                                              fill={
+                                                savedLooks.some((id) => false)
+                                                  ? "currentColor"
+                                                  : "none"
+                                              }
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                              />
+                                            </svg>
+                                          </button>
+
+                                          {/* Elegant overlay */}
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none" />
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-
-                                {/* Single Featured Content - Celebrity Images */}
-                                <div className="flex-1 flex flex-col p-4">
-                                  {(historyItem.outfit as any)?.loading ? (
-                                    // Instagram-style loading for right panel
-                                    <div className="w-full h-[600px] bg-gray-200 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl animate-pulse">
-                                      {/* Loading placeholder */}
-                                    </div>
-                                  ) : historyItem.celebrity &&
-                                    celebrityMediaGallery[
-                                      historyItem.celebrity
-                                    ] ? (
-                                    // Show dynamic media for selected celebrity
-                                    <div className="w-full h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl group">
-                                      <img
-                                        src={
-                                          celebrityMediaGallery[
-                                            historyItem.celebrity
-                                          ][currentMediaIndex]?.src
-                                        }
-                                        alt={
-                                          celebrityMediaGallery[
-                                            historyItem.celebrity
-                                          ][currentMediaIndex]?.title
-                                        }
-                                        className="w-full h-full object-cover transition-all duration-500 hover:scale-[1.02] rounded-2xl"
-                                        onError={(e) => {
-                                          const target =
-                                            e.target as HTMLImageElement;
-                                          target.src =
-                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                        }}
-                                      />
-
-                                      {/* Navigation arrows - hidden by default, shown on hover */}
-                                      <button
-                                        onClick={() => {
-                                          const gallery =
-                                            celebrityMediaGallery[
-                                              historyItem.celebrity!
-                                            ];
-                                          setCurrentMediaIndex((prev) =>
-                                            prev === 0
-                                              ? gallery.length - 1
-                                              : prev - 1,
-                                          );
-                                        }}
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                                      >
-                                        <ChevronLeft className="w-5 h-5 text-gray-700" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          const gallery =
-                                            celebrityMediaGallery[
-                                              historyItem.celebrity!
-                                            ];
-                                          setCurrentMediaIndex((prev) =>
-                                            prev === gallery.length - 1
-                                              ? 0
-                                              : prev + 1,
-                                          );
-                                        }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                                      >
-                                        <ChevronRight className="w-5 h-5 text-gray-700" />
-                                      </button>
-
-                                      {/* Favorite button */}
-                                      <button
-                                        onClick={() => {
-                                          saveLookToBoard(
-                                            historyItem.outfit,
-                                            historyItem.celebrity,
-                                          );
-                                        }}
-                                        className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                      >
-                                        <svg
-                                          className={`w-5 h-5 transition-colors ${
-                                            savedLooks.some((id) => {
-                                              // Check if this look combination is already saved
-                                              // This is a simplified check - in a real app you'd want more sophisticated matching
-                                              return false; // For now, always show unfilled heart
-                                            })
-                                              ? "text-red-500 fill-current"
-                                              : "text-gray-600 hover:text-red-400"
-                                          }`}
-                                          fill={
-                                            savedLooks.some((id) => false)
-                                              ? "currentColor"
-                                              : "none"
-                                          }
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                          />
-                                        </svg>
-                                      </button>
-
-                                      {/* Elegant overlay gradient */}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
-
-                                      {/* Media indicators */}
-                                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                                        {celebrityMediaGallery[
-                                          historyItem.celebrity
-                                        ].map((_, mediaIndex) => (
-                                          <div
-                                            key={mediaIndex}
-                                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                                              mediaIndex === currentMediaIndex
-                                                ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
-                                                : "bg-white/60 hover:bg-white/80"
-                                            }`}
-                                            onClick={() =>
-                                              setCurrentMediaIndex(mediaIndex)
-                                            }
-                                          />
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    // Show default image for no celebrity selected
-                                    <div className="w-full h-[600px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
-                                      <img
-                                        src="/images/style-inspiration.jpg"
-                                        alt="Featured style inspiration"
-                                        className="w-full h-full object-cover rounded-2xl"
-                                        onError={(e) => {
-                                          const target =
-                                            e.target as HTMLImageElement;
-                                          target.src =
-                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                        }}
-                                      />
-
-                                      {/* Favorite button for default image */}
-                                      <button
-                                        onClick={() => {
-                                          saveLookToBoard(
-                                            historyItem.outfit,
-                                            undefined,
-                                          );
-                                        }}
-                                        className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                      >
-                                        <svg
-                                          className={`w-5 h-5 transition-colors ${
-                                            savedLooks.some((id) => {
-                                              // Check if this look combination is already saved
-                                              // This is a simplified check - in a real app you'd want more sophisticated matching
-                                              return false; // For now, always show unfilled heart
-                                            })
-                                              ? "text-red-500 fill-current"
-                                              : "text-gray-600 hover:text-red-400"
-                                          }`}
-                                          fill={
-                                            savedLooks.some((id) => false)
-                                              ? "currentColor"
-                                              : "none"
-                                          }
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                          />
-                                        </svg>
-                                      </button>
-
-                                      {/* Elegant overlay */}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
-                                    </div>
-                                  )}
-                                  {!(historyItem.outfit as any)?.loading && (
-                                    <div className="text-center flex-shrink-0 pt-4">
-                                      <h4 className="font-semibold text-gray-900 mb-2 text-lg leading-tight">
-                                        {historyItem.celebrity &&
-                                        celebrityMediaGallery[
-                                          historyItem.celebrity
-                                        ]
-                                          ? celebrityMediaGallery[
-                                              historyItem.celebrity
-                                            ][currentMediaIndex]?.title ||
-                                            "Celebrity Style"
-                                          : "Street Style Vibes"}
-                                      </h4>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              )}
                             </div>
                           </div>
 
