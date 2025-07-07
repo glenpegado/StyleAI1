@@ -203,14 +203,9 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-black">
-                  peacedrobe
-                </span>
-                <span className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full">
-                  BETA
-                </span>
-              </div>
+              <span className="text-lg font-semibold text-black">
+                peacedrobe
+              </span>
             </div>
           </div>
 
