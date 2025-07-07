@@ -43,6 +43,16 @@ interface OutfitSuggestion {
   shoes: OutfitItem[];
 }
 
+interface SearchHistoryItem {
+  id: string;
+  query: string;
+  outfit: OutfitSuggestion;
+  celebrity?: string;
+  celebrityData?: { name: string; image: string; fragrance: string };
+  timestamp: number;
+  currentItemIndices: { [key: number]: number };
+}
+
 interface CelebrityTrend {
   name: string;
   tags: { name: string; color: string }[];
@@ -55,6 +65,8 @@ interface CelebrityTrend {
 
 interface HeroProps {
   showSearch?: boolean;
+  initialQuery?: string;
+  initialCelebrity?: string;
 }
 
 // Add this type above the celebrityMediaGallery declaration
@@ -65,13 +77,20 @@ interface CelebrityMediaItem {
   title: string;
 }
 
-export default function Hero({ showSearch = true }: HeroProps = {}) {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function Hero({
+  showSearch = true,
+  initialQuery = "",
+  initialCelebrity = null,
+}: HeroProps = {}) {
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [showDialog, setShowDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isStyleLoading, setIsStyleLoading] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [outfitSuggestions, setOutfitSuggestions] =
     useState<OutfitSuggestion | null>(null);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const historyContainerRef = useRef<HTMLDivElement>(null);
   const { promptCount, incrementPrompt, hasReachedLimit } = usePrompt();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -82,7 +101,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [selectedCelebrity, setSelectedCelebrity] = useState<string | null>(
-    null,
+    initialCelebrity,
   );
   const [currentCelebLookIndex, setCurrentCelebLookIndex] = useState(0);
   const [user, setUser] = useState<any>(null);
@@ -99,6 +118,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   const mediaTransitionRef = useRef<NodeJS.Timeout | null>(null);
   const [currentStyleImageIndex, setCurrentStyleImageIndex] = useState(0);
   const [favoriteImages, setFavoriteImages] = useState<Set<string>>(new Set());
+  const [isUserInitiatedPrompt, setIsUserInitiatedPrompt] = useState(false);
   const supabase = createClient();
 
   // Update the celebrityMediaGallery declaration
@@ -528,17 +548,76 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       return;
     }
 
+    // Show loading state immediately
+    setIsLoading(true);
+    setLoadingTimeout(false);
+
+    // Only add loading item to search history if we have existing search history
+    let loadingHistoryItem: SearchHistoryItem | null = null;
+    const shouldShowInHistory = searchHistory.length > 0;
+
+    if (shouldShowInHistory) {
+      // Add loading item to search history immediately for subsequent prompts
+      loadingHistoryItem = {
+        id: `loading-${Date.now()}`,
+        query,
+        outfit: { loading: true } as any,
+        celebrity: selectedCelebrity || undefined,
+        celebrityData: selectedCelebrity
+          ? (() => {
+              const trend = celebrityTrends.find(
+                (trend) => trend.name === selectedCelebrity,
+              );
+              return trend
+                ? {
+                    ...trend,
+                    fragrance: trend.fragrance ?? "",
+                  }
+                : undefined;
+            })()
+          : undefined,
+        timestamp: Date.now(),
+        currentItemIndices: {},
+      };
+
+      setSearchHistory((prev) => [...prev, loadingHistoryItem]);
+    }
+
+    setSearchQuery(""); // Clear search input immediately
+
     // Check if this is an Odell Beckham query
     if (
       query.toLowerCase().includes("odell beckham") ||
       query.toLowerCase().includes("obj")
     ) {
-      setIsLoading(true);
-      setOutfitSuggestions({ loading: true } as any);
-
       // Simulate loading time
       setTimeout(() => {
-        setOutfitSuggestions(odellBeckhamOutfit);
+        const historyItem: SearchHistoryItem = {
+          id: Date.now().toString(),
+          query,
+          outfit: odellBeckhamOutfit,
+          celebrity: "Odell Beckham Jr",
+          celebrityData: {
+            name: "Odell Beckham Jr",
+            image:
+              "/images/odell-beckham-jr-obj-monaco-friends-amfar-gala-cannes-f1-2025-2-1.jpg",
+            fragrance: "Champion Spirit",
+          },
+          timestamp: Date.now(),
+          currentItemIndices: {},
+        };
+
+        // Replace the loading item with the actual result (only if we created one)
+        if (loadingHistoryItem) {
+          setSearchHistory((prev) =>
+            prev.map((item) =>
+              item.id === loadingHistoryItem.id ? historyItem : item,
+            ),
+          );
+        } else {
+          // For initial queries, just add the result directly
+          setSearchHistory((prev) => [...prev, historyItem]);
+        }
         setIsLoading(false);
         incrementPrompt();
 
@@ -549,9 +628,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       return;
     }
 
-    // Show loading state immediately for both outfit and style
-    setOutfitSuggestions({ loading: true } as any);
-    setIsLoading(true);
+    // Set timeout for slow connections (show modal after 8 seconds)
+    const timeoutId = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 8000);
 
     // Simple request with timeout
     const makeRequest = async () => {
@@ -600,8 +680,41 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         throw new Error(data.error);
       }
 
-      // Set both outfit suggestions and style loading to complete simultaneously
-      setOutfitSuggestions(data);
+      // Create the actual result item
+      const historyItem: SearchHistoryItem = {
+        id: Date.now().toString(),
+        query,
+        outfit: data,
+        celebrity: selectedCelebrity || undefined,
+        celebrityData: selectedCelebrity
+          ? (() => {
+              const trend = celebrityTrends.find(
+                (trend) => trend.name === selectedCelebrity,
+              );
+              return trend
+                ? {
+                    ...trend,
+                    fragrance: trend.fragrance ?? "",
+                  }
+                : undefined;
+            })()
+          : undefined,
+        timestamp: Date.now(),
+        currentItemIndices: {},
+      };
+
+      // Replace the loading item with the actual result (only if we created one)
+      if (loadingHistoryItem) {
+        setSearchHistory((prev) =>
+          prev.map((item) =>
+            item.id === loadingHistoryItem.id ? historyItem : item,
+          ),
+        );
+      } else {
+        // For initial queries, just add the result directly
+        setSearchHistory((prev) => [...prev, historyItem]);
+      }
+      clearTimeout(timeoutId);
 
       // Increment prompt count after successful generation
       incrementPrompt();
@@ -611,6 +724,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         setShowDialog(true);
       }
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error("Error generating outfit:", error);
 
       let errorMessage =
@@ -620,6 +734,13 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         errorMessage = error.message;
       }
 
+      // Replace loading item with error state (only if we created one)
+      if (loadingHistoryItem) {
+        setSearchHistory((prev) =>
+          prev.filter((item) => item.id !== loadingHistoryItem.id),
+        );
+      }
+
       // Show simplified error message
       alert(
         errorMessage ||
@@ -627,22 +748,40 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       );
     } finally {
       setIsLoading(false);
+      setLoadingTimeout(false);
     }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      await generateOutfit(searchQuery);
+      const query = searchQuery.trim();
+
+      // Mark this as a user-initiated prompt
+      setIsUserInitiatedPrompt(true);
+
+      await generateOutfit(query);
+
+      // Scroll to bottom immediately to show the new loading item (only when there's search history)
+      if (searchHistory.length > 0) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 100);
+      }
     }
   };
 
   const handleStyleClick = async (query: string, celebrityName?: string) => {
-    setSearchQuery(query); // Update search query to match the clicked style
-    if (celebrityName && !selectedCelebrity) {
-      setSelectedCelebrity(celebrityName);
+    // Navigate to prompt page with query parameters
+    const params = new URLSearchParams();
+    params.set("query", query);
+    if (celebrityName) {
+      params.set("celebrity", celebrityName);
     }
-    await generateOutfit(query);
+    window.location.href = `/prompt?${params.toString()}`;
   };
 
   // Auto-scroll effect with infinite loop
@@ -790,6 +929,27 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       setCurrentMediaIndex(0);
     }
   }, [selectedCelebrity]);
+
+  // Auto-scroll to bottom when new search history is added (like ChatGPT)
+  useEffect(() => {
+    if (searchHistory.length > 1) {
+      // Scroll to bottom to show the latest search result (only for subsequent searches)
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }, [searchHistory.length]);
+
+  // Auto-generate outfit when initial query is provided
+  useEffect(() => {
+    if (initialQuery && searchHistory.length === 0) {
+      setIsUserInitiatedPrompt(false);
+      generateOutfit(initialQuery);
+    }
+  }, [initialQuery]);
 
   // Celebrity trends data
   const celebrityTrends: CelebrityTrend[] = [
@@ -1289,7 +1449,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 setSelectedLookData({
                   outfit: outfitData,
                   celebrity: celebrityName,
-                  celebrityData: celebrityData ? { ...celebrityData, fragrance: celebrityData.fragrance ?? "" } : undefined,
+                  celebrityData: celebrityData
+                    ? {
+                        ...celebrityData,
+                        fragrance: celebrityData.fragrance ?? "",
+                      }
+                    : undefined,
                 });
                 setShowLookModal(true);
               }}
@@ -1325,28 +1490,33 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
   return (
     <div className="bg-white">
       <div
-        className={`relative ${outfitSuggestions ? "pt-8 pb-16" : "pt-24 pb-32 sm:pt-32 sm:pb-40"}`}
+        className={`relative ${outfitSuggestions ? "pt-4 pb-8" : searchHistory.length > 0 ? "pt-8 pb-24" : "pt-16 pb-24 sm:pt-20 sm:pb-32"}`}
       >
         <div className="container mx-auto px-4">
           <div className="flex flex-col" id="hero-content">
             <div className="text-center max-w-4xl mx-auto w-full">
-              {/* Title and description - only show when no outfit suggestions */}
+              {/* Title and description - only show when no search history */}
               <div
-                className={`transition-all duration-500 ease-in-out ${outfitSuggestions ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
+                className={`transition-all duration-500 ease-in-out ${searchHistory.length > 0 ? "opacity-0 transform -translate-y-4 h-0 overflow-hidden" : "opacity-100 transform translate-y-0"}`}
               >
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight px-4">
-                  <span className="text-black">peacedrobe</span>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 sm:mb-8 tracking-tight px-4">
+                  <span className="text-black flex items-center justify-center gap-3">
+                    peacedrobe
+                    <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full">
+                      BETA
+                    </span>
+                  </span>
                 </h1>
 
-                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+                <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
                   Discover complete outfit ideas with high-end options and
                   budget-friendly alternatives
                 </p>
               </div>
 
-              {/* AI Search Bar - Only show if showSearch is true and no outfit suggestions */}
-              {showSearch && !outfitSuggestions && (
-                <div className="max-w-2xl mx-auto px-4 mb-12">
+              {/* AI Search Bar - Only show if showSearch is true and no search history */}
+              {showSearch && searchHistory.length === 0 && (
+                <div className="max-w-2xl mx-auto px-4 mb-16">
                   <form onSubmit={handleSearch} className="relative">
                     <div className="relative bg-white rounded-2xl border border-beige-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
                       <textarea
@@ -1392,359 +1562,358 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                 </div>
               )}
 
-              {/* Outfit Suggestions Panel - Show below search area */}
-              {outfitSuggestions && showSearch && (
-                <div className="w-full max-w-7xl mx-auto mb-32 px-4">
-                  <div className="flex flex-col gap-8">
-                    {/* Content area with outfit display and style inspiration side by side */}
-                    <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
-                      {/* Left side - Outfit display */}
-                      <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
-                        {(() => {
-                          // Show loading state
-                          if ((outfitSuggestions as any)?.loading) {
-                            return (
-                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-                                {/* Header with celebrity info */}
-                                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-gray-200 animate-pulse" />
-                                  <div className="flex-1">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-                                  </div>
-                                </div>
-                                {/* Loading items */}
-                                <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-                                  {[1, 2, 3, 4].map((i) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg"
-                                    >
-                                      <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse" />
-                                      <div className="flex-1">
-                                        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                                        <div className="h-3 bg-gray-200 rounded animate-pulse mb-2 w-3/4" />
-                                        <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                {/* Loading total */}
-                                <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                                  <div className="flex items-center justify-between mb-4">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-                                    <div className="h-6 bg-gray-200 rounded animate-pulse w-20" />
-                                  </div>
-                                  <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Show actual outfit suggestions
-                          return renderOutfitItems(
-                            outfitSuggestions,
-                            selectedCelebrity || undefined,
-                            selectedCelebrity
-                              ? (() => {
-                                  const trend = celebrityTrends.find((trend) => trend.name === selectedCelebrity);
-                                  return trend ? { ...trend, fragrance: trend.fragrance ?? "" } : undefined;
-                                })()
-                              : undefined,
-                          );
-                        })()}
-                      </div>
-
-                      {/* Right side - Style Inspiration Gallery */}
-                      <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
-                        {(outfitSuggestions as any)?.loading ? (
-                          // Loading state for style inspiration
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-                            {/* Header */}
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 text-lg truncate">
-                                  Style Inspiration
-                                </h3>
-                              </div>
+              {/* Search History - ChatGPT Style */}
+              {searchHistory.length > 0 && showSearch && (
+                <div className="w-full max-w-7xl mx-auto mb-4 px-4">
+                  <div ref={historyContainerRef} className="space-y-8">
+                    {searchHistory.map((historyItem, index) => (
+                      <div key={historyItem.id} className="relative">
+                        {/* Search Query Header */}
+                        <div className="mb-4">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                              <Sparkles className="w-4 h-4 text-white" />
                             </div>
-                            {/* Loading content */}
-                            <div className="p-4 flex-1 flex flex-col">
-                              <div className="w-full h-[400px] bg-gray-200 rounded-lg animate-pulse" />
-                              <div className="mt-4 text-center flex-shrink-0">
-                                <div className="h-4 bg-gray-200 rounded animate-pulse mb-2 mx-auto w-32" />
-                                <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-24" />
-                              </div>
-                            </div>
-                            {/* Loading footer */}
-                            <div className="border-t border-gray-200 p-4 flex-shrink-0">
-                              <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-                            </div>
+                            <p className="text-gray-800 font-medium">
+                              {historyItem.query}
+                            </p>
                           </div>
-                        ) : (
-                          <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
-                            {/* Header */}
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 text-lg truncate">
-                                  Style Inspiration
-                                </h3>
-                              </div>
-                            </div>
+                          <div className="text-xs text-gray-500 ml-11">
+                            {new Date(historyItem.timestamp).toLocaleString()}
+                          </div>
+                        </div>
 
-                            {/* Single Featured Content - Celebrity Images */}
-                            <div className="flex-1 flex flex-col p-4">
-                              {selectedCelebrity &&
-                              celebrityMediaGallery[selectedCelebrity] ? (
-                                // Show dynamic media for selected celebrity
-                                <div className="w-full h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl group">
-                                  <img
-                                    src={
-                                      celebrityMediaGallery[selectedCelebrity][
-                                        currentMediaIndex
-                                      ]?.src
-                                    }
-                                    alt={
-                                      celebrityMediaGallery[selectedCelebrity][
-                                        currentMediaIndex
-                                      ]?.title
-                                    }
-                                    className="w-full h-full object-cover transition-all duration-500 hover:scale-[1.02] rounded-2xl"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.src =
-                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                    }}
-                                  />
-
-                                  {/* Navigation arrows - hidden by default, shown on hover */}
-                                  <button
-                                    onClick={() => {
-                                      const gallery =
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ];
-                                      setCurrentMediaIndex((prev) =>
-                                        prev === 0
-                                          ? gallery.length - 1
-                                          : prev - 1,
-                                      );
-                                    }}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                                  >
-                                    <ChevronLeft className="w-5 h-5 text-gray-700" />
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      const gallery =
-                                        celebrityMediaGallery[
-                                          selectedCelebrity
-                                        ];
-                                      setCurrentMediaIndex((prev) =>
-                                        prev === gallery.length - 1
-                                          ? 0
-                                          : prev + 1,
-                                      );
-                                    }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                                  >
-                                    <ChevronRight className="w-5 h-5 text-gray-700" />
-                                  </button>
-
-                                  {/* Favorite button */}
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        outfitSuggestions &&
-                                        !(outfitSuggestions as any)?.loading
-                                      ) {
-                                        saveLookToBoard(
-                                          outfitSuggestions,
-                                          selectedCelebrity || undefined,
-                                        );
-                                      }
-                                    }}
-                                    className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                  >
-                                    <svg
-                                      className={`w-5 h-5 transition-colors ${
-                                        savedLooks.some((id) => {
-                                          // Check if this look combination is already saved
-                                          // This is a simplified check - in a real app you'd want more sophisticated matching
-                                          return false; // For now, always show unfilled heart
-                                        })
-                                          ? "text-red-500 fill-current"
-                                          : "text-gray-600 hover:text-red-400"
-                                      }`}
-                                      fill={
-                                        savedLooks.some((id) => false)
-                                          ? "currentColor"
-                                          : "none"
-                                      }
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                      />
-                                    </svg>
-                                  </button>
-
-                                  {/* Elegant overlay gradient */}
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
-
-                                  {/* Media indicators */}
-                                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                                    {celebrityMediaGallery[
-                                      selectedCelebrity
-                                    ].map((_, index) => (
-                                      <div
-                                        key={index}
-                                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                                          index === currentMediaIndex
-                                            ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
-                                            : "bg-white/60 hover:bg-white/80"
-                                        }`}
-                                        onClick={() =>
-                                          setCurrentMediaIndex(index)
-                                        }
-                                      />
+                        {/* Outfit Results */}
+                        <div className="ml-11">
+                          <div className="flex flex-col md:flex-row gap-8 justify-center items-start">
+                            {/* Left side - Outfit display */}
+                            <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
+                              {(historyItem.outfit as any)?.loading ? (
+                                // Instagram-style loading with greyed-out preview items
+                                <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
+                                  {/* Header */}
+                                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 relative flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-1 w-24" />
+                                    </div>
+                                  </div>
+                                  {/* Loading items with greyed-out preview */}
+                                  <div className="p-3 space-y-2 flex-1 overflow-y-auto">
+                                    {[1, 2, 3, 4].map((i) => (
+                                      <div key={i} className="relative">
+                                        <div className="block rounded-lg p-2 border border-gray-100">
+                                          <div className="flex items-center gap-2">
+                                            {/* Item Image */}
+                                            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
+                                            {/* Item Details */}
+                                            <div className="flex-1 min-w-0 mr-1">
+                                              <div className="flex items-start justify-between mb-1">
+                                                <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                                              </div>
+                                              <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-32" />
+                                              <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-16" />
+                                              <div className="flex items-center justify-between">
+                                                <div className="h-3 bg-gray-200 rounded animate-pulse w-12" />
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
                                     ))}
+                                  </div>
+                                  {/* Total */}
+                                  <div className="border-t border-gray-200 p-3 flex-shrink-0">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="h-3 bg-gray-200 rounded animate-pulse w-10" />
+                                      <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
+                                    </div>
+                                    <div className="h-10 bg-gray-200 rounded-xl animate-pulse" />
                                   </div>
                                 </div>
                               ) : (
-                                // Show default image for no celebrity selected
-                                <div className="w-full h-[600px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
-                                  <img
-                                    src="/images/style-inspiration.jpg"
-                                    alt="Featured style inspiration"
-                                    className="w-full h-full object-cover rounded-2xl"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.src =
-                                        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
-                                    }}
-                                  />
-
-                                  {/* Favorite button for default image */}
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        outfitSuggestions &&
-                                        !(outfitSuggestions as any)?.loading
-                                      ) {
-                                        saveLookToBoard(
-                                          outfitSuggestions,
-                                          undefined,
-                                        );
-                                      }
-                                    }}
-                                    className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                  >
-                                    <svg
-                                      className={`w-5 h-5 transition-colors ${
-                                        savedLooks.some((id) => {
-                                          // Check if this look combination is already saved
-                                          // This is a simplified check - in a real app you'd want more sophisticated matching
-                                          return false; // For now, always show unfilled heart
-                                        })
-                                          ? "text-red-500 fill-current"
-                                          : "text-gray-600 hover:text-red-400"
-                                      }`}
-                                      fill={
-                                        savedLooks.some((id) => false)
-                                          ? "currentColor"
-                                          : "none"
-                                      }
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                      />
-                                    </svg>
-                                  </button>
-
-                                  {/* Elegant overlay */}
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
-                                </div>
+                                renderOutfitItems(
+                                  historyItem.outfit,
+                                  historyItem.celebrity,
+                                  historyItem.celebrityData,
+                                )
                               )}
-                              <div className="text-center flex-shrink-0 pt-4">
-                                <h4 className="font-semibold text-gray-900 mb-2 text-lg leading-tight">
-                                  {selectedCelebrity &&
-                                  celebrityMediaGallery[selectedCelebrity]
-                                    ? celebrityMediaGallery[selectedCelebrity][
-                                        currentMediaIndex
-                                      ]?.title || "Celebrity Style"
-                                    : "Street Style Vibes"}
-                                </h4>
-                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Search Bar at Bottom - Only show when outfit suggestions are present */}
-                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-                      <div className="w-full max-w-4xl mx-auto">
-                        <form onSubmit={handleSearch} className="relative">
-                          <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
-                            <textarea
-                              value={searchQuery}
-                              onChange={handleTextareaChange}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  if (searchQuery.trim()) {
-                                    handleSearch(e as any);
-                                  }
-                                }
-                              }}
-                              placeholder="Ask for another style or outfit idea..."
-                              className="w-full px-4 sm:px-6 py-4 pr-44 sm:pr-56 text-sm sm:text-base bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed h-14 min-h-14 max-h-30"
-                              disabled={isLoading}
-                              rows={1}
-                              suppressHydrationWarning
-                            />
-                            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                              <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
-                                {promptCount}/7 free
+                            {/* Right side - Style Inspiration Gallery */}
+                            <div className="w-full md:w-auto md:min-w-[450px] md:max-w-[450px] flex">
+                              <div className="bg-white rounded-2xl shadow-xl w-full border border-gray-200 overflow-hidden flex flex-col h-[700px]">
+                                {/* Header */}
+                                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 flex-shrink-0">
+                                  <div className="flex-1 min-w-0">
+                                    {/* Title removed */}
+                                  </div>
+                                </div>
+
+                                {/* Single Featured Content - Celebrity Images */}
+                                <div className="flex-1 flex flex-col p-4">
+                                  {(historyItem.outfit as any)?.loading ? (
+                                    // Instagram-style loading for right panel
+                                    <div className="w-full h-[600px] bg-gray-200 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl animate-pulse">
+                                      {/* Loading placeholder */}
+                                    </div>
+                                  ) : historyItem.celebrity &&
+                                    celebrityMediaGallery[
+                                      historyItem.celebrity
+                                    ] ? (
+                                    // Show dynamic media for selected celebrity
+                                    <div className="w-full h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden relative shadow-lg border border-gray-200/50 rounded-2xl group">
+                                      <img
+                                        src={
+                                          celebrityMediaGallery[
+                                            historyItem.celebrity
+                                          ][currentMediaIndex]?.src
+                                        }
+                                        alt={
+                                          celebrityMediaGallery[
+                                            historyItem.celebrity
+                                          ][currentMediaIndex]?.title
+                                        }
+                                        className="w-full h-full object-cover transition-all duration-500 hover:scale-[1.02] rounded-2xl"
+                                        onError={(e) => {
+                                          const target =
+                                            e.target as HTMLImageElement;
+                                          target.src =
+                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                        }}
+                                      />
+
+                                      {/* Navigation arrows - hidden by default, shown on hover */}
+                                      <button
+                                        onClick={() => {
+                                          const gallery =
+                                            celebrityMediaGallery[
+                                              historyItem.celebrity!
+                                            ];
+                                          setCurrentMediaIndex((prev) =>
+                                            prev === 0
+                                              ? gallery.length - 1
+                                              : prev - 1,
+                                          );
+                                        }}
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                                      >
+                                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          const gallery =
+                                            celebrityMediaGallery[
+                                              historyItem.celebrity!
+                                            ];
+                                          setCurrentMediaIndex((prev) =>
+                                            prev === gallery.length - 1
+                                              ? 0
+                                              : prev + 1,
+                                          );
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                                      >
+                                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                                      </button>
+
+                                      {/* Favorite button */}
+                                      <button
+                                        onClick={() => {
+                                          saveLookToBoard(
+                                            historyItem.outfit,
+                                            historyItem.celebrity,
+                                          );
+                                        }}
+                                        className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                      >
+                                        <svg
+                                          className={`w-5 h-5 transition-colors ${
+                                            savedLooks.some((id) => {
+                                              // Check if this look combination is already saved
+                                              // This is a simplified check - in a real app you'd want more sophisticated matching
+                                              return false; // For now, always show unfilled heart
+                                            })
+                                              ? "text-red-500 fill-current"
+                                              : "text-gray-600 hover:text-red-400"
+                                          }`}
+                                          fill={
+                                            savedLooks.some((id) => false)
+                                              ? "currentColor"
+                                              : "none"
+                                          }
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                          />
+                                        </svg>
+                                      </button>
+
+                                      {/* Elegant overlay gradient */}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
+
+                                      {/* Media indicators */}
+                                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                        {celebrityMediaGallery[
+                                          historyItem.celebrity
+                                        ].map((_, mediaIndex) => (
+                                          <div
+                                            key={mediaIndex}
+                                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                                              mediaIndex === currentMediaIndex
+                                                ? "bg-white shadow-lg scale-110 ring-2 ring-white/30"
+                                                : "bg-white/60 hover:bg-white/80"
+                                            }`}
+                                            onClick={() =>
+                                              setCurrentMediaIndex(mediaIndex)
+                                            }
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    // Show default image for no celebrity selected
+                                    <div className="w-full h-[600px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-200/50 shadow-lg rounded-2xl relative">
+                                      <img
+                                        src="/images/style-inspiration.jpg"
+                                        alt="Featured style inspiration"
+                                        className="w-full h-full object-cover rounded-2xl"
+                                        onError={(e) => {
+                                          const target =
+                                            e.target as HTMLImageElement;
+                                          target.src =
+                                            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
+                                        }}
+                                      />
+
+                                      {/* Favorite button for default image */}
+                                      <button
+                                        onClick={() => {
+                                          saveLookToBoard(
+                                            historyItem.outfit,
+                                            undefined,
+                                          );
+                                        }}
+                                        className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
+                                      >
+                                        <svg
+                                          className={`w-5 h-5 transition-colors ${
+                                            savedLooks.some((id) => {
+                                              // Check if this look combination is already saved
+                                              // This is a simplified check - in a real app you'd want more sophisticated matching
+                                              return false; // For now, always show unfilled heart
+                                            })
+                                              ? "text-red-500 fill-current"
+                                              : "text-gray-600 hover:text-red-400"
+                                          }`}
+                                          fill={
+                                            savedLooks.some((id) => false)
+                                              ? "currentColor"
+                                              : "none"
+                                          }
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                          />
+                                        </svg>
+                                      </button>
+
+                                      {/* Elegant overlay */}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none rounded-2xl" />
+                                    </div>
+                                  )}
+                                  {!(historyItem.outfit as any)?.loading && (
+                                    <div className="text-center flex-shrink-0 pt-4">
+                                      <h4 className="font-semibold text-gray-900 mb-2 text-lg leading-tight">
+                                        {historyItem.celebrity &&
+                                        celebrityMediaGallery[
+                                          historyItem.celebrity
+                                        ]
+                                          ? celebrityMediaGallery[
+                                              historyItem.celebrity
+                                            ][currentMediaIndex]?.title ||
+                                            "Celebrity Style"
+                                          : "Street Style Vibes"}
+                                      </h4>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <button
-                                type="submit"
-                                disabled={isLoading || !searchQuery.trim()}
-                                className="w-10 h-10 sm:w-12 sm:h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center flex-shrink-0"
-                              >
-                                {isLoading ? (
-                                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                                ) : (
-                                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                                )}
-                              </button>
                             </div>
                           </div>
-                        </form>
+
+                          {/* Separator line between history items */}
+                          {index < searchHistory.length - 1 && (
+                            <div className="mt-8 border-b border-gray-200"></div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    ))}
+
+                    {/* Search Bar at Bottom - Only show when search history exists */}
+                    {searchHistory.length > 0 && (
+                      <div className="fixed bottom-0 left-0 right-0 z-50 p-2">
+                        <div className="w-full max-w-2xl mx-auto">
+                          <form onSubmit={handleSearch} className="relative">
+                            <div className="relative bg-white rounded-2xl border border-beige-200 shadow-xl hover:shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/20 focus-within:border-gold-300">
+                              <textarea
+                                value={searchQuery}
+                                onChange={handleTextareaChange}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (searchQuery.trim()) {
+                                      handleSearch(e as any);
+                                    }
+                                  }
+                                }}
+                                placeholder="Ask for another style or outfit idea..."
+                                className="w-full px-3 sm:px-4 py-3 pr-36 sm:pr-40 text-sm bg-transparent border-none rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none resize-none overflow-hidden leading-relaxed h-12 min-h-12 max-h-24"
+                                disabled={isLoading}
+                                rows={1}
+                                suppressHydrationWarning
+                              />
+                              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                <div className="text-xs sm:text-sm text-gray-400 hidden md:block whitespace-nowrap">
+                                  {promptCount}/7 free
+                                </div>
+                                <button
+                                  type="submit"
+                                  disabled={isLoading || !searchQuery.trim()}
+                                  className="w-8 h-8 sm:w-10 sm:h-10 bg-black hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg flex-shrink-0"
+                                >
+                                  {isLoading ? (
+                                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                                  ) : (
+                                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Celebrity Trends Section - Only show if no outfit suggestions and showSearch is true */}
-              {!outfitSuggestions && showSearch && (
-                <div className="max-w-5xl mx-auto px-4">
+              {/* Celebrity Trends Section - Only show if no search history, showSearch is true, and no initial query */}
+              {searchHistory.length === 0 && showSearch && !initialQuery && (
+                <div className="max-w-6xl mx-auto px-4">
                   {/* Trending Title */}
-                  <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
+                  <div className="text-center mb-8">
+                    <h2 className="text-3xl font-bold text-gray-900">
                       Trending
                     </h2>
                   </div>
@@ -1924,8 +2093,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                       selectedCelebrity || undefined,
                       selectedCelebrity
                         ? (() => {
-                            const trend = celebrityTrends.find((trend) => trend.name === selectedCelebrity);
-                            return trend ? { ...trend, fragrance: trend.fragrance ?? "" } : undefined;
+                            const trend = celebrityTrends.find(
+                              (trend) => trend.name === selectedCelebrity,
+                            );
+                            return trend
+                              ? { ...trend, fragrance: trend.fragrance ?? "" }
+                              : undefined;
                           })()
                         : undefined,
                     );
@@ -1944,17 +2117,17 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       {/* Sign In Dialog */}
       {showSignInDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="text-center mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-xl p-3 max-w-[280px] w-full mx-4">
+            <div className="text-center mb-3">
+              <h3 className="text-sm font-bold text-gray-900 mb-1">
                 Save Your Looks
               </h3>
-              <p className="text-sm sm:text-base text-gray-600">
-                Sign in to save and organize your favorite outfit combinations
+              <p className="text-xs text-gray-600">
+                Sign in to save your favorite outfits
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <button
                 onClick={async () => {
                   const { error } = await supabase.auth.signInWithOAuth({
@@ -1965,9 +2138,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   });
                   if (error) console.error("Error:", error);
                 }}
-                className="w-full flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
+                className="w-full flex items-center justify-center gap-2 py-1.5 px-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M22.56 12c-6.626 0-12 5.373-12 12 0 6.627 5.373 12 12 12 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12-12z"
@@ -1998,10 +2171,10 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                   });
                   if (error) console.error("Error:", error);
                 }}
-                className="w-full flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
+                className="w-full flex items-center justify-center gap-2 py-1.5 px-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-xs"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -2013,7 +2186,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
 
             <button
               onClick={() => setShowSignInDialog(false)}
-              className="w-full mt-3 sm:mt-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="w-full mt-2 py-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
             >
               Maybe later
             </button>
@@ -2022,154 +2195,100 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       )}
       {/* Full Look Modal */}
       {showLookModal && selectedLookData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl w-full max-w-[95vw] max-h-[95vh] sm:max-h-[90vh] flex flex-col">
-            <div className="flex-shrink-0 bg-white border-b border-gray-200 p-3 sm:p-6 flex items-center justify-between">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-xl w-full max-w-lg max-h-[70vh] flex flex-col">
+            <div className="flex-shrink-0 bg-white border-b border-gray-200 p-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900 truncate">
                 {selectedLookData.celebrity || "Style AI"} Look
               </h3>
               <button
                 onClick={() => setShowLookModal(false)}
-                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 ml-2"
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 ml-2"
               >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
 
-            <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-                {/* Left: Outfit Card */}
-                <div className="flex justify-center order-2 md:order-1">
-                  <div className="w-full max-w-md">
-                    {renderOutfitItems(
-                      selectedLookData.outfit,
-                      selectedLookData.celebrity,
-                      selectedLookData.celebrityData,
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: Details */}
-                <div className="space-y-4 sm:space-y-6 order-1 md:order-2">
-                  {/* Celebrity Style Gallery */}
-                  {selectedLookData.celebrity &&
-                    celebrityMediaGallery[selectedLookData.celebrity] && (
-                      <div>
-                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                          Style Inspiration Gallery
-                        </h4>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                          {celebrityMediaGallery[selectedLookData.celebrity]
-                            .slice(0, 4)
-                            .map((media, index) => (
-                              <div
-                                key={index}
-                                className="aspect-square rounded-lg overflow-hidden bg-gray-100"
-                              >
-                                <img
-                                  src={media.src}
-                                  alt={media.title}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src =
-                                      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80";
-                                  }}
-                                />
-                              </div>
-                            ))}
-                        </div>
-
-                        {/* Save to My Looks Button - moved here below gallery */}
-                        <div className="pt-3 sm:pt-4">
-                          <button
-                            onClick={() =>
-                              saveLookToBoard(
-                                selectedLookData.outfit,
-                                selectedLookData.celebrity,
-                              )
-                            }
-                            className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-3 sm:px-4 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg text-sm sm:text-base"
-                          >
-                            <svg
-                              className="w-4 h-4 sm:w-5 sm:h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                              />
-                            </svg>
-                            Save to My Looks
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                  <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                      Outfit Description
-                    </h4>
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                      {selectedLookData.outfit.main_description}
-                    </p>
-                  </div>
-
-                  {selectedLookData.celebrityData?.fragrance && (
+            <div className="flex-1 p-2 overflow-y-auto">
+              <div className="space-y-3">
+                {/* Celebrity Style Gallery */}
+                {selectedLookData.celebrity &&
+                  celebrityMediaGallery[selectedLookData.celebrity] && (
                     <div>
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Signature Fragrance
+                      <h4 className="text-xs font-semibold text-gray-900 mb-2">
+                        Style Gallery
                       </h4>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href="https://www.fragrantica.com/perfume/Tom-Ford/Oud-Wood-1826.html"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                        >
-                          <img
-                            src="https://images.unsplash.com/photo-1541643600914-78b084683601?w=32&h=32&fit=crop&crop=center"
-                            alt="Champion Spirit Perfume"
-                            className="w-6 h-6 rounded object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src =
-                                "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=32&h=32&fit=crop&crop=center";
-                            }}
-                          />
-                          <span className="text-sm sm:text-base text-violet-600 font-medium">
-                            🌸 {selectedLookData.celebrityData.fragrance}
-                          </span>
-                        </a>
+                      <div className="grid grid-cols-2 gap-1">
+                        {celebrityMediaGallery[selectedLookData.celebrity]
+                          .slice(0, 2)
+                          .map((media, index) => (
+                            <div
+                              key={index}
+                              className="aspect-square rounded-lg overflow-hidden bg-gray-100"
+                            >
+                              <img
+                                src={media.src}
+                                alt={media.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src =
+                                    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80";
+                                }}
+                              />
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
 
-                  <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                      Style Tips
-                    </h4>
-                    <ul className="space-y-2 text-sm sm:text-base text-gray-600">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Mix high-end pieces with affordable alternatives for the
-                        perfect balance
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Pay attention to fit and proportions for a polished look
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        Accessories can make or break an outfit - choose wisely
-                      </li>
-                    </ul>
-                  </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-900 mb-1">
+                    Description
+                  </h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {selectedLookData.outfit.main_description}
+                  </p>
                 </div>
+
+                {selectedLookData.celebrityData?.fragrance && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-900 mb-1">
+                      Signature Fragrance
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-violet-600 font-medium">
+                        🌸 {selectedLookData.celebrityData.fragrance}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Save Button */}
+                <button
+                  onClick={() =>
+                    saveLookToBoard(
+                      selectedLookData.outfit,
+                      selectedLookData.celebrity,
+                    )
+                  }
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-black hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-200 text-xs"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                  Save to My Looks
+                </button>
               </div>
             </div>
           </div>
