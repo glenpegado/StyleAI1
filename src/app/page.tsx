@@ -1,4 +1,4 @@
-import HomepageHero from "@/components/homepage-hero";
+import Hero from "@/components/hero";
 import Navbar from "@/components/navbar";
 
 export default function Home() {
@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="transition-all duration-300 ease-out">
-        <HomepageHero />
+        <Hero />
       </div>
     </div>
   );

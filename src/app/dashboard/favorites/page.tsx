@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "../../../../supabase/client";
 import { useRouter } from "next/navigation";
 import { SubscriptionCheck } from "@/components/subscription-check";
-import Navbar from "@/components/navbar";
+import DashboardNavbar from "@/components/dashboard-navbar";
 import {
   Heart,
   X,
@@ -166,7 +166,7 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <SubscriptionCheck>
-        <Navbar />
+        <DashboardNavbar />
         <main className="w-full bg-gray-50 min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-16">
@@ -181,7 +181,7 @@ export default function FavoritesPage() {
 
   return (
     <SubscriptionCheck>
-      <Navbar />
+      <DashboardNavbar />
       <main className="w-full bg-gray-50 min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
@@ -443,7 +443,7 @@ function FavoriteModal({
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "peacedrobe"}`;
+                                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentLook.celebrity_name || "peacedrobe"}`;
               }}
             />
           </div>
