@@ -8,8 +8,30 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "peacedrobe - AI-Powered Fashion Styling | Awin",
-  description: "Discover celebrity styles and get personalized outfit recommendations powered by AI.",
+  title: "peacedrobe - AI-Powered Fashion Assistant",
+  description:
+    "Discover celebrity styles and get personalized outfit recommendations with affordable alternatives. Your Gen-Z fashion assistant powered by AI.",
+  keywords:
+    "fashion, AI, styling, outfits, celebrity style, affordable fashion, streetwear, Gen-Z",
+  authors: [{ name: "peacedrobe" }],
+  creator: "peacedrobe",
+  publisher: "peacedrobe",
+  robots: "index, follow",
+  openGraph: {
+    title: "peacedrobe - AI-Powered Fashion Assistant",
+    description:
+      "Discover celebrity styles and get personalized outfit recommendations with affordable alternatives.",
+    url: "https://peacedrobe.ai",
+    siteName: "peacedrobe",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "peacedrobe - AI-Powered Fashion Assistant",
+    description:
+      "Discover celebrity styles and get personalized outfit recommendations with affordable alternatives.",
+    creator: "@peacedrobe",
+  },
 };
 
 export default function RootLayout({
@@ -19,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
+      <Script src="https://api.tempo.build/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js" />
       <body className={inter.className} suppressHydrationWarning>
         <PromptProvider>
           {children}

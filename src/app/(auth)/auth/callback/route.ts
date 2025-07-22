@@ -11,12 +11,11 @@ export async function GET(request: Request) {
   // Handle errors from Supabase
   if (error) {
     console.error("Auth callback error:", error, error_description);
-    // Redirect to sign-in page with error message using webapp URL
+    // Redirect to sign-in page with error message using production URL
     const errorRedirectUrl = new URL(
       `/sign-in?error=${encodeURIComponent(error_description || error)}`,
-      "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
+      "https://peacedrobe.ai",
     );
-    console.log("Error redirect to:", errorRedirectUrl.toString());
     return NextResponse.redirect(errorRedirectUrl);
   }
 
@@ -29,22 +28,17 @@ export async function GET(request: Request) {
       console.error("Error exchanging code for session:", exchangeError);
       const exchangeErrorUrl = new URL(
         `/sign-in?error=${encodeURIComponent(exchangeError.message)}`,
-        "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
+        "https://peacedrobe.ai",
       );
-      console.log("Exchange error redirect to:", exchangeErrorUrl.toString());
       return NextResponse.redirect(exchangeErrorUrl);
     }
   }
 
   // URL to redirect to after sign in process completes
-  const redirectTo = redirect_to || "/pricing";
+  const redirectTo = redirect_to || "/dashboard";
 
-  // Use the webapp URL instead of request origin to avoid localhost issues
-  const redirectUrl = new URL(
-    redirectTo,
-    "https://unruffled-fermat9-v3wle.view-3.tempo-dev.app",
-  );
-  console.log("Redirecting to:", redirectUrl.toString());
+  // Use the production URL instead of request origin to avoid localhost issues
+  const redirectUrl = new URL(redirectTo, "https://peacedrobe.ai");
 
   return NextResponse.redirect(redirectUrl);
 }

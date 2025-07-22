@@ -1599,49 +1599,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                           <ChevronRight className="w-5 h-5 text-gray-700" />
                                         </button>
 
-                                        {/* Favorite button */}
-                                        <button
-                                          onClick={() => {
-                                            if (
-                                              outfitSuggestions &&
-                                              !(outfitSuggestions as any)
-                                                ?.loading
-                                            ) {
-                                              saveLookToBoard(
-                                                outfitSuggestions,
-                                                selectedCelebrity || undefined,
-                                              );
-                                            }
-                                          }}
-                                          className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                        >
-                                          <svg
-                                            className={`w-5 h-5 transition-colors ${
-                                              savedLooks.some((id) => {
-                                                // Check if this look combination is already saved
-                                                // This is a simplified check - in a real app you'd want more sophisticated matching
-                                                return false; // For now, always show unfilled heart
-                                              })
-                                                ? "text-red-500 fill-current"
-                                                : "text-gray-600 hover:text-red-400"
-                                            }`}
-                                            fill={
-                                              savedLooks.some((id) => false)
-                                                ? "currentColor"
-                                                : "none"
-                                            }
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                            />
-                                          </svg>
-                                        </button>
-
                                         {/* Elegant overlay gradient */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none" />
 
@@ -1678,49 +1635,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                               "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
                                           }}
                                         />
-
-                                        {/* Favorite button for default image */}
-                                        <button
-                                          onClick={() => {
-                                            if (
-                                              outfitSuggestions &&
-                                              !(outfitSuggestions as any)
-                                                ?.loading
-                                            ) {
-                                              saveLookToBoard(
-                                                outfitSuggestions,
-                                                undefined,
-                                              );
-                                            }
-                                          }}
-                                          className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                        >
-                                          <svg
-                                            className={`w-5 h-5 transition-colors ${
-                                              savedLooks.some((id) => {
-                                                // Check if this look combination is already saved
-                                                // This is a simplified check - in a real app you'd want more sophisticated matching
-                                                return false; // For now, always show unfilled heart
-                                              })
-                                                ? "text-red-500 fill-current"
-                                                : "text-gray-600 hover:text-red-400"
-                                            }`}
-                                            fill={
-                                              savedLooks.some((id) => false)
-                                                ? "currentColor"
-                                                : "none"
-                                            }
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                            />
-                                          </svg>
-                                        </button>
 
                                         {/* Elegant overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent pointer-events-none" />
@@ -1793,47 +1707,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                           <ChevronRight className="w-5 h-5 text-gray-700" />
                                         </button>
 
-                                        {/* Favorite button */}
-                                        <button
-                                          onClick={() => {
-                                            if (
-                                              outfitSuggestions &&
-                                              !(outfitSuggestions as any)
-                                                ?.loading
-                                            ) {
-                                              saveLookToBoard(
-                                                outfitSuggestions,
-                                                selectedCelebrity || undefined,
-                                              );
-                                            }
-                                          }}
-                                          className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                        >
-                                          <svg
-                                            className={`w-5 h-5 transition-colors ${
-                                              savedLooks.some((id) => {
-                                                return false;
-                                              })
-                                                ? "text-red-500 fill-current"
-                                                : "text-gray-600 hover:text-red-400"
-                                            }`}
-                                            fill={
-                                              savedLooks.some((id) => false)
-                                                ? "currentColor"
-                                                : "none"
-                                            }
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                            />
-                                          </svg>
-                                        </button>
-
                                         {/* Media indicators */}
                                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
                                           {celebrityMediaGallery[
@@ -1867,47 +1740,6 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
                                               "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80";
                                           }}
                                         />
-
-                                        {/* Favorite button for default image */}
-                                        <button
-                                          onClick={() => {
-                                            if (
-                                              outfitSuggestions &&
-                                              !(outfitSuggestions as any)
-                                                ?.loading
-                                            ) {
-                                              saveLookToBoard(
-                                                outfitSuggestions,
-                                                undefined,
-                                              );
-                                            }
-                                          }}
-                                          className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                                        >
-                                          <svg
-                                            className={`w-5 h-5 transition-colors ${
-                                              savedLooks.some((id) => {
-                                                return false;
-                                              })
-                                                ? "text-red-500 fill-current"
-                                                : "text-gray-600 hover:text-red-400"
-                                            }`}
-                                            fill={
-                                              savedLooks.some((id) => false)
-                                                ? "currentColor"
-                                                : "none"
-                                            }
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                            />
-                                          </svg>
-                                        </button>
                                       </div>
                                     )}
                                   </div>

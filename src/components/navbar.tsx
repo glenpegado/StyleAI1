@@ -87,9 +87,6 @@ export default function Navbar() {
                 <span className="text-lg font-semibold text-black">
                   peacedrobe
                 </span>
-                <span className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full">
-                  BETA
-                </span>
               </div>
             </div>
           </div>
