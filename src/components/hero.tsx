@@ -528,6 +528,12 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       return;
     }
 
+    // Validate query length
+    if (query.trim().length < 3) {
+      alert("Please enter a more detailed query (at least 3 characters).");
+      return;
+    }
+
     // Check if this is an Odell Beckham query
     if (
       query.toLowerCase().includes("odell beckham") ||
@@ -536,7 +542,7 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       setIsLoading(true);
       setOutfitSuggestions({ loading: true } as any);
 
-      // Simulate loading time
+      // Simulate loading time with reduced delay
       setTimeout(() => {
         setOutfitSuggestions(odellBeckhamOutfit);
         setIsLoading(false);
@@ -545,24 +551,27 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         if (promptCount + 1 >= 7) {
           setShowDialog(true);
         }
-      }, 1500);
+      }, 1000); // Reduced from 1500ms
       return;
     }
 
-    // Show loading state immediately for both outfit and style
+    // Show loading state immediately
     setOutfitSuggestions({ loading: true } as any);
     setIsLoading(true);
 
-    // Simple request with timeout
+    // Optimized request with faster timeout
     const makeRequest = async () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout (reduced)
 
       try {
         const response = await fetch("/api/generate-outfit", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }),
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+          body: JSON.stringify({ query: query.trim() }),
           signal: controller.signal,
         });
 
@@ -585,7 +594,9 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
       } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === "AbortError") {
-          throw new Error("Request timeout. Please try again.");
+          throw new Error(
+            "Request timeout. Please try a shorter query or try again.",
+          );
         }
         throw error;
       }
@@ -620,11 +631,14 @@ export default function Hero({ showSearch = true }: HeroProps = {}) {
         errorMessage = error.message;
       }
 
-      // Show simplified error message
-      alert(
-        errorMessage ||
-          "Sorry, there was an error generating your outfit. Please try again.",
-      );
+      // Show user-friendly error message
+      const userFriendlyMessage = errorMessage.includes("timeout")
+        ? "The request is taking longer than expected. Please try a shorter query or try again."
+        : errorMessage.includes("quota")
+          ? "We're experiencing high demand. Please try again in a few minutes."
+          : "Sorry, there was an error generating your outfit. Please try again.";
+
+      alert(userFriendlyMessage);
     } finally {
       setIsLoading(false);
     }

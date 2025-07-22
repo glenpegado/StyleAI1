@@ -84,12 +84,9 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("prompt_count");
   };
 
-  // Development reset function - immediately reset for testing
+  // Development reset function - only in development
   useEffect(() => {
-    if (
-      process.env.NODE_ENV === "development" ||
-      window.location.hostname.includes("tempo-dev")
-    ) {
+    if (process.env.NODE_ENV === "development") {
       // Auto-reset if we've reached the limit for testing purposes
       if (hasReachedLimit) {
         console.log(
@@ -98,7 +95,7 @@ export function PromptProvider({ children }: { children: React.ReactNode }) {
         // Add a small delay to prevent immediate reset during API calls
         setTimeout(() => {
           resetPrompts();
-        }, 1000);
+        }, 2000); // Increased delay to prevent race conditions
       }
     }
   }, [hasReachedLimit]);

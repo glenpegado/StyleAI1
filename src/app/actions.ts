@@ -31,6 +31,7 @@ export const signUpAction = async (formData: FormData) => {
         name: fullName,
         email: email,
       },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://peacedrobe.ai"}/dashboard`,
     },
   });
 
@@ -41,7 +42,7 @@ export const signUpAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     "/sign-up",
-    "Thanks for signing up! Please check your email for a verification link.",
+    "Welcome to Peacedrobe! Please check your email from support@peacedrobe.com for a verification link to complete your registration.",
   );
 };
 

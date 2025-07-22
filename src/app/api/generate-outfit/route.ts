@@ -3,9 +3,13 @@ import OpenAI from "openai";
 import * as cheerio from "cheerio";
 import crypto from "crypto";
 
-// In-memory cache for outfit suggestions
-const cache = new Map<string, { data: any; expiry: number }>();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+// Enhanced in-memory cache with LRU eviction
+const cache = new Map<
+  string,
+  { data: any; expiry: number; lastAccessed: number }
+>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes (increased from 5)
+const MAX_CACHE_SIZE = 100; // Prevent memory leaks
 
 function generateCacheKey(query: string): string {
   const hash = crypto
@@ -13,6 +17,29 @@ function generateCacheKey(query: string): string {
     .update(query.toLowerCase().trim())
     .digest("hex");
   return `outfit_${hash}`;
+}
+
+// Clean cache with LRU eviction
+function cleanCache() {
+  const now = Date.now();
+  const entries = Array.from(cache.entries());
+
+  // Remove expired entries
+  entries.forEach(([key, value]) => {
+    if (value.expiry <= now) {
+      cache.delete(key);
+    }
+  });
+
+  // If still over limit, remove least recently used
+  if (cache.size > MAX_CACHE_SIZE) {
+    const sortedEntries = entries
+      .filter(([key]) => cache.has(key))
+      .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+
+    const toRemove = sortedEntries.slice(0, cache.size - MAX_CACHE_SIZE);
+    toRemove.forEach(([key]) => cache.delete(key));
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -29,16 +56,15 @@ export async function POST(request: NextRequest) {
     const cached = cache.get(cacheKey);
 
     if (cached && cached.expiry > now) {
+      // Update last accessed time
+      cached.lastAccessed = now;
+      cache.set(cacheKey, cached);
       console.log("Cache hit for query:", query);
       return NextResponse.json(cached.data);
     }
 
-    // Clean expired cache entries
-    Array.from(cache.entries()).forEach(([key, value]) => {
-      if (value.expiry <= now) {
-        cache.delete(key);
-      }
-    });
+    // Clean cache periodically
+    cleanCache();
 
     // Check environment variables
     if (
@@ -56,9 +82,9 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are a Gen-Z fashion stylist AI that specializes in urban streetwear and trendy fashion. Your goal is to provide complete outfit suggestions that are both stylish and accessible.
+          content: `You are a professional Gen-Z fashion stylist AI specializing in urban streetwear and contemporary fashion. Provide complete outfit suggestions that are stylish, accessible, and professionally curated.
 
-When a user asks about fashion inspiration (like "I want to dress like [celebrity]" or "What goes with [item]"), provide a complete outfit suggestion with multiple alternatives for each category.
+When users request fashion inspiration, provide outfit suggestions with multiple price-point alternatives for each category.
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 
@@ -75,39 +101,32 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
       "image_url": "https://example.com/image.jpg",
       "availability": "In Stock" or "Limited" or "Sold Out"
     }
-    // Include 2-3 alternatives with different price points
   ],
-  "bottoms": [
-    // Same format as tops, 2-3 alternatives
-  ],
-  "accessories": [
-    // Same format, 2-3 alternatives including bags, jewelry, hats, etc.
-  ],
-  "shoes": [
-    // Same format, 2-3 alternatives
-  ]
+  "bottoms": [],
+  "accessories": [],
+  "shoes": []
 }
 
-Ensure you include both premium and affordable options. Use real brands and realistic prices. Make sure all URLs are valid and accessible.`,
+Include 2-3 alternatives per category with different price points. Use established brands and realistic pricing. Ensure all URLs are valid and accessible.`,
         },
         {
           role: "user",
           content: query,
         },
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.6, // Reduced for more consistent responses
+      max_tokens: 1500, // Reduced for faster responses
     };
 
-    // Retry mechanism with exponential backoff
-    const makeRequestWithRetry = async (maxRetries = 5) => {
+    // Optimized retry mechanism with faster timeouts
+    const makeRequestWithRetry = async (maxRetries = 3) => {
       let attempt = 0;
-      const baseDelay = 1000;
+      const baseDelay = 500; // Reduced base delay
 
       while (attempt <= maxRetries) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout (reduced)
 
           const response = await fetch(
             "https://api.picaos.com/v1/passthrough/chat/completions",
@@ -163,10 +182,13 @@ Ensure you include both premium and affordable options. Use real brands and real
             }
           }
 
-          // Retry server errors (5xx) but only if we have attempts left
-          if (response.status >= 500 && attempt < maxRetries) {
+          // Retry server errors (5xx) and rate limits but only if we have attempts left
+          if (
+            (response.status >= 500 || response.status === 429) &&
+            attempt < maxRetries
+          ) {
             console.warn(`Server error ${response.status}, will retry...`);
-            const delay = baseDelay * Math.pow(2, attempt);
+            const delay = Math.min(baseDelay * Math.pow(2, attempt), 5000); // Cap at 5 seconds
             await new Promise((resolve) => setTimeout(resolve, delay));
             attempt++;
             continue;
@@ -184,8 +206,11 @@ Ensure you include both premium and affordable options. Use real brands and real
             errorData.error || `Server error: ${response.status}`,
           );
         } catch (error) {
-          if (attempt < maxRetries) {
-            const delay = baseDelay * Math.pow(2, attempt);
+          if (
+            attempt < maxRetries &&
+            !(error instanceof Error && error.name === "AbortError")
+          ) {
+            const delay = Math.min(baseDelay * Math.pow(2, attempt), 5000);
             await new Promise((resolve) => setTimeout(resolve, delay));
             attempt++;
             continue;
@@ -449,6 +474,7 @@ Ensure you include both premium and affordable options. Use real brands and real
     cache.set(cacheKey, {
       data: enhancedOutfitData,
       expiry: now + CACHE_TTL_MS,
+      lastAccessed: now,
     });
     console.log("Cached new response for query:", query);
 

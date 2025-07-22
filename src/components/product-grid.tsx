@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Product } from '@/lib/product-fetcher';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, ShoppingCart } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Product } from "@/lib/product-fetcher";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, ShoppingCart } from "lucide-react";
 
 // Extend Window interface for gtag
 declare global {
@@ -17,21 +17,21 @@ declare global {
 interface ProductGridProps {
   query?: string;
   category?: string;
-  type?: 'search' | 'category' | 'trending' | 'celebrity';
+  type?: "search" | "category" | "trending" | "celebrity";
   celebrity?: string;
   itemType?: string;
   limit?: number;
   title?: string;
 }
 
-export function ProductGrid({ 
-  query, 
-  category, 
-  type = 'search', 
-  celebrity, 
-  itemType, 
+export function ProductGrid({
+  query,
+  category,
+  type = "search",
+  celebrity,
+  itemType,
   limit = 8,
-  title 
+  title,
 }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,17 +41,17 @@ export function ProductGrid({
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const params = new URLSearchParams({
           type,
           limit: limit.toString(),
         });
 
-        if (query) params.append('query', query);
-        if (category) params.append('category', category);
-        if (celebrity) params.append('celebrity', celebrity);
-        if (itemType) params.append('itemType', itemType);
+        if (query) params.append("query", query);
+        if (category) params.append("category", category);
+        if (celebrity) params.append("celebrity", celebrity);
+        if (itemType) params.append("itemType", itemType);
 
         const response = await fetch(`/api/products?${params}`);
         const data = await response.json();
@@ -59,11 +59,11 @@ export function ProductGrid({
         if (data.success) {
           setProducts(data.products);
         } else {
-          setError(data.error || 'Failed to fetch products');
+          setError(data.error || "Failed to fetch products");
         }
       } catch (err) {
-        setError('Failed to fetch products');
-        console.error('Error fetching products:', err);
+        setError("Failed to fetch products");
+        console.error("Error fetching products:", err);
       } finally {
         setLoading(false);
       }
@@ -73,19 +73,23 @@ export function ProductGrid({
   }, [query, category, type, celebrity, itemType, limit]);
 
   const handleProductClick = (product: Product) => {
-    // Track product click for analytics
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'product_click', {
-        product_id: product.id,
-        product_name: product.name,
-        product_brand: product.brand,
-        product_price: product.price,
-        retailer: product.retailer,
-      });
+    // Track product click for analytics (non-blocking)
+    if (typeof window !== "undefined" && window.gtag) {
+      try {
+        window.gtag("event", "product_click", {
+          product_id: product.id,
+          product_name: product.name,
+          product_brand: product.brand,
+          product_price: product.price,
+          retailer: product.retailer,
+        });
+      } catch (error) {
+        console.warn("Analytics tracking failed:", error);
+      }
     }
-    
+
     // Open product link in new tab
-    window.open(product.url, '_blank', 'noopener,noreferrer');
+    window.open(product.url, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -108,9 +112,7 @@ export function ProductGrid({
     return (
       <div className="text-center py-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>
-          Try Again
-        </Button>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
       </div>
     );
   }
@@ -131,10 +133,13 @@ export function ProductGrid({
       {title && (
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {products.map((product) => (
-          <Card key={product.id} className="group hover:shadow-lg transition-shadow">
+          <Card
+            key={product.id}
+            className="group hover:shadow-lg transition-shadow"
+          >
             <div className="relative aspect-square overflow-hidden rounded-t-lg">
               <img
                 src={product.imageUrl}
@@ -142,7 +147,7 @@ export function ProductGrid({
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 onError={(e) => {
                   // Fallback image if product image fails to load
-                  e.currentTarget.src = '/images/placeholder-product.png';
+                  e.currentTarget.src = "/images/placeholder-product.png";
                 }}
               />
               {product.brand && (
@@ -151,7 +156,7 @@ export function ProductGrid({
                 </Badge>
               )}
             </div>
-            
+
             <CardContent className="p-4">
               <h4 className="font-medium text-sm line-clamp-2 mb-2">
                 {product.name}
@@ -159,13 +164,11 @@ export function ProductGrid({
               <p className="text-lg font-bold text-green-600">
                 {product.price}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {product.retailer}
-              </p>
+              <p className="text-xs text-gray-500 mt-1">{product.retailer}</p>
             </CardContent>
-            
+
             <CardFooter className="p-4 pt-0">
-              <Button 
+              <Button
                 onClick={() => handleProductClick(product)}
                 className="w-full group-hover:bg-green-600 transition-colors"
                 size="sm"
@@ -180,4 +183,4 @@ export function ProductGrid({
       </div>
     </div>
   );
-} 
+}
