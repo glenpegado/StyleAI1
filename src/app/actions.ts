@@ -22,7 +22,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -36,7 +36,29 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (error) {
+    console.error("Sign up error:", error);
+
+    // Provide more specific error messages
+    if (error.message.includes("email")) {
+      return encodedRedirect(
+        "error",
+        "/sign-up",
+        "There was an issue sending the verification email. Please check your email address and try again, or contact support if the problem persists.",
+      );
+    }
+
     return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  // Check if user was created but email might not have been sent
+  if (data.user && !data.user.email_confirmed_at) {
+    console.log("User created, verification email should be sent to:", email);
+
+    return encodedRedirect(
+      "success",
+      "/sign-up",
+      "Welcome to Peacedrobe! Please check your email (including spam folder) for a verification link from support@peacedrobe.com. If you don't receive it within 5 minutes, please try signing up again or contact support.",
+    );
   }
 
   return encodedRedirect(
@@ -47,20 +69,47 @@ export const signUpAction = async (formData: FormData) => {
 };
 
 export const signInAction = async (formData: FormData) => {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const supabase = await createClient();
+  try {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    // Validate input
+    if (!email || !password) {
+      return encodedRedirect(
+        "error",
+        "/sign-in",
+        "Email and password are required",
+      );
+    }
 
-  if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Sign in error:", error);
+      return encodedRedirect("error", "/sign-in", error.message);
+    }
+
+    if (!data.user) {
+      return encodedRedirect("error", "/sign-in", "Authentication failed");
+    }
+
+    // Force a small delay to ensure session is properly set
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    return redirect("/dashboard");
+  } catch (error) {
+    console.error("Unexpected error during sign in:", error);
+    return encodedRedirect(
+      "error",
+      "/sign-in",
+      "An unexpected error occurred. Please try again.",
+    );
   }
-
-  return redirect("/dashboard");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 import { SubscriptionCheck } from "@/components/subscription-check";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InviteUserDialog } from "@/components/invite-user-dialog";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -167,7 +168,7 @@ export default async function Dashboard() {
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <InfoIcon size={16} className="text-blue-600" />
@@ -188,6 +189,20 @@ export default async function Dashboard() {
                     View Features
                   </button>
                 </div>
+              </div>
+
+              {/* User Management Section */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium text-gray-900">
+                    User Management
+                  </span>
+                </div>
+                <p className="text-gray-600 text-sm mb-3">
+                  Invite new users to join your organization and manage team
+                  access.
+                </p>
+                <InviteUserDialog />
               </div>
             </CardContent>
           </Card>

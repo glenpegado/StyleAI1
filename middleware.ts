@@ -27,13 +27,17 @@ export async function middleware(req: NextRequest) {
   );
 
   // Refresh session if expired - required for Server Components
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
 
-  if (error) {
-    // Auth session error handling without console.error
+    if (error) {
+      console.error("Middleware auth error:", error);
+    }
+  } catch (error) {
+    console.error("Middleware unexpected error:", error);
   }
 
   return res;
